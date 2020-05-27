@@ -1,0 +1,22 @@
+
+# Node.js directories/files
+node_modules/
+.npm/
+
+
+#Vscode related settings
+.vscode
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Environment variables file
+.env
+.env.test
+
+# Logs
+*.log
+
+# MacOS
+.DS_Store/
