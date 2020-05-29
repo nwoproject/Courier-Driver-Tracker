@@ -1,6 +1,6 @@
 # Courier-Driver-Tracker
 ## Description
-Courier-Driver-Tracker is a mobile application which main purpose is to track all courier drivers of a company. The application will monitor driver behaviour and log any suspicious behaviour like devating from the delivery route. Description will be updated as the project progresses.
+Courier-Driver-Tracker is a system that provides an efficient way to track a fleet of courier vehicles. Beyond tracking, it should detect abnormal behaviours and alert the relevant people if those patterns repeat often. The App also supplies data that will be used to generate reports that will be sent weekly. 
 
 ## Demo video
 
