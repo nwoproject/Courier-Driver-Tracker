@@ -19,7 +19,7 @@ jobs:
         working-directory: ./courier_driver_tracker
       - run: flutter build aot
         working-directory: ./courier_driver_tracker
-      - run: flutter analyze
-        working-directory: ./courier_driver_tracker
       - run: flutter test
+        working-directory: ./courier_driver_tracker
+      - run: flutter analyze
         working-directory: ./courier_driver_tracker
