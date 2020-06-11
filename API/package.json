@@ -1,0 +1,15 @@
+{
+  "name": "courier_driver_tracker_api",
+  "version": "0.0.1",
+  "description": "Main API for the courier_driver_tracker project",
+  "author": "ctrl+alt+elite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": " "
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {}
+}
