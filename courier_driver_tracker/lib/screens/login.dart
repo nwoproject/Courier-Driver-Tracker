@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
           },
         child: Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: Color(0xffCEE5F2),
+          backgroundColor: Colors.lightBlue[200],
           body: Column(
             children: <Widget>[
               Container(
@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
                             padding: EdgeInsets.all(10.0),
                             decoration: BoxDecoration(
                               border: Border(
-                                bottom: BorderSide(color: Color(0xff2B2C28)),
+                                bottom: BorderSide(color: Colors.black),
                               ),
                             ),
                             child: TextField(
@@ -66,10 +66,10 @@ class _LoginPageState extends State<LoginPage> {
                               decoration: InputDecoration(
                                 border: InputBorder.none,
                                 hintText: 'Email',
-                                hintStyle: TextStyle(color: Color(0xff2B2C28)),
+                                hintStyle: TextStyle(color: Colors.black),
                                 icon: Icon(
                                   Icons.email,
-                                  color: Color(0xff131515),
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
-                                  color: Color(0xff2B2C28),
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -89,10 +89,10 @@ class _LoginPageState extends State<LoginPage> {
                               decoration: InputDecoration(
                                 border: InputBorder.none,
                                 hintText: 'Password',
-                                hintStyle: TextStyle(color: Color(0xff2B2C28)),
+                                hintStyle: TextStyle(color: Colors.black),
                                 icon: Icon(
                                   Icons.lock,
-                                  color: Color(0xff131515),
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -113,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                         //  margin: EdgeInsets.symmetric(horizontal: 60),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(50),
-                          color: Color(0xff2B2C28),
+                          color: Colors.black,
                         ),
                         child: Center(
                           child: Padding(
@@ -121,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Text(
                               "Login",
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.white, fontSize: 15),
+                              style: TextStyle(color: Colors.lightBlue[100], fontSize: 20),
                             ),
                           ),
                         ),
