@@ -1,3 +1,4 @@
+import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:courier_driver_tracker/services/location/TrackingData.dart';
@@ -33,8 +34,6 @@ class _HomePageViewState extends State<HomePageView> {
     String longitude = 'N/A';
     TrackingData trackingData = Provider.of<TrackingData>(context);
 
-
-
     if(trackingData != null){
       latitude = '${trackingData.latitude}';
       longitude = '${trackingData.longitude}';
@@ -53,6 +52,7 @@ class _HomePageViewState extends State<HomePageView> {
         backgroundColor: Colors.black,
         body: Column(
           children: <Widget>[
+            LocalNotifications(),
             Expanded(
                 flex: 5,
                 child: GMap()
