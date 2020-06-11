@@ -17,8 +17,6 @@ jobs:
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
         working-directory: ./courier_driver_tracker
-      - run: flutter build aot
-        working-directory: ./courier_driver_tracker
       - run: flutter test
         working-directory: ./courier_driver_tracker
       - run: flutter analyze
