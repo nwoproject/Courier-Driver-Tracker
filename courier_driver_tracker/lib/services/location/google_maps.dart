@@ -78,7 +78,7 @@ class MapSampleState extends State<GMap> {
 
     if(trackingData != null){
       updateCamera(trackingData);
-      updateMarkerAndCircle(trackingData);
+      //updateMarkerAndCircle(trackingData);
     }
 
 
