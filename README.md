@@ -3,7 +3,7 @@
 ### Project Description
 The system is for tracking a courier fleet. It will monitor them and report suspicious behavior and detect patterns. The System will mainly run from an App, but will also have a website that will be used for reporting purposes. 
 ### Latest Demo
-Link to be Added
+[Link to Video on YouTube](https://youtu.be/3eAq-aJkn40)
 ### Functional Requirements Document
 [Viewable Link](https://www.overleaf.com/read/scbvxcvmwpzd)
 ### Project Management Tool
