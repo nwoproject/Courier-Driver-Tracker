@@ -29,4 +29,3 @@ const dbErrorHandler = (res,err) =>
 }
 
 module.exports = {pool,dbErrorHandler};
-

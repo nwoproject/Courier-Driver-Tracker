@@ -18,6 +18,9 @@ The following header field should be present in each request: `Authorization: Be
 4.  [Location Endpoints](#location-endpoints)  
         4.1     [Set Location](#set-location)  
         4.2     [Get Location](#get-location)  
+5.  [Route Endpoints](#route-endpoints)  
+        5.1     [Create Route](#create-route)  
+        5.2     [Get Driver Route](#get-driver-route)  
 
 # Endpoint Summary
 
@@ -25,9 +28,9 @@ The following header field should be present in each request: `Authorization: Be
 
 | Method | Path | Usage |
 |---------|-----------------------------------------|------------------|
-| `POST` | `/api/drivers` | Create new driver/employee | 
+| `POST` | `/api/drivers` | Create new driver | 
 | `POST` | `/api/drivers/authenticate` | Authenticates driver |
-| `PUT` | `/api/drivers/:driverid/password` | Create new driver/employee |
+| `PUT` | `/api/drivers/:driverid/password` | Updates the drivers password |
 
 ## Manager Endpoint Summary
 
@@ -42,6 +45,14 @@ The following header field should be present in each request: `Authorization: Be
 |---------|-----------------------------------------|------------------|
 | `PUT` | `/api/location/:driverid` | Sets driver's current location | 
 | `GET` | `/api/location/driver` | Get location of a driver |
+
+## Route Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `POST` | `/api/routes` | Creates a new delivery route | 
+| `GET` | `/api/routes/:driverid` | Returns a driver's active delivery routes |
+
 
 # Driver Endpoints
 
@@ -226,7 +237,7 @@ Updates the drivers current location.
 
 ```json
 {
-    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw"
 }
 ```
 
@@ -239,8 +250,7 @@ This request returns no body.
 | Status Code | Description |
 |-------------|-------------|
 | `204` | Location has been updated |
-| `401` | Invalid token | 
-| `404` | Invalid :driverid |
+| `401` | Invalid :driverid or token|
 | `500` | Server error |
 
 ## Get Location
@@ -282,4 +292,88 @@ Returns the current location of a specified driver.
 | `200` | Requested driver location retrieved |
 | `400` | Bad request (invalid format) | 
 | `404` | Driver was not found |
+| `500` | Server error |
+
+# Route Endpoints
+
+## Create Route
+
+Creates a new delivery route from the passed in parameters and assignes it to a specific driver. The endpoint expects a `route` array that contains the coordinates of each delivery address that forms part of the route that the driver must take. The manager's session `token` as well as their `id` should be present in the request body.
+
+##### Http Request
+
+`POST /api/routes`
+
+##### Request Body
+
+```json
+{
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "id": 1,
+    "driver_id" : 1,
+    "route" : [
+        {
+            "latitude" : "-25.7542559", 
+            "longitude": "28.2321043"
+        },
+        {
+            "latitude" : "-25.7674421",
+            "longitude": "28.1991501"
+        }
+    ]
+}
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `201` | Route successfully created |
+| `400` | Bad request (invalid format or missing parameters) | 
+| `401` | Manager token and id does not match |
+| `404` | Invalid driver_id |
+| `500` | Server error |
+
+## Get Driver Route
+
+Returns all active routes currently assgined to a specific driver. It will return an array of routes that each contain an array of locations consisting of coordinates. Each location is an address that the driver must make a delivery too on his route.
+
+##### Http Request
+
+`GET /api/routes/:driverid`
+
+##### Request Body
+
+This request has no body.
+
+##### Response Body
+
+```json
+{
+    "driver_id": 14,
+    "active_routes: ": [
+        {
+            "route_id": "6",
+            "locations": [
+                {
+                    "latitude": "-25.7542559",
+                    "longitude": "28.2321043"
+                },
+                {
+                    "latitude": "-25.7674421",
+                    "longitude": "28.1991501"
+                }
+            ]
+        }
+    ]
+}
+```
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Driver's active routes successfully retrieved |
+| `404` | Driver not found or currently has no active routes | 
 | `500` | Server error |

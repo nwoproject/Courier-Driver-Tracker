@@ -36,5 +36,8 @@ router.use((req, res, next) => {
 });
 
 router.use('/drivers', require('./drivers'));
+router.use('/managers', require('./managers'));
+router.use('/location', require('./location'));
+router.use('/routes', require('./driver_routes'));
 
 module.exports = router;

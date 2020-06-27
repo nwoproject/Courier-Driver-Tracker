@@ -1,11 +1,9 @@
-/* /api/users */
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const mailer = require('../services/mailer');
 const DB = require('../services/db_config');
 const bcrypt = require('bcrypt');
-const { dbErrorHandler } = require('../services/db_config');
 
 // POST /api/drivers
 router.post('/', (req, res) =>{ 
@@ -28,7 +26,7 @@ router.post('/', (req, res) =>{
             }
             else
             {
-                var token = crypto.randomBytes(32).toString('hex');
+                var token = crypto.randomBytes(46).toString('base64').replace(/\//g,'_').replace(/\+/g,'-');
                 const tokenGenerator = () =>
                 {
                     DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."driver" WHERE "token" =($1))',[token],(error,tokenres)=>{
@@ -40,9 +38,9 @@ router.post('/', (req, res) =>{
                         {
                             return token;
                         }
-                        else // Token already exists, generates a new token and calls function again
+                        else //Token allready exists, generates new token.
                         {
-                            token = crypto.randomBytes(32).toString('hex');
+                            token = crypto.randomBytes(46).toString('base64').replace(/\//g,'_').replace(/\+/g,'-');
                             tokenGenerator(); 
                         }
                     });
@@ -67,13 +65,90 @@ router.post('/', (req, res) =>{
     });
 });
 
+// POST api/drivers/authenticate
 router.post('/authenticate', (req, res) =>{
-    res.status(202).send("authenticate pass").end();
+    DB.pool.query('SELECT * FROM public."driver" WHERE "email"=($1)',[req.body.email],(err,results)=>{
+        if(err)
+        {
+          DB.dbErrorHandler(res,err);
+        }
+        else
+        {
+            if(results.rowCount==0)
+            {
+                res.status(404).end();
+            }
+            else
+            {
+                bcrypt.compare(req.body.password,results.rows[0].password,(bcryptError,passResult)=>{
+                    if(bcryptError)
+                    {
+                        DB.dbErrorHandler(res,bcryptError);
+                    }
+                    if(passResult)
+                    {
+                        res.status(200).json({"id":results.rows[0].id,"token":results.rows[0].token}).end();
+                    }
+                    else
+                    {
+                        res.status(401).end();
+                    }
+                });
+            }
+        }
+    });
 });
 
-router.put('/:driverid/password	', (req, res) =>{
-    res.status(202).send("update password").end();
+// PUT api/drivers/:driverid/password
+router.put('/:driverid/password', (req, res) =>{
+    const driverID = req.params.driverid;
+    DB.pool.query('SELECT * FROM public."driver" WHERE "id"=($1)',[driverID],(err,results)=>{
+        if(err)
+        {
+            DB.dbErrorHandler(res,err);
+        }
+        else
+        {
+            if(results.rowCount==0)
+            {
+                res.status(404).end();
+            }
+            if(results.rows[0].token!=req.body.token)
+            {
+                res.status(401).end();
+                console.log(results.rows[0].token);
+            }
+            else
+            {
+                bcrypt.hash(req.body.password, 10, (hasherr, hash)=>{
+                    if(hasherr)
+                    {
+                        DB.dbErrorHandler(res,hasherr);
+                    }
+                    else
+                    {
+                        DB.pool.query('UPDATE public."driver" SET "password"=($1) WHERE "id"=($2) AND "token"=($3)',[hash,driverID,req.body.token],(updateError,updateResults)=>{
+                            if(updateError)
+                            {
+                                DB.dbErrorHandler(res,updateError);
+                            }
+                            else
+                            {
+                                if(updateResults.rowCount==1)
+                                {
+                                    res.status(204).end();
+                                }
+                                else
+                                {
+                                    res.status(500).end();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
 });
-
 
 module.exports = router;
