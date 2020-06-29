@@ -108,6 +108,8 @@ Authenticates driver, mainly for session management purposes.
 {
     "id": 1,
     "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "name": "John",
+    "surname": "Doe"
 }
 ```
 
@@ -144,9 +146,8 @@ This request returns no body.
 
 | Status Code | Description |
 |-------------|-------------|
-| `204` | Password has been updated |
-| `401` | Invalid token | 
-| `404` | Invalid :driverid |
+| `204` | Password has been updated | 
+| `404` | Invalid :driverid or token|
 | `500` | Server error |
 
 # Manager Endpoints
@@ -211,6 +212,8 @@ Authenticates a manager.
 {
     "id": 1,
     "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "name": "John",
+    "surname": "Doe"
 }
 ```
 
@@ -237,7 +240,9 @@ Updates the drivers current location.
 
 ```json
 {
-    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw"
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "latitude": "-25.7542559",
+    "longitude": "28.2321043"
 }
 ```
 
@@ -270,20 +275,24 @@ Returns the current location of a specified driver.
     "id": 1,
 }
 ```
->**NOTE:** One parameter in the request body can be left out, meaning atleast two should be present except if `id` is included, then both `name` and `surname` can be omitted. The API will preferably search by `id` but if it is not present it will use `name` and `surname` to determine which driver location should be returned. ALL MATCHING RECORDS WILL BE RETURNED. Meaning if two drivers share the same name and surname and no `id` was provided then two locations will be returned.
+>**NOTE:** One parameter in the request body can be left out, meaning atleast two should be present except if `id` is included, then both `name` and `surname` can be omitted. The API will preferably search by `id` but if it is not present it will use `name` and `surname` to determine which driver location should be returned. ALL MATCHING RECORDS WILL BE RETURNED. Meaning if two drivers share the same name and surname and no `id` was provided then two drivers will be returned.
 
 ##### Response Body
 
 ```json
 {
-    "id": 1,
-    "name": "John",
-    "surname": "Doe",
-    "latitude": "31.16506",
-    "longitude": "-168.64513",
+    "drivers": [
+        {
+            "id": 1,
+            "name": "John",
+            "surname": "Doe",
+            "latitude": "-25.7542559",
+            "longitude": "28.2321043"
+        }
+    ]
 }
 ```
->**NOTE:** An array can be returned here if a driver happens too share the same name and surname and no `id` was provided in the request body.
+>**NOTE:** An array of drivers will always be returned, even if searched by `id`.
 
 ##### Response status codes
 

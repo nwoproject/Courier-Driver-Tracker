@@ -83,7 +83,7 @@ router.post('/authenticate', (req, res) =>{
                     }
                     if(passResult)
                     {
-                        res.status(200).json({"id":results.rows[0].id,"token":results.rows[0].token}).end();
+                        res.status(200).json({"id":results.rows[0].id,"token":results.rows[0].token,"name":results.rows[0].name,"surname":results.rows[0].surname}).end();
                     }
                     else
                     {

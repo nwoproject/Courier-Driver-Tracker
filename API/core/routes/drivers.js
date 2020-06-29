@@ -87,7 +87,7 @@ router.post('/authenticate', (req, res) =>{
                     }
                     if(passResult)
                     {
-                        res.status(200).json({"id":results.rows[0].id,"token":results.rows[0].token}).end();
+                        res.status(200).json({"id":results.rows[0].id,"token":results.rows[0].token,"name":results.rows[0].name,"surname":results.rows[0].surname}).end();
                     }
                     else
                     {
@@ -102,7 +102,7 @@ router.post('/authenticate', (req, res) =>{
 // PUT api/drivers/:driverid/password
 router.put('/:driverid/password', (req, res) =>{
     const driverID = req.params.driverid;
-    DB.pool.query('SELECT * FROM public."driver" WHERE "id"=($1)',[driverID],(err,results)=>{
+    DB.pool.query('SELECT * FROM public."driver" WHERE "id"=($1) AND "token"=($2)',[driverID,req.body.token],(err,results)=>{
         if(err)
         {
             DB.dbErrorHandler(res,err);
@@ -112,11 +112,6 @@ router.put('/:driverid/password', (req, res) =>{
             if(results.rowCount==0)
             {
                 res.status(404).end();
-            }
-            if(results.rows[0].token!=req.body.token)
-            {
-                res.status(401).end();
-                console.log(results.rows[0].token);
             }
             else
             {
