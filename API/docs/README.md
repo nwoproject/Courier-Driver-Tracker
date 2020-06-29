@@ -1,1 +1,388 @@
 # API documentation
+
+Main API for the courier_driver_tracker system. All requests to the API should contain a valid Bearer token in the header of the request. If no token is present or an invalid token is sent then the request will automatically be rejected.
+
+The following header field should be present in each request: `Authorization: Bearer <token>`.
+
+>**NOTE:** This document is incomplete and will be updated throughout development.
+
+# Table of Contents
+1.  [Endpoint Summary](#endpoint-summary)  
+2.  [Driver Endpoints](#driver-endpoints)  
+		2.1		[Create Driver](#create-driver)  
+        2.2     [Authenticate Driver](#authenticate-driver)  
+        2.3     [Update Driver Password](#update-driver-password)  
+3.  [Manager Endpoints](#manager-endpoints)  
+        3.1     [Create Manager](#create-manager)  
+        3.2     [Authenticate Manager](#authenticate-manager)  
+4.  [Location Endpoints](#location-endpoints)  
+        4.1     [Set Location](#set-location)  
+        4.2     [Get Location](#get-location)  
+5.  [Route Endpoints](#route-endpoints)  
+        5.1     [Create Route](#create-route)  
+        5.2     [Get Driver Route](#get-driver-route)  
+
+# Endpoint Summary
+
+## Driver Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `POST` | `/api/drivers` | Create new driver | 
+| `POST` | `/api/drivers/authenticate` | Authenticates driver |
+| `PUT` | `/api/drivers/:driverid/password` | Updates the drivers password |
+
+## Manager Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `POST` | `/api/managers` | Create new manager | 
+| `POST` | `/api/managers/authenticate` | Authenticates manager |
+
+## Location Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `PUT` | `/api/location/:driverid` | Sets driver's current location | 
+| `GET` | `/api/location/driver` | Get location of a driver |
+
+## Route Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `POST` | `/api/routes` | Creates a new delivery route | 
+| `GET` | `/api/routes/:driverid` | Returns a driver's active delivery routes |
+
+
+# Driver Endpoints
+
+## Create Driver
+
+Creates a new driver, this endpoint will only be used by managers. A driver cannot add himself to the system.
+
+##### Http Request
+
+`POST /api/drivers`
+
+##### Request Body
+
+```json
+{
+    "email": "example@example.com",
+    "name": "John",
+    "surname": "Doe"
+}
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `201` | Driver created and email containing one time use password sent to driver |
+| `400` | Invalid email | 
+| `409` | Email already in use |
+| `500` | Server error |
+
+## Authenticate Driver
+
+Authenticates driver, mainly for session management purposes.
+
+##### Http Request
+
+`POST /api/drivers/authenticate`
+
+##### Request Body
+
+```json
+{
+    "email": "example@example.com",
+    "password": "5RqwKzK1A7Tcacd1JvF5lM0963qFbxMw",
+}
+```
+##### Response Body
+
+```json
+{
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "name": "John",
+    "surname": "Doe"
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Authentication successful |
+| `401` | Incorrect email or password | 
+| `404` | Driver does not exist |
+| `500` | Server error |
+
+## Update Driver Password
+
+Used to update driver password
+
+##### Http Request
+
+`PUT /api/drivers/:driverid/password`
+
+##### Request Body
+
+```json
+{
+    "password": "5RqwKzK1A7Tcacd1JvF5lM0963qFbxMw",
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw"
+}
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Password has been updated | 
+| `404` | Invalid :driverid or token|
+| `500` | Server error |
+
+# Manager Endpoints
+
+## Create Manager
+
+Creates a manager account.
+
+##### Http Request
+
+`POST /api/managers`
+
+##### Request Body
+
+```json
+{
+    "email": "example@example.com",
+    "password": "5RqwKzK1A7Tcacd1JvF5lM0963qFbxMw",
+    "name": "John",
+    "surname": "Doe"
+}
+```
+
+##### Response Body
+
+```json
+{
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `201` | Manager created |
+| `400` | Invalid email |
+| `409` | Email already in use | 
+| `500` | Server error |
+
+## Authenticate Manager
+
+Authenticates a manager.
+
+##### Http Request
+
+`POST /api/managers/authenticate`
+
+##### Request Body
+
+```json
+{
+    "email": "example@example.com",
+    "password": "5RqwKzK1A7Tcacd1JvF5lM0963qFbxMw",
+}
+```
+
+##### Response Body
+
+```json
+{
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "name": "John",
+    "surname": "Doe"
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Authentication successful |
+| `401` | Incorrect email or password | 
+| `404` | Manager does not exist |
+| `500` | Server error |
+
+# Location Endpoints
+
+## Set Location
+
+Updates the drivers current location.
+
+##### Http Request
+
+`PUT /api/location/:driverid`
+
+##### Request Body
+
+```json
+{
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "latitude": "-25.7542559",
+    "longitude": "28.2321043"
+}
+```
+
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Location has been updated |
+| `401` | Invalid :driverid or token|
+| `500` | Server error |
+
+## Get Location
+
+Returns the current location of a specified driver.
+
+##### Http Request
+
+`GET /api/location/driver`
+
+##### Request Body
+
+```json
+{
+    "name": "John",
+    "surname": "Doe",
+    "id": 1,
+}
+```
+>**NOTE:** One parameter in the request body can be left out, meaning atleast two should be present except if `id` is included, then both `name` and `surname` can be omitted. The API will preferably search by `id` but if it is not present it will use `name` and `surname` to determine which driver location should be returned. ALL MATCHING RECORDS WILL BE RETURNED. Meaning if two drivers share the same name and surname and no `id` was provided then two drivers will be returned.
+
+##### Response Body
+
+```json
+{
+    "drivers": [
+        {
+            "id": 1,
+            "name": "John",
+            "surname": "Doe",
+            "latitude": "-25.7542559",
+            "longitude": "28.2321043"
+        }
+    ]
+}
+```
+>**NOTE:** An array of drivers will always be returned, even if searched by `id`.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Requested driver location retrieved |
+| `400` | Bad request (invalid format) | 
+| `404` | Driver was not found |
+| `500` | Server error |
+
+# Route Endpoints
+
+## Create Route
+
+Creates a new delivery route from the passed in parameters and assignes it to a specific driver. The endpoint expects a `route` array that contains the coordinates of each delivery address that forms part of the route that the driver must take. The manager's session `token` as well as their `id` should be present in the request body.
+
+##### Http Request
+
+`POST /api/routes`
+
+##### Request Body
+
+```json
+{
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "id": 1,
+    "driver_id" : 1,
+    "route" : [
+        {
+            "latitude" : "-25.7542559", 
+            "longitude": "28.2321043"
+        },
+        {
+            "latitude" : "-25.7674421",
+            "longitude": "28.1991501"
+        }
+    ]
+}
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `201` | Route successfully created |
+| `400` | Bad request (invalid format or missing parameters) | 
+| `401` | Manager token and id does not match |
+| `404` | Invalid driver_id |
+| `500` | Server error |
+
+## Get Driver Route
+
+Returns all active routes currently assgined to a specific driver. It will return an array of routes that each contain an array of locations consisting of coordinates. Each location is an address that the driver must make a delivery too on his route.
+
+##### Http Request
+
+`GET /api/routes/:driverid`
+
+##### Request Body
+
+This request has no body.
+
+##### Response Body
+
+```json
+{
+    "driver_id": 14,
+    "active_routes: ": [
+        {
+            "route_id": "6",
+            "locations": [
+                {
+                    "latitude": "-25.7542559",
+                    "longitude": "28.2321043"
+                },
+                {
+                    "latitude": "-25.7674421",
+                    "longitude": "28.1991501"
+                }
+            ]
+        }
+    ]
+}
+```
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Driver's active routes successfully retrieved |
+| `404` | Driver not found or currently has no active routes | 
+| `500` | Server error |
