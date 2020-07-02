@@ -1,0 +1,50 @@
+.LoginCard{
+    margin-left: 20vw;
+    margin-right: 20vw;
+    margin-top: 5vw;
+    padding: 0.5vw;
+
+}
+
+.Title{
+    font-weight: bold;
+}
+
+.FormLabel{
+    margin-top: 0.4vw;
+    margin-bottom: 0;
+}
+
+.BrandHome{
+    font-weight: bolder;
+}
+
+.BrandLogo{
+    width: 4vw;
+    height: 4vw;
+    margin: 0;
+    padding: 0;
+}
+
+.SearchCard{
+    margin: 2vw;
+    margin-bottom: 10vw;
+}
+
+.LocationCard{
+    margin-top:1vw;
+    padding:1vw;
+}
+
+.TheFoot{
+    height: 6vw;
+    margin-top: 1000px;   
+}
+
+.CardImg{
+    width: 50px;
+}
+
+.DeleteCard{
+    margin-bottom: 0.8vw;
+}
