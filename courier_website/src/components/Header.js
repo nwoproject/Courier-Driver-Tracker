@@ -38,7 +38,7 @@ function Header() {
                 <Nav.Link href="#routes" as={Link} to={Logged ? "/pages/Routes" : "/pages/Login"}>
                     Routes
                 </Nav.Link>
-                <Nav.Link href="#pricing">Pricing</Nav.Link>
+                <Nav.Link href="#Tracking" as={Link} to={Logged ? "/pages/AlwaysOnTracking" : "/pages/Login"}>Always On Tracking</Nav.Link>
             </Nav>
             <Form inline>
             <FormControl type="text" placeholder="Search" className="mr-sm-2" />

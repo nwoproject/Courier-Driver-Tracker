@@ -2,6 +2,8 @@ import React from "react";
 import Card from "react-bootstrap/Card";
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import CreateDriver from "./CreateDriver";
+import CreateManager from "./CreateManager";
 import "./style/style.css";
 
 function ManagerAcc(){
@@ -15,12 +17,16 @@ function ManagerAcc(){
 
     return(
         <Card className="LoginCard">
-            <Card.Header>You are a Manager. Nice</Card.Header> <br />
+            <Card.Header>You are a Manager. Nice</Card.Header> 
+            <Card.Body>
             <Form onSubmit={Logout}>
                 <Button variant="primary" type="submit">
                     Logout
                 </Button>
-            </Form>
+            </Form><br />
+            <CreateDriver /> <br />
+            <CreateManager />
+            </Card.Body>
         </Card>
     )
 }  
