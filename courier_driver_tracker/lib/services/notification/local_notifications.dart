@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:courier_driver_tracker/services/location/TrackingData.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/UniversalFunctions.dart';
 import 'package:provider/provider.dart';
 
@@ -65,7 +64,7 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         0, 'Test', 'You have not moved in a while!', notificationDetails);
   }
 
-  Future onSelectNotification(String payLoad) {
+  onSelectNotification(String payLoad) {
     if (payLoad != null) {
       print(payLoad);
     }
@@ -73,26 +72,29 @@ class _LocalNotificationsState extends State<LocalNotifications> {
 
   @override
   Widget build(BuildContext context) {
-    TrackingData trackingData = TrackingData(latitude: 0.0, longitude: 0.0);
-
-    TrackingData trackingData2 = Provider.of<TrackingData>(context);
-    const timeout = const Duration(seconds: 20);
+    Position position;
+    Position position2 = Provider.of<Position>(context);
+    const timeout = const Duration(seconds: 4);
     const ms = const Duration(milliseconds: 1);
-
 
     startTimeout([int milliseconds]) {
       var duration = milliseconds == null ? timeout : ms * milliseconds;
 
       return new Timer(duration, ()=>{
-        if(isMoving(trackingData, trackingData2)){
-          trackingData = new TrackingData(latitude: trackingData2.latitude, longitude: trackingData2.longitude)}
+        if(isMoving(position, position2)){
+          position = new Position(latitude: position2.latitude, longitude: position2.longitude)}
         else{
           _showNotifications()
-          },
+        },
         startTimeout()
       });
-
     }
+
+    if(position == null && position2 != null){
+      position = Position(latitude: position2.latitude, longitude: position2.longitude);
+      startTimeout();
+    }
+
     return Container();
   }
 }
