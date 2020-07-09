@@ -37,6 +37,29 @@ class _HomePageViewState extends State<HomePageView> {
 
     return SafeArea(
       child: Scaffold(
+        drawer: new Drawer(
+          child: new ListView(
+            children: <Widget>[
+              new UserAccountsDrawerHeader(
+                accountName: new Text("username"),
+                accountEmail: new Text("username@gmail.com"),
+                currentAccountPicture: new CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: new Text("U")
+                ),
+              ),
+              new ListTile(
+                title: new Text("Deliveries"),
+                trailing: new Icon(Icons.local_shipping),
+              ),
+              new ListTile(
+                title: new Text("Settings"),
+                trailing: new Icon(Icons.settings),
+              ),
+              new Divider(),
+            ],
+          ),
+        ),
         body: Column(
           children: <Widget>[
             AppBar(
@@ -44,6 +67,7 @@ class _HomePageViewState extends State<HomePageView> {
                   'MAP'
               ),
             ),
+
             Expanded(
                 child: GMap()
             ),
