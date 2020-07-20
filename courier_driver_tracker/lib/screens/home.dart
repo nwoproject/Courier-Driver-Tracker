@@ -1,9 +1,13 @@
-// import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
+import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:courier_driver_tracker/services/location/google_maps.dart';
+
+import "dart:io" show Platform;
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -29,6 +33,20 @@ class HomePageView extends StatefulWidget {
 }
 
 class _HomePageViewState extends State<HomePageView> {
+
+  @override
+  void initState(){
+    super.initState();
+    startServiceInPlatform();
+  }
+
+  void startServiceInPlatform() async{
+    if(Platform.isAndroid){
+      var methodChannel = MethodChannel("com.ctrlaltelite.messages");
+      String data = await methodChannel.invokeMethod("startService");
+      print(data);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +81,12 @@ class _HomePageViewState extends State<HomePageView> {
         body: Column(
           children: <Widget>[
             AppBar(
+              backgroundColor: Colors.black,
               title: Text(
-                  'MAP'
+                  'Route',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
               ),
             ),
 
