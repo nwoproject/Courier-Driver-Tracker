@@ -20,5 +20,6 @@ public final class GeneratedPluginRegistrant {
     flutterEngine.getPlugins().add(new io.flutter.plugins.googlemaps.GoogleMapsPlugin());
     flutterEngine.getPlugins().add(new com.lyokone.location.LocationPlugin());
       io.flutter.plugins.pathprovider.PathProviderPlugin.registerWith(shimPluginRegistry.registrarFor("io.flutter.plugins.pathprovider.PathProviderPlugin"));
+      com.rioapp.permissions_plugin.PermissionsPlugin.registerWith(shimPluginRegistry.registrarFor("com.rioapp.permissions_plugin.PermissionsPlugin"));
   }
 }
