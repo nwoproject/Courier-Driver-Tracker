@@ -44,9 +44,9 @@ router.put('/:driverid', (req, res)=>{
 
 // GET /api/location/driver
 router.get('/driver', (req, res)=>{
-    if(!req.body.id || req.body.id.length ==0) // search by name and surname
+    if(!req.query.id || req.query.id.length ==0) // search by name and surname
     {
-        DB.pool.query('SELECT * FROM public."driver" WHERE "name"=($1) AND "surname"=($2)',[req.body.name,req.body.surname],(err,results)=>{
+        DB.pool.query('SELECT * FROM public."driver" WHERE "name"=($1) AND "surname"=($2)',[req.query.name,req.query.surname],(err,results)=>{
             if(err)
             {
                 DB.dbErrorHandler(res,err);
@@ -57,14 +57,16 @@ router.get('/driver', (req, res)=>{
                 {
                     res.status(404).end();
                 }
-
-                res.status(200).json({"drivers": objectConverter(results)}).end();
+                else
+                {
+                    res.status(200).json({"drivers": objectConverter(results)}).end();
+                }
             }
         });
     }
     else // search by id
     {
-        DB.pool.query('SELECT * FROM public."driver" WHERE "id"=($1)',[req.body.id],(err,results)=>{
+        DB.pool.query('SELECT * FROM public."driver" WHERE "id"=($1)',[req.query.id],(err,results)=>{
             if(err)
             {
                 DB.dbErrorHandler(res,err);
@@ -75,8 +77,10 @@ router.get('/driver', (req, res)=>{
                 {
                     res.status(404).end();
                 }
-
-                res.status(200).json({"drivers": objectConverter(results)}).end();
+                else
+                {
+                    res.status(200).json({"drivers": objectConverter(results)}).end();
+                }
             }
         });
     }
