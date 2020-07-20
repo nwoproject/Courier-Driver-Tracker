@@ -67,10 +67,6 @@ const setDriverLocation = {
     'longitude': '28.2321043'
 }
 
-const getDriverLocation = {
-    id: 16    
-}
-
 const responseGetLocation = {
     'drivers': [
         {
@@ -223,9 +219,9 @@ describe('Server', ()=>{
         it("Get driver location", done =>{
             chai
                 .request(app)
-                .get('/api/location/driver')
+                .get('/api/location/driver?id=16')
                 .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
-                .send(getDriverLocation)
+                .send()
                 .end((err,res)=>{
                     expect(res).to.have.status(200);
                     expect(res).to.be.json;
