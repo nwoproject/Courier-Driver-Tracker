@@ -1,26 +1,37 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:courier_driver_tracker/services/location/TrackingData.dart';
-import 'package:courier_driver_tracker/services/location/location_service.dart';
+
 import 'package:path_provider/path_provider.dart';
+import 'package:permissions_plugin/permissions_plugin.dart';
 
-class RouteLogging{
-  TrackingData location;
+class routeLogging{
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
+
+   static void getPermissions() async{
+
+    Map<Permission, PermissionState> permission = await PermissionsPlugin
+        .requestPermissions([
+      Permission.READ_EXTERNAL_STORAGE,
+      Permission.WRITE_EXTERNAL_STORAGE
+    ]);
+  }
+
+  //Gets the directory path for the file
+  static Future<String> get localPath async {
+     getPermissions();
+    final directory = await getExternalStorageDirectory();
 
     return directory.path;
   }
 
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/test.txt');
+  static Future<File> get localFile async {
+    final path = await localPath;
+    return File('$path/Download/test.txt');
   }
 
   static Future<String> readFileContents() async {
     try {
-      final file = await _localFile;
+      final file = await localFile;
 
       // Read the file
       String contents = await file.readAsString();
@@ -33,11 +44,10 @@ class RouteLogging{
   }
 
   static Future<File> writeToFile(String data) async {
-    final file = await _localFile;
+    final file = await localFile;
 
     // Write the file
     return file.writeAsString('data');
   }
 }
 
-}
