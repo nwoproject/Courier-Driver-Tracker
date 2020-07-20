@@ -46,22 +46,24 @@ function LoginForm(){
     return(
         <Card className="LoginCard">
             <Card.Header className="Title">Login</Card.Header>
-            <Form className="ActualForm" onSubmit={RealSubmit}> 
-                <Form.Group controlId="formBasicEmail">
-                    <Form.Label className="FormLabel">Email address</Form.Label>
-                    <Form.Control type="email" placeholder="Enter email" name="updateEmail" onChange={handleChange}/>
-                    <Form.Text className="text-muted">
-                    </Form.Text>
-                </Form.Group>
+            <Card.Body>
+                <Form className="ActualForm" onSubmit={RealSubmit}> 
+                    <Form.Group controlId="formBasicEmail">
+                        <Form.Label className="FormLabel">Email address</Form.Label>
+                        <Form.Control type="email" placeholder="Enter email" name="updateEmail" onChange={handleChange}/>
+                        <Form.Text className="text-muted">
+                        </Form.Text>
+                    </Form.Group>
 
-                <Form.Group controlId="formBasicPassword">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" placeholder="Password" name="updatePass" onChange={handleChange}/>
-                </Form.Group>
-                <Button variant="primary" type="submit">
-                    Submit
-                </Button>
-            </Form>
+                    <Form.Group controlId="formBasicPassword">
+                        <Form.Label>Password</Form.Label>
+                        <Form.Control type="password" placeholder="Password" name="updatePass" onChange={handleChange}/>
+                    </Form.Group>
+                    <Button variant="primary" type="submit">
+                        Submit
+                    </Button>
+                </Form>
+            </Card.Body>
         </Card> 
     );
 }

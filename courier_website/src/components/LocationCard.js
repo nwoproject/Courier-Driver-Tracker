@@ -27,7 +27,6 @@ function LocationCard(props){
     return(
         <Col xs={4}>
             <Card className="LocationCard">
-                {console.log("Making a Location Card")}
                 <Card.Img variant="top" src={props.IMGSrc}/>
                 <Card.Body>
                     <Card.Title>{props.LocName}</Card.Title>

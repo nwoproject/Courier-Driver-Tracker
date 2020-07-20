@@ -1,10 +1,7 @@
 import React, {useState, useEffect} from "react";
 import "./style/style.css";
 import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar'
-import Form from 'react-bootstrap/Form';
-import FormControl from 'react-bootstrap/FormControl';
-import Button from 'react-bootstrap/button';
+import Navbar from 'react-bootstrap/Navbar';
 import { Link } from "react-router-dom";
 
 function Header() {
@@ -40,10 +37,6 @@ function Header() {
                 </Nav.Link>
                 <Nav.Link href="#Tracking" as={Link} to={Logged ? "/pages/AlwaysOnTracking" : "/pages/Login"}>Always On Tracking</Nav.Link>
             </Nav>
-            <Form inline>
-            <FormControl type="text" placeholder="Search" className="mr-sm-2" />
-            <Button variant="outline-info">Search</Button>
-            </Form>
         </Navbar>
     );
 }

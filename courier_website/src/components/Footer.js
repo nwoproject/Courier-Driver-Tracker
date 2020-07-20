@@ -6,7 +6,7 @@ function Footer(){
     
     return(
         <Navbar bg="dark" variant="dark" fixed="bottom" className="TheFoot">
-            <Navbar.Text>
+            <Navbar.Text className="BottomText">
                 Create by Ctrl+Alt+Elite for COS 301 in 2020<br/>
                 Created for Epi-Use in collaboration with the University of Pretoria<br/>
                 All rights reserved <br/>

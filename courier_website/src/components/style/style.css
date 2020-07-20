@@ -37,8 +37,18 @@
 }
 
 .TheFoot{
-    height: 6vw;
+    /*height: 10%;*/
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     margin-top: 1000px;   
+    padding: 0;
+}
+
+.BottomText{
+    padding: 0;
+    margin: 0;
+    font-size: small;
 }
 
 .CardImg{
@@ -47,4 +57,14 @@
 
 .DeleteCard{
     margin-bottom: 0.8vw;
+}
+
+.TrackingCard{
+    margin: 2%;
+    margin-bottom: 9%;
+}
+
+.MapDiv:first-child{
+    position: relative !important;
+    height: 500px !important;
 }

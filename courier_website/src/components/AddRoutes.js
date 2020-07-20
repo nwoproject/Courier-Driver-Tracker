@@ -87,6 +87,7 @@ function AddRoutes(){
             }
             else{
                 alert("Failed to create the Route :(");
+                console.log(response);
             }
             
         });
