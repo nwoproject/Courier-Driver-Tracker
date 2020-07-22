@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GMap extends StatefulWidget {
   @override
@@ -133,15 +134,15 @@ class MapSampleState extends State<GMap> {
   }
 
   bool zoom(LatLngBounds markerBounds, LatLngBounds screenBounds){
-    final bool northEastLatitudeCheck = screenBounds.northeast.latitude >= markerBounds.northeast.latitude + 0.01
-                                      && screenBounds.northeast.latitude <= markerBounds.northeast.latitude + 0.02;
-    final bool northEastLongitudeCheck = screenBounds.northeast.longitude >= markerBounds.northeast.longitude + 0.01
-                                      && screenBounds.northeast.longitude <= markerBounds.northeast.longitude + 0.02;
+    final bool northEastLatitudeCheck = screenBounds.northeast.latitude >= markerBounds.northeast.latitude + 0.005
+                                      && screenBounds.northeast.latitude <= markerBounds.northeast.latitude + 0.05;
+    final bool northEastLongitudeCheck = screenBounds.northeast.longitude >= markerBounds.northeast.longitude + 0.005
+                                      && screenBounds.northeast.longitude <= markerBounds.northeast.longitude + 0.05;
 
-    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <= markerBounds.southwest.latitude - 0.03
-                                      && screenBounds.southwest.latitude >= markerBounds.southwest.latitude - 0.04;
-    final bool southWestLongitudeCheck = screenBounds.southwest.longitude <= markerBounds.southwest.longitude - 0.01
-                                      && screenBounds.southwest.longitude >= markerBounds.southwest.longitude - 0.02;
+    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <= markerBounds.southwest.latitude - 0.015
+                                      && screenBounds.southwest.latitude >= markerBounds.southwest.latitude - 0.05;
+    final bool southWestLongitudeCheck = screenBounds.southwest.longitude <= markerBounds.southwest.longitude - 0.005
+                                      && screenBounds.southwest.longitude >= markerBounds.southwest.longitude - 0.05;
 
     return !(northEastLatitudeCheck && northEastLongitudeCheck && southWestLatitudeCheck && southWestLongitudeCheck);
   }
@@ -150,7 +151,7 @@ class MapSampleState extends State<GMap> {
     final bool northEastLatitudeCheck = screenBounds.northeast.latitude >= markerBounds.northeast.latitude + 0.01;
     final bool northEastLongitudeCheck = screenBounds.northeast.longitude >= markerBounds.northeast.longitude + 0.01;
 
-    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <= markerBounds.southwest.latitude - 0.01;
+    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <= markerBounds.southwest.latitude - 0.02;
     final bool southWestLongitudeCheck = screenBounds.southwest.longitude <= markerBounds.southwest.longitude - 0.01;
 
     return northEastLatitudeCheck && northEastLongitudeCheck && southWestLatitudeCheck && southWestLongitudeCheck;
@@ -188,7 +189,7 @@ class MapSampleState extends State<GMap> {
     // Generating the list of coordinates to be used for
     // drawing the polylines
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      "AIzaSyBoXxuef1WtkCakSJ7MBMKksjH9FJMxE98", // Google Maps API Key
+      String.fromEnvironment('APP_MAP_API_KEY', defaultValue: DotEnv().env['APP_MAP_API_KEY']), // Google Maps API Key
       PointLatLng(start.latitude, start.longitude),
       PointLatLng(destination.latitude, destination.longitude),
       travelMode: TravelMode.transit,
@@ -237,101 +238,89 @@ class MapSampleState extends State<GMap> {
   Widget build(BuildContext context) {
     _currentPosition = Provider.of<Position>(context);
 
-    return Column(
-              // Google map container with buttons stacked on top
-              children: <Widget>[
-                Expanded(
-                  flex: 3,
-                  child: Stack(
-                    children: <Widget>[
-                      GoogleMap(
-                        initialCameraPosition: _initialLocation,
-                        markers: markers != null ? Set<Marker>.from(markers) : null,
-                        polylines: Set<Polyline>.of(polylines.values),
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: false,
-                        mapType: MapType.normal,
-                        zoomGesturesEnabled: true,
-                        zoomControlsEnabled: false,
-                        onMapCreated: (GoogleMapController controller) {
-                          mapController = controller;
-                          addMarkers(deliveries);
-                        },
-                      ),
-                      // Design for current location button
 
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0, right: 10.0),
-                          child: ClipOval(
-                            child: Material(
-                              color: Colors.amber[600], // button color
-                              child: InkWell(
-                                splashColor: Colors.white, // inkwell color
-                                child: SizedBox(
-                                  width: 56,
-                                  height: 56,
-                                  child: Icon(Icons.my_location),
-                                ),
-                                onTap: () {
-                                  _currentPosition != null ? moveToCurrentLocation() : getCurrentLocation();
-                                },
-                              ),
+    return Container(
+      color: Colors.black,
+      child: Column(
+                // Google map container with buttons stacked on top
+                children: <Widget>[
+                  Expanded(
+                    flex: 5,
+                    child: Stack(
+                      children: <Widget>[
+                        Container(
+                          color: Colors.black,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                            child: GoogleMap(
+                              initialCameraPosition: _initialLocation,
+                              markers: markers != null ? Set<Marker>.from(markers) : null,
+                              polylines: Set<Polyline>.of(polylines.values),
+                              myLocationEnabled: true,
+                              myLocationButtonEnabled: false,
+                              mapType: MapType.normal,
+                              zoomGesturesEnabled: true,
+                              zoomControlsEnabled: false,
+                              onMapCreated: (GoogleMapController controller) {
+                                mapController = controller;
+                                addMarkers(deliveries);
+                              },
                             ),
                           ),
                         ),
-                      ),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0, right: 100.0),
-                          child: ClipOval(
-                            child: Material(
-                              color: Colors.amber[600], // button color
-                              child: InkWell(
-                                splashColor: Colors.white, // inkwell color
-                                child: SizedBox(
-                                  width: 56,
-                                  height: 56,
-                                  child: Icon(Icons.explore),
-                                ),
-                                onTap: () {
-                                  _currentPosition != null && deliveries.isNotEmpty ? showEntireRoute() : getCurrentLocation();
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Show zoom buttons
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            ClipOval(
+                        // Design for current location button
+
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0, right: 10.0),
+                            child: ClipOval(
                               child: Material(
-                                color: Colors.white, // button color
+                                color: Colors.amber[600], // button color
                                 child: InkWell(
-                                  splashColor: Colors.black, // inkwell color
+                                  splashColor: Colors.white, // inkwell color
                                   child: SizedBox(
-                                    width: 50,
-                                    height: 50,
-                                    child: Icon(Icons.add),
+                                    width: 56,
+                                    height: 56,
+                                    child: Icon(Icons.my_location),
                                   ),
                                   onTap: () {
-                                    mapController.animateCamera(
-                                      CameraUpdate.zoomIn(),
-                                    );
+                                    _currentPosition != null ? moveToCurrentLocation() : getCurrentLocation();
                                   },
                                 ),
                               ),
                             ),
-                            SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 40.0),
-                              child: ClipOval(
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0, right: 100.0),
+                            child: ClipOval(
+                              child: Material(
+                                color: Colors.amber[600], // button color
+                                child: InkWell(
+                                  splashColor: Colors.white, // inkwell color
+                                  child: SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: Icon(Icons.explore),
+                                  ),
+                                  onTap: () {
+                                    _currentPosition != null && deliveries.isNotEmpty ? showEntireRoute() : getCurrentLocation();
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Show zoom buttons
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              ClipOval(
                                 child: Material(
                                   color: Colors.white, // button color
                                   child: InkWell(
@@ -339,42 +328,65 @@ class MapSampleState extends State<GMap> {
                                     child: SizedBox(
                                       width: 50,
                                       height: 50,
-                                      child: Icon(Icons.remove),
+                                      child: Icon(Icons.add),
                                     ),
                                     onTap: () {
                                       mapController.animateCamera(
-                                        CameraUpdate.zoomOut(),
+                                        CameraUpdate.zoomIn(),
                                       );
                                     },
                                   ),
                                 ),
                               ),
-                            )
-                          ],
+                              SizedBox(height: 20),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 40.0),
+                                child: ClipOval(
+                                  child: Material(
+                                    color: Colors.white, // button color
+                                    child: InkWell(
+                                      splashColor: Colors.black, // inkwell color
+                                      child: SizedBox(
+                                        width: 50,
+                                        height: 50,
+                                        child: Icon(Icons.remove),
+                                      ),
+                                      onTap: () {
+                                        mapController.animateCamera(
+                                          CameraUpdate.zoomOut(),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  flex: 1,
-                // Card with current Delivery details.
-                  child: Card(
-                    child: ListTile(
-                      title: Text(
-                        'Delivery'
-                      ),
-                      subtitle: Text(
-                        _currentDelivery,
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          color: Colors.black,
+                  Expanded(
+                    flex: 1,
+
+                  // Card with current Delivery details.
+                    child: Card(
+                      child: ListTile(
+                        title: Text(
+                          'Delivery'
+                        ),
+                        subtitle: Text(
+                          _currentDelivery,
+                          style: TextStyle(
+                            fontSize: 14.0,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ]
+                ]
+      ),
     );
   }
 

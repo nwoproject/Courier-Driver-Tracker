@@ -5,6 +5,7 @@ import "home.dart";
 import 'package:courier_driver_tracker/services/location/location_permissions.dart';
 import 'package:shimmer/shimmer.dart';
 
+
 class SplashScreen extends StatefulWidget{
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -57,8 +58,9 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     }
     else{
+      showMyDialog(context);
       setState(() => {
-        _activeWidget = PermissionsStepper()
+        _activeWidget = Permissions()
       });
     }
   }

@@ -1,20 +1,26 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin{
-  // The following two controllers stores the textfield values.
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passController = new TextEditingController();
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
+  final storage = new FlutterSecureStorage();
+  final loginResponse = List<Widget>();
 
-  AnimationController _iconAnimationController;
-  Animation<double>_iconAnimation;
+  TextEditingController email = new TextEditingController();
+  TextEditingController password = new TextEditingController();
+
+  //AnimationController _iconAnimationController;
+  //Animation<double> _iconAnimation;
 
   final headingLabelStyle = TextStyle(
     color: Colors.white,
@@ -24,45 +30,130 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   final hintLabelStyle = TextStyle(
     color: Colors.black.withOpacity(0.2),
     fontFamily: 'OpenSans-Regular',
-
   );
 
-  void userLogin() {
-    //Called when tapped on the Login button
-    Navigator.of(context).pushNamed('/home');
+  void createLoginResponse(String response) {
+    var errorWidget = Card(
+      color: Colors.red[100],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(Icons.warning, color: Colors.red[300]),
+          Padding(padding: EdgeInsets.only(right: 10.0)),
+          Padding(padding: EdgeInsets.only(bottom: 30.0)),
+          Text(
+            response,
+            style: TextStyle(
+              color: Colors.black.withOpacity(0.8),
+              fontFamily: "OpenSans-Regular",
+            ),
+          ),
+        ],
+      ),
+    );
+    
+    setState(() {
+      loginResponse.add(errorWidget);
+    });
   }
 
-  Widget _username(){
+  void userLogin() async {
+    setState(() {
+      loginResponse.clear();
+    });
+
+    if(email.text.isEmpty)
+    {
+      createLoginResponse('Please enter your email address.');
+      return;
+    }
+
+    bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email.text.trim());
+    if(!emailValid)
+    {
+      createLoginResponse('Email is invalid.');
+      return;
+    }
+
+    if(password.text.isEmpty)
+    {
+      createLoginResponse('Please enter a password.');
+      return;
+    }
+
+    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
+    
+    await storage.deleteAll();
+    Map data = {"email": email.text.trim(), "password": password.text.trim()};
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'Authorization':'Bearer $bearerToken'
+    };
+
+    var response = await http.post(
+        "https://drivertracker-api.herokuapp.com/api/drivers/authenticate",
+        headers: requestHeaders,
+        body: data);
+    if (response.statusCode == 200) {
+      var responseData = json.decode(response.body);
+      await storage.write(key: 'id', value: responseData['id']);
+      await storage.write(key: 'token', value: responseData['token']);
+      await storage.write(key: 'name', value: responseData['name']);
+      await storage.write(key: 'surname', value: responseData['surname']);
+
+      Navigator.of(context)
+          .pushNamed('/home', arguments: responseData['token']);
+    } else //invalid credentials
+    {
+      print(response.statusCode);
+      String errorResponse = '';
+
+      switch(response.statusCode)
+      {
+        case 401:
+          errorResponse = 'Incorrect Email or password!';
+          break;
+        case 404:
+          errorResponse = 'This email has not been registered!';
+          break;
+        case 500:
+          errorResponse = 'Service is currently unavailable';
+          break;
+      }
+
+      createLoginResponse(errorResponse); 
+    }
+  }
+
+  Widget _username() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Username',
+          'Email',
           style: headingLabelStyle,
         ),
         SizedBox(height: 20.0, width: 100.0),
-
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(5),
-                  topRight: Radius.circular(5),
-                  bottomLeft: Radius.circular(5),
-                  bottomRight: Radius.circular(5)
-              ),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: Offset(0, 3)
-                )
-              ]
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(5),
+                topRight: Radius.circular(5),
+                bottomLeft: Radius.circular(5),
+                bottomRight: Radius.circular(5)),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 3))
+            ],
           ),
           height: 60.0,
           child: TextField(
+            controller: email,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
               color: Colors.black.withOpacity(0.5),
@@ -72,20 +163,19 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               border: InputBorder.none,
               contentPadding: EdgeInsets.only(top: 14.0),
               prefixIcon: Icon(
-                Icons.person,
+                Icons.email,
                 color: Colors.black,
               ),
               hintStyle: hintLabelStyle,
-              hintText: "Enter your Username",
-
+              hintText: "Enter your Email",
             ),
           ),
         ),
-
       ],
     );
   }
-  Widget _password(){
+
+  Widget _password() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -97,28 +187,28 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(5),
-                  topRight: Radius.circular(5),
-                  bottomLeft: Radius.circular(5),
-                  bottomRight: Radius.circular(5)
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(5),
+                topRight: Radius.circular(5),
+                bottomLeft: Radius.circular(5),
+                bottomRight: Radius.circular(5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 5,
+                blurRadius: 7,
+                offset: Offset(0, 3),
               ),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: Offset(0, 3)
-                )
-              ]
+            ],
           ),
           height: 60.0,
           child: TextField(
+            controller: password,
             obscureText: true,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.black.withOpacity(0.5),
               fontFamily: "OpenSans-Regular",
             ),
             decoration: InputDecoration(
@@ -133,36 +223,34 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             ),
           ),
         ),
-
       ],
     );
   }
+
   Widget _forgetPassword() {
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-          onPressed: () => {"implementation missing"},
-          padding: EdgeInsets.only(right: 0.0),
-          child: Text(
-            "Forgot Password?",
-            style: TextStyle(
-              color: Color(0xFFFF1B1C),
-
-              fontFamily: 'OpenSans-Regular',
-            ),
-
-          )
+        onPressed: () => {"implementation missing"},
+        padding: EdgeInsets.only(right: 0.0),
+        child: Text(
+          "Forgot Password?",
+          style: TextStyle(
+            color: Color(0xFFFF1B1C),
+            fontFamily: 'OpenSans-Regular',
+          ),
+        ),
       ),
     );
   }
 
-  Widget _button(){
+  Widget _button() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 25.0),
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: () => userLogin(),
+        onPressed: () => {userLogin()},
         padding: EdgeInsets.all(15.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30.0),
@@ -175,15 +263,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               letterSpacing: 1.5,
               fontSize: 18.0,
               fontWeight: FontWeight.bold,
-              fontFamily: "OpenSans-Regular"
-          ),
+              fontFamily: "OpenSans-Regular"),
         ),
-
       ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -194,60 +278,56 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             height: double.infinity,
             width: double.infinity,
             decoration: BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken),
-                  image: AssetImage("assets/images/login.jpg"),
-
-                )
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.4), BlendMode.darken),
+                image: AssetImage("assets/images/login.jpg"),
+              ),
             ),
           ),
           Container(
             height: double.infinity,
             child: SingleChildScrollView(
               physics: AlwaysScrollableScrollPhysics(),
-              padding:  EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 horizontal: 40.0,
-                vertical: 120.0,
+                vertical: 100.0,
               ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    "Sign In",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'OpenSans',
-                      fontSize: 30.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 30.0),
-                  _username(),
-                  SizedBox(height: 30.0),
-                  _password(),
-                  _forgetPassword(),
-                  _button(),
-                  Container(
-                    padding: EdgeInsets.only(bottom: 0.0),
-                    alignment: Alignment.bottomCenter,
-                    child: Text(
-                      "By CTRL-ALT-ELITE",
-                      style: TextStyle(
-                        color: Colors.white,
-
-                      ),
-                    ),
-
-                  )],
-              ),
-
-
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: loginResponse +
+                      <Widget>[
+                        Text(
+                          "Sign In",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'OpenSans',
+                            fontSize: 30.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 30.0),
+                        _username(),
+                        SizedBox(height: 30.0),
+                        _password(),
+                        _forgetPassword(),
+                        _button(),
+                        Container(
+                          padding: EdgeInsets.only(bottom: 0.0),
+                          alignment: Alignment.bottomCenter,
+                          child: Text(
+                            "By CTRL-ALT-ELITE",
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ]),
             ),
-          )
+          ),
         ],
       ),
-
     );
   }
 }
