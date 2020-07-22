@@ -2,30 +2,27 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:permissions_plugin/permissions_plugin.dart';
 
-class routeLogging{
+import 'package:permission_handler/permission_handler.dart';
 
+class RouteLogging{
 
-   static void getPermissions() async{
-
-    Map<Permission, PermissionState> permission = await PermissionsPlugin
-        .requestPermissions([
-      Permission.READ_EXTERNAL_STORAGE,
-      Permission.WRITE_EXTERNAL_STORAGE
-    ]);
+  static void getPermissions() async {
+    await Permission.storage.request();
   }
 
   //Gets the directory path for the file
   static Future<String> get localPath async {
-     getPermissions();
+
     final directory = await getExternalStorageDirectory();
 
     return directory.path;
   }
 
   static Future<File> get localFile async {
+
     final path = await localPath;
+
     return File('$path/Download/test.txt');
   }
 
@@ -47,7 +44,6 @@ class routeLogging{
     final file = await localFile;
 
     // Write the file
-    return file.writeAsString('data');
+    return file.writeAsString('data', mode: FileMode.append);
   }
 }
-

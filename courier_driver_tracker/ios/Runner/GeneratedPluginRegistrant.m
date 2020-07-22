@@ -28,10 +28,10 @@
 @import path_provider;
 #endif
 
-#if __has_include(<permissions_plugin/PermissionsPlugin.h>)
-#import <permissions_plugin/PermissionsPlugin.h>
+#if __has_include(<permission_handler/PermissionHandlerPlugin.h>)
+#import <permission_handler/PermissionHandlerPlugin.h>
 #else
-@import permissions_plugin;
+@import permission_handler;
 #endif
 
 @implementation GeneratedPluginRegistrant
@@ -41,7 +41,7 @@
   [FLTGoogleMapsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleMapsPlugin"]];
   [LocationPlugin registerWithRegistrar:[registry registrarForPlugin:@"LocationPlugin"]];
   [FLTPathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTPathProviderPlugin"]];
-  [PermissionsPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionsPlugin"]];
+  [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];
 }
 
 @end
