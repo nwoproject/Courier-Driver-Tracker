@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import com.ctrlaltelite.courier_driver_tracker.location_service.Common;
@@ -38,6 +39,11 @@ import com.google.android.gms.tasks.Task;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.flutter.plugin.common.EventChannel;
 
 public class BackgroundService extends Service {
 
@@ -57,6 +63,7 @@ public class BackgroundService extends Service {
     private LocationCallback locationCallback;
     private Handler serviceHandler;
     public Location location;
+    EventChannel.EventSink eventSink;
 
     public BackgroundService(){
 
@@ -92,6 +99,10 @@ public class BackgroundService extends Service {
 
     }
 
+    void setEventSink(EventChannel.EventSink eventSink){
+        this.eventSink = eventSink;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
         boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION, false);
@@ -113,6 +124,7 @@ public class BackgroundService extends Service {
         startService(new Intent(getApplicationContext(), BackgroundService.class));
         try{
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+            System.out.println("Working?");
         }
         catch (SecurityException ex){
             Log.e("CTRLALTELITE_Dev", "Lost location permission. Could not request it " + ex);
@@ -161,12 +173,28 @@ public class BackgroundService extends Service {
 
     private void onNewLocation(Location lastLocation){
         location = lastLocation;
-        // EventBus.getDefault().postSticky(new SendLocationToActivity(location));
 
         //if running in foreground
         if(serviceIsRunningInForeGround(this)){
             notificationManager.notify(notificationID, getNotification());
         }
+        if(eventSink != null){
+            eventSink.success(locationToString(location));
+        }
+
+    }
+
+    private String locationToString(Location location){
+        String values = "";
+        values += location.getLatitude();
+        values += "," + location.getLongitude();
+        values += "," + location.getAccuracy();
+        values += "," + location.getAltitude();
+        values += "," + location.getSpeed();
+        values += "," + location.getBearing();
+        values += "," + location.getTime();
+
+        return values;
     }
 
     private Notification getNotification(){

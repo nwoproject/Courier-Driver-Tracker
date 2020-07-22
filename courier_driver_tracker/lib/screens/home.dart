@@ -16,7 +16,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final geolocationService = GeolocatorService();
-
   @override
   Widget build(BuildContext context) {
 
@@ -50,9 +49,6 @@ class _HomePageViewState extends State<HomePageView> {
 
   @override
   Widget build(BuildContext context) {
-
-    // Position trackingData = Provider.of<Position>(context);
-
     return SafeArea(
       child: Scaffold(
         drawer: new Drawer(
@@ -89,7 +85,6 @@ class _HomePageViewState extends State<HomePageView> {
                       ),
               ),
             ),
-
             Expanded(
                 child: GMap()
             ),

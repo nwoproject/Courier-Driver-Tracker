@@ -42,8 +42,9 @@ class MapSampleState extends State<GMap> {
   getCurrentLocation() async {
     _currentPosition = await _geolocatorService.getPosition();
     moveToCurrentLocation();
-    getNextDelivery(_currentPosition);
-    // _createPolylines(_currentPosition, deliveries[0]);
+    if(polylinePoints == null){
+      _createPolylines(_currentPosition, deliveries[0]);
+    }
   }
 
   moveToCurrentLocation(){
@@ -57,6 +58,7 @@ class MapSampleState extends State<GMap> {
             _currentPosition.longitude,
           ),
           zoom: 18.0,
+          bearing: _currentPosition.heading,
         ),
       ),
     ).catchError((e){
@@ -157,6 +159,7 @@ class MapSampleState extends State<GMap> {
   }
 
   getNextDelivery(Position position) async {
+
     String address = await _geolocatorService.getAddress(position);
     setState(() {
       _currentDelivery = address;
@@ -208,9 +211,9 @@ class MapSampleState extends State<GMap> {
     // Initializing Polyline
     Polyline polyline = Polyline(
       polylineId: id,
-      color: Colors.red,
+      color: Colors.purple,
       points: polylineCoordinates,
-      width: 3,
+      width: 5,
     );
 
     // Adding the polyline to the map
@@ -233,10 +236,11 @@ class MapSampleState extends State<GMap> {
   }
 
 
+
+
   @override
   Widget build(BuildContext context) {
     _currentPosition = Provider.of<Position>(context);
-
 
     return Container(
       color: Colors.black,
@@ -284,7 +288,7 @@ class MapSampleState extends State<GMap> {
                                     child: Icon(Icons.my_location),
                                   ),
                                   onTap: () {
-                                    _currentPosition != null ? moveToCurrentLocation() : getCurrentLocation();
+                                    getCurrentLocation();
                                   },
                                 ),
                               ),

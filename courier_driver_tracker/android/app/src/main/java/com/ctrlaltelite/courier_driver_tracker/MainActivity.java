@@ -26,6 +26,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.Arrays;
 import java.util.List;
 
+import io.flutter.Log;
 import io.flutter.app.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -40,6 +41,22 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
     //new vars
     BackgroundService backgroundService = null;
     boolean bound = false;
+    EventChannel.EventSink eventSink = new EventChannel.EventSink() {
+        @Override
+        public void success(Object event) {
+
+        }
+
+        @Override
+        public void error(String errorCode, String errorMessage, Object errorDetails) {
+
+        }
+
+        @Override
+        public void endOfStream() {
+
+        }
+    };
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -55,6 +72,8 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
             bound = false;
         }
     };
+
+
 
 
     @Override
@@ -83,26 +102,26 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
             public void onMethodCall(MethodCall methodCall, MethodChannel.Result result){
                 if(methodCall.method.equals("startService")){
                     //startService();
+                    backgroundService.setEventSink(eventSink);
                     backgroundService.requestLocationUpdates();
-
 
                     result.success("Service started");
                 }
             }
         });
 
-        new EventChannel(getFlutterView(), "com.ctrlaltelite.locationStream").setStreamHandler(
-                new EventChannel.StreamHandler() {
-                    @Override
-                    public void onListen(Object arguments, EventChannel.EventSink events) {
-
-                    }
-
-                    @Override
-                    public void onCancel(Object arguments) {
-
-                    }
+        new EventChannel(getFlutterView(), "com.ctrlaltelite.locationstream").setStreamHandler(
+            new EventChannel.StreamHandler() {
+                @Override
+                public void onListen(Object arguments, EventChannel.EventSink events) {
+                    backgroundService.setEventSink(events);
                 }
+
+                @Override
+                public void onCancel(Object arguments) {
+                    backgroundService.setEventSink(null);
+                }
+            }
         );
 
     }
@@ -139,6 +158,7 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onListenLocation(SendLocationToActivity event){
+        /*
         if(event != null){
             String data = new StringBuilder()
                     .append(event.getLocation().getLatitude())
@@ -147,8 +167,9 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
                     .toString();
             Toast.makeText(backgroundService, data, Toast.LENGTH_SHORT).show();
         }
-    }
 
+         */
+    }
 
 
 }
