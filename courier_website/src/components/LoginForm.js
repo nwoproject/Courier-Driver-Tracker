@@ -1,8 +1,9 @@
-import React, {useState} from "react";
+import React, {useState} from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
-import "./style/style.css";
+
+import './style/style.css';
 
 function LoginForm(){
     const [emaill, updateEmail] = useState("");

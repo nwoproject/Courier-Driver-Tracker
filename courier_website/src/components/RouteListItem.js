@@ -2,7 +2,8 @@ import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col'; 
-import './style/style.css'
+
+import './style/style.css';
 
 function RouteListItem(props){
 

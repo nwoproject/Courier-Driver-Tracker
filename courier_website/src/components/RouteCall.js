@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+
 import LocationCard from './LocationCard';
-import Container from "react-bootstrap/Container";
-import Row from 'react-bootstrap/Row'
 
 function RouteCall(props){
 

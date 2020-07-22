@@ -1,7 +1,8 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect} from 'react';
 import {Map, GoogleApiWrapper, Marker} from 'google-maps-react';
-import Card from "react-bootstrap/Card";
-import "./style/style.css";
+import Card from 'react-bootstrap/Card';
+
+import './style/style.css';
 
 function TrackMap(props){
     const [FirstCall, setLocation] = useState(false);

@@ -1,10 +1,12 @@
-import React from "react";
-import Card from "react-bootstrap/Card";
+import React from 'react';
+import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import CreateDriver from "./CreateDriver";
-import CreateManager from "./CreateManager";
-import "./style/style.css";
+
+import CreateDriver from './CreateDriver';
+import CreateManager from './CreateManager';
+
+import './style/style.css';
 
 function ManagerAcc(){
 

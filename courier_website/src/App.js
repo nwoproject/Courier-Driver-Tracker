@@ -1,9 +1,11 @@
 import React from 'react';
-import {BrowserRouter } from "react-router-dom";
+import {BrowserRouter } from 'react-router-dom';
+
+import Main from './Main';
+import Header from './components/Header';
+import Footer from './components/Footer';
+
 import './App.css';
-import Main from "./Main";
-import Header from "./components/Header";
-import Footer from "./components/Footer"
 
 function App() {
   return (

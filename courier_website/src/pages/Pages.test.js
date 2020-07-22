@@ -1,10 +1,10 @@
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 
-import AlwaysOnTracking from "./AlwaysOnTracking";
-import Login from "./Login";
-import Routes from "./Routes";
-import Home from "./Home";
+import AlwaysOnTracking from './AlwaysOnTracking';
+import Login from './Login';
+import Routes from './Routes';
+import Home from './Home';
 
 describe("Home", ()=>{
     test("Render MainHome text in Home", ()=>{

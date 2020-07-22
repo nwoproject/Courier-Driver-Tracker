@@ -1,9 +1,9 @@
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 
-import ManagerAcc from "./ManagerAcc";
-import CreateManager from "./CreateManager";
-import CreateDriver from "./CreateDriver";
+import ManagerAcc from './ManagerAcc';
+import CreateManager from './CreateManager';
+import CreateDriver from './CreateDriver';
 
 describe("ManagerAcc", ()=>{
     test("Render Manager Account",()=>{

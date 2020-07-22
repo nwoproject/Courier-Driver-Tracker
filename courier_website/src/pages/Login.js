@@ -1,6 +1,7 @@
-import React, {useState, useEffect} from "react";
-import LoginForm from "../components/LoginForm";
-import ManagerAcc from "../components/ManagerAcc";
+import React, {useState, useEffect} from 'react';
+
+import LoginForm from '../components/LoginForm';
+import ManagerAcc from '../components/ManagerAcc';
 
 function Login(){
 

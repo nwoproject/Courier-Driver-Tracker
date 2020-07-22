@@ -1,5 +1,6 @@
 import React from 'react';
-import AddRoutes from "../components/AddRoutes";
+
+import AddRoutes from '../components/AddRoutes';
 
 function Routes(){
     return (

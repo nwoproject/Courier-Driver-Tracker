@@ -1,5 +1,6 @@
-import React from "react";
-import "./style/style.css"
+import React from 'react';
+
+import './style/style.css';
 
 function MainHome(){
     return(

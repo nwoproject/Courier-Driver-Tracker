@@ -1,6 +1,7 @@
-import React from "react";
-import Navbar from "react-bootstrap/Navbar";
-import "./style/style.css"
+import React from 'react';
+import Navbar from 'react-bootstrap/Navbar';
+
+import './style/style.css';
 
 function Footer(){
     
