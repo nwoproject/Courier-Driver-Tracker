@@ -21,8 +21,8 @@ The following header field should be present in each request: `Authorization: Be
 5.  [Route Endpoints](#route-endpoints)  
         5.1     [Create Route](#create-route)  
         5.2     [Get Driver Route](#get-driver-route)  
-6.  [Google Maps](#google-maps)
-        6.1     [Search place and get coordinates](#search-place-and-get-coordinates)
+6.  [Google Maps](#google-maps)  
+        6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
 
 # Endpoint Summary
 
@@ -55,6 +55,11 @@ The following header field should be present in each request: `Authorization: Be
 | `POST` | `/api/routes` | Creates a new delivery route | 
 | `GET` | `/api/routes/:driverid` | Returns a driver's active delivery routes |
 
+## Google Maps Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `GET` | `/api/google-maps/web` | Returns location details with a nice picture |
 
 # Driver Endpoints
 
@@ -278,7 +283,7 @@ No request body, however the following parameters is expected in the query strin
 | `name` | Name of driver |
 | `surname` | Driver's surname |
 
-Example usage `/api/location/driver?name=John&surname=Doe`;
+Example usage: `/api/location/driver?name=John&surname=Doe`;
 
 >**NOTE:** One parameter in the request can be left out, meaning atleast two should be present except if `id` is included, then both `name` and `surname` can be omitted. The API will preferably search by `id` but if it is not present it will use `name` and `surname` to determine which driver location should be returned. ALL MATCHING RECORDS WILL BE RETURNED. Meaning if two drivers share the same name and surname and no `id` was provided then two drivers will be returned.
 
@@ -411,7 +416,7 @@ No request body, however the following parameters is expected in the query strin
 |-------------|-------------|
 | `searchQeury` | Location to be seached for |
 
-Example usage `/api/google-maps/web?searchQeury=university+of+pretoria`
+Example usage: `/api/google-maps/web?searchQeury=university+of+pretoria`
 
 
 ##### Response Body
