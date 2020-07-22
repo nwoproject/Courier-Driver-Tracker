@@ -59,7 +59,7 @@ function CreateDriver(){
                                         type="email"
                                         placeholder="Enter New Driver Email"
                                         name="email"
-                                        required="true"
+                                        required={true}
                                         onChange={handleChange} />
                                 </Col>
                             </Row> <br />
@@ -69,7 +69,7 @@ function CreateDriver(){
                                     type="text"
                                     placeholder="First Name"
                                     name="name"
-                                    required="true"
+                                    required={true}
                                     onChange={handleChange}/>
                                 </Col>
                                 <Col xs={4}>
@@ -77,7 +77,7 @@ function CreateDriver(){
                                     type="text"
                                     placeholder="Last Name"
                                     name="surname"
-                                    required="true"
+                                    required={true}
                                     onChange={handleChange}/>
                                 </Col>
                                 <Col xs={4}>
@@ -87,7 +87,7 @@ function CreateDriver(){
                         </Form.Group>
                     </Form>
                 </Container>
-                {requestSent ? <Alert variant="primary">Account Made</Alert> : ""}
+                {requestSent ? <Alert variant="primary">Account Made</Alert> : null}
             </Card.Body>
         </Card>
     );

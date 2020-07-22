@@ -44,7 +44,7 @@ function RouteCall(props){
             }); 
             
         });
-    },[]);
+    });
 
     return(
         <div>

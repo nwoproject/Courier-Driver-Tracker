@@ -75,7 +75,7 @@ function CreateManager(){
                                         type="email"
                                         placeholder="Enter New Manager Email"
                                         name="email"
-                                        required="true"
+                                        required={true}
                                         onChange={handleChange} />
                                 </Col>
                             </Row> <br />
@@ -85,7 +85,7 @@ function CreateManager(){
                                     type="password"
                                     placeholder="Password"
                                     name="pass1"
-                                    required="true"
+                                    required={true}
                                     onChange={handleChange}/>
                                 </Col>
                                 <Col xs={6}>
@@ -93,7 +93,7 @@ function CreateManager(){
                                     type="password"
                                     placeholder="Confirm Password"
                                     name="pass2"
-                                    required="true"
+                                    required={true}
                                     onChange={handleChange}/>
                                 </Col>
                             </Row><br />
@@ -103,7 +103,7 @@ function CreateManager(){
                                     type="text"
                                     placeholder="First Name"
                                     name="name"
-                                    required="true"
+                                    required={true}
                                     onChange={handleChange}/>
                                 </Col>
                                 <Col xs={4}>
@@ -111,7 +111,7 @@ function CreateManager(){
                                     type="text"
                                     placeholder="Last Name"
                                     name="surname"
-                                    required="true"
+                                    required={true}
                                     onChange={handleChange}/>
                                 </Col>
                                 <Col xs={4}>

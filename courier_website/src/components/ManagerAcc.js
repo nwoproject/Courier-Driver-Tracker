@@ -17,7 +17,7 @@ function ManagerAcc(){
 
     return(
         <Card className="LoginCard">
-            <Card.Header>You are a Manager. Nice</Card.Header> 
+            <Card.Header>You are logged in, Welcome</Card.Header> 
             <Card.Body>
             <Form onSubmit={Logout}>
                 <Button variant="primary" type="submit">

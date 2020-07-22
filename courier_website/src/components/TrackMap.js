@@ -9,7 +9,7 @@ function TrackMap(props){
     const [DriverSurname, setSurname] = useState("");
     const [DriverLat, setLat] = useState(0);
     const [DriverLng, setLng] = useState(0);
-    const [DriverID, setID] = useState(0);
+
     const mapStyles = {
         'width': '90%',
         'display': 'block',
@@ -37,11 +37,10 @@ function TrackMap(props){
                 setSurname(result.drivers[0].surname);
                 setLat(result.drivers[0].latitude);
                 setLng(result.drivers[0].longitude);
-                setID(result.drivers[0].id);
                 setLocation(true);
             });
         }, 5000);
-    },[]);
+    });
 
     return(
         <div>

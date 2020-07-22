@@ -8,13 +8,13 @@ import AlwaysOnTracking from "./pages/AlwaysOnTracking";
 
 const Main = () =>{
     return(
-        <Switch>
-            <Route exact path="/pages/Login" component={Login}></Route>
-            <Route exact path="/pages/Home" component={Home}></Route>
-            <Route exact path="/pages/Routes" component={Routes}></Route>
-            <Route exact path="/pages/AlwaysOnTracking" component={AlwaysOnTracking}></Route>
-            <Route path="/" component={Login}></Route>
-        </Switch>
+            <Switch>
+                <Route exact path="/pages/Login" component={Login}></Route>
+                <Route exact path="/pages/Home" component={Home}></Route>
+                <Route exact path="/pages/Routes" component={Routes}></Route>
+                <Route exact path="/pages/AlwaysOnTracking" component={AlwaysOnTracking}></Route>
+                <Route path="/" component={Login}></Route>
+            </Switch>
     );
 }
 
