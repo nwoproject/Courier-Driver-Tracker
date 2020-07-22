@@ -21,6 +21,8 @@ The following header field should be present in each request: `Authorization: Be
 5.  [Route Endpoints](#route-endpoints)  
         5.1     [Create Route](#create-route)  
         5.2     [Get Driver Route](#get-driver-route)  
+6.  [Google Maps](#google-maps)  
+        6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
 
 # Endpoint Summary
 
@@ -53,6 +55,11 @@ The following header field should be present in each request: `Authorization: Be
 | `POST` | `/api/routes` | Creates a new delivery route | 
 | `GET` | `/api/routes/:driverid` | Returns a driver's active delivery routes |
 
+## Google Maps Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `GET` | `/api/google-maps/web` | Returns location details with a nice picture |
 
 # Driver Endpoints
 
@@ -268,14 +275,17 @@ Returns the current location of a specified driver.
 
 ##### Request Body
 
-```json
-{
-    "name": "John",
-    "surname": "Doe",
-    "id": 1,
-}
-```
->**NOTE:** One parameter in the request body can be left out, meaning atleast two should be present except if `id` is included, then both `name` and `surname` can be omitted. The API will preferably search by `id` but if it is not present it will use `name` and `surname` to determine which driver location should be returned. ALL MATCHING RECORDS WILL BE RETURNED. Meaning if two drivers share the same name and surname and no `id` was provided then two drivers will be returned.
+No request body, however the following parameters is expected in the query string.
+
+| Parameter | Example |
+|-------------|-------------|
+| `id` | ID of courier driver |
+| `name` | Name of driver |
+| `surname` | Driver's surname |
+
+Example usage: `/api/location/driver?name=John&surname=Doe`;
+
+>**NOTE:** One parameter in the request can be left out, meaning atleast two should be present except if `id` is included, then both `name` and `surname` can be omitted. The API will preferably search by `id` but if it is not present it will use `name` and `surname` to determine which driver location should be returned. ALL MATCHING RECORDS WILL BE RETURNED. Meaning if two drivers share the same name and surname and no `id` was provided then two drivers will be returned.
 
 ##### Response Body
 
@@ -380,9 +390,80 @@ This request has no body.
     ]
 }
 ```
+##### Response status codes
 
 | Status Code | Description |
 |-------------|-------------|
 | `200` | Driver's active routes successfully retrieved |
 | `404` | Driver not found or currently has no active routes | 
+| `500` | Server error |
+
+## Google Maps
+
+## Search place and get coordinates
+
+Takes in a string parameter which is then used to search for a specific location using the google maps API, if multiple results are found then the first result is returned. The returned results contains all the important information about a location like the coordinates, street address and a link to a photo of the location.
+
+##### Http Request
+
+`GET /api/google-maps/web`
+
+##### Request Body
+
+No request body, however the following parameters is expected in the query string.
+
+| Parameter | Descriptiom |
+|-------------|-------------|
+| `searchQeury` | Location to be seached for |
+
+Example usage: `/api/google-maps/web?searchQeury=university+of+pretoria`
+
+
+##### Response Body
+
+```json
+{
+    "candidates": [
+        {
+            "formatted_address": "24 Duxbury Rd, Hillcrest, Pretoria, 0083, South Africa",
+            "geometry": {
+                "location": {
+                    "lat": -25.7544078,
+                    "lng": 28.231784
+                },
+                "viewport": {
+                    "northeast": {
+                        "lat": -25.75305797010728,
+                        "lng": 28.23313382989273
+                    },
+                    "southwest": {
+                        "lat": -25.75575762989272,
+                        "lng": 28.23043417010728
+                    }
+                }
+            },
+            "name": "UP Student Centre",
+            "photos": [
+                {
+                    "height": 2322,
+                    "html_attributions": [
+                        "<a href=\"https://maps.google.com/maps/contrib/107282224746449458000\">Thato0 Mmetwane</a>"
+                    ],
+                    "photo_reference": "CmRaAAAAlp-mTMNnwypzkV6TUenYKgmnXkkYyEhr9sgtioMqD9ECPN-7sZFPcv0qoqufqVI9wnYoIIiQ49LV1VuXZ6aYi4gifXZOftfzX9DjFcl6Ez5ADb9an1umoMMeJadvkQcyEhCoAUrHeuF4vx6s5lsFtP5sGhQQJLZiPXzHCdG2vJtUxdrOkQUvxQ",
+                    "width": 4128
+                }
+            ]
+        }
+    ],
+    "status": "OK",
+    "photo": "https://lh3.googleusercontent.com/p/AF1QipObDXCqc_uAPYGK3Viai-J52qlDxXjb0uWpIAKG=s1600-w400"
+}
+```
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Location and photo was returned |
+| `206` | Location returned but no photo was found | 
+| `404` | No location was found |
 | `500` | Server error |
