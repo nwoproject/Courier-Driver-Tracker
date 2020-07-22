@@ -234,4 +234,28 @@ describe('Server', ()=>{
                 }).timeout(5000);
         });
     });
+    describe('Google maps API integration', ()=>{
+        it("Search for a non-existant location", done =>{
+            chai
+                .request(app)
+                .get('/api/google-maps/web?searchQeury=fwqfwqfqwwqffwqfwqfwqwqfwqffwdqfwq')
+                .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
+                .send()
+                .end((err,res)=>{
+                    expect(res).to.have.status(404);
+                    done();
+                }).timeout(5000);
+        });
+        it("Search for an existing location", done =>{
+            chai
+            .request(app)
+            .get('/api/google-maps/web?searchQeury=up')
+            .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
+            .send()
+            .end((err,res)=>{
+                expect(res).to.have.status(200);
+                done();
+            }).timeout(5000);;
+        });
+    });
 });
