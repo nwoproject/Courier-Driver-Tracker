@@ -1,3 +1,4 @@
+import 'package:courier_driver_tracker/screens/deliveryScreen.dart';
 import 'package:flutter/material.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
@@ -24,6 +25,9 @@ class Router {
           return MaterialPageRoute(builder: (_)=>LoginPage(),);
         }
         break;
+
+      case '/delivery':
+        return MaterialPageRoute(builder: (_)=>DeliveryPage(),);
 
       default: //If page is not found, redirect to loginpage
         return MaterialPageRoute(builder: (_)=>LoginPage(),);

@@ -15,7 +15,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final geolocationService = GeolocatorService();
-
   @override
   Widget build(BuildContext context) {
 
@@ -50,16 +49,27 @@ class _HomePageViewState extends State<HomePageView> {
   @override
   Widget build(BuildContext context) {
 
-    // Position trackingData = Provider.of<Position>(context);
+  void startServiceInPlatform() async{
+    if(Platform.isAndroid){
+      var methodChannel = MethodChannel("com.ctrlaltelite.messages");
+      String data = await methodChannel.invokeMethod("startService");
+      print(data);
+    }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         drawer: new Drawer(
           child: new ListView(
             children: <Widget>[
               new UserAccountsDrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                ),
                 accountName: new Text("username"),
-                accountEmail: new Text("username@gmail.com"),
+                accountEmail: new Text("username@gmail.com"),   // data should be pulled from database
                 currentAccountPicture: new CircleAvatar(
                     backgroundColor: Colors.white,
                     child: new Text("U")
@@ -68,12 +78,23 @@ class _HomePageViewState extends State<HomePageView> {
               new ListTile(
                 title: new Text("Deliveries"),
                 trailing: new Icon(Icons.local_shipping),
+                onTap: (){
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed("/delivery");},
+                
               ),
               new ListTile(
                 title: new Text("Settings"),
                 trailing: new Icon(Icons.settings),
               ),
-              new Divider(),
+              new Divider(height: 10.0),
+              new ListTile(
+                title: new Text("Close"),
+                trailing: new Icon(Icons.close),
+                onTap: ()=> Navigator.of(context).pop(),
+
+
+              )
             ],
           ),
         ),
@@ -88,7 +109,6 @@ class _HomePageViewState extends State<HomePageView> {
                       ),
               ),
             ),
-
             Expanded(
                 child: GMap()
             ),

@@ -26,6 +26,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.Arrays;
 import java.util.List;
 
+import io.flutter.Log;
 import io.flutter.app.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -56,7 +57,6 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
         }
     };
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,27 +84,10 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
                 if(methodCall.method.equals("startService")){
                     //startService();
                     backgroundService.requestLocationUpdates();
-
-
                     result.success("Service started");
                 }
             }
         });
-
-        new EventChannel(getFlutterView(), "com.ctrlaltelite.locationStream").setStreamHandler(
-                new EventChannel.StreamHandler() {
-                    @Override
-                    public void onListen(Object arguments, EventChannel.EventSink events) {
-
-                    }
-
-                    @Override
-                    public void onCancel(Object arguments) {
-
-                    }
-                }
-        );
-
     }
 
     //new
@@ -139,16 +122,5 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onListenLocation(SendLocationToActivity event){
-        if(event != null){
-            String data = new StringBuilder()
-                    .append(event.getLocation().getLatitude())
-                    .append("/")
-                    .append(event.getLocation().getLongitude())
-                    .toString();
-            Toast.makeText(backgroundService, data, Toast.LENGTH_SHORT).show();
-        }
     }
-
-
-
 }

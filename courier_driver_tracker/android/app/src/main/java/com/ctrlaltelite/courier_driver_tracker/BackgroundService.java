@@ -39,29 +39,51 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import io.flutter.plugin.common.EventChannel;
+
 public class BackgroundService extends Service {
+    /*
+     * Author: Gian Geyser & Jordan Nijs
+     * Description: Service that retrieves the users location while the application
+     *              is minimized or closed while the user is still driving on his route.
+     */
 
-    private static final String channelID = "locationStream";
-    private static final String EXTRA_STARTED_FROM_NOTIFICATION = "com.ctrlaltelite.courier_driver_tracker"
-            + ".started_from_notification";
+    private static final String channelID = "locationStream";               // ID of channel
+    private static final String EXTRA_STARTED_FROM_NOTIFICATION =           // channel name
+            "com.ctrlaltelite.courier_driver_tracker.started_from_notification";
+    private final IBinder binder = new LocalBinder();                       // service binder
+    private static final long updateInterval = 5000;                        // max update interval in milli seconds
+    private static final long fastestUpdateInterval = updateInterval/2;     // min update interval in milli seconds
+    private static final int notificationID = 24;                           // ID of notification channel
+    private boolean changingConfiguration = false;                          // bool stating if application is moving between foreground and background
+    private NotificationManager notificationManager;                        // a notification manager
+    private LocationRequest locationRequest;                                // stores location retrieval options
+    private FusedLocationProviderClient fusedLocationProviderClient;        // location client
+    private LocationCallback locationCallback;                              // callback function for the location request
+    private Handler serviceHandler;                                         // a service handler
+    public Location location;                                               // current location of the courier
 
-    private final IBinder binder = new LocalBinder();
-    private static final long updateInterval = 5000;
-    private static final long fastestUpdateInterval = updateInterval/2;
-    private static final int notificationID = 24;
-    private boolean changingConfiguration = false;
-    private NotificationManager notificationManager;
 
-    private LocationRequest locationRequest;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationCallback locationCallback;
-    private Handler serviceHandler;
-    public Location location;
-
+    /*
+     * Author: Jordan Nijs
+     * Parameters: none
+     * Returns: none
+     * Description: Default constructor for service.
+     */
     public BackgroundService(){
 
     }
 
+    /*
+     * Author: Jordan Nijs
+     * Parameters: none
+     * Returns: none
+     * Description: Overrides the super create function to initialize all the necessary variables
+     *              required by the service.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -92,6 +114,14 @@ public class BackgroundService extends Service {
 
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: Intent intent, int flags, int startId
+     * Returns: int
+     * Description: Overrides the onStartCommand, when application is started from the background
+     *              notification it stops the background service.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
         boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION, false);
@@ -102,12 +132,26 @@ public class BackgroundService extends Service {
         return START_NOT_STICKY;
     }
 
+
+    /*
+     * Author: Gian Geyser & Jordan Nijs
+     * Parameters: none
+     * Returns: Configuration
+     * Description: Overrides the onConfigurationChanged, only sets the changingConfiguration to true.
+     */
     @Override
     public void onConfigurationChanged(Configuration newConfig){
         super.onConfigurationChanged(newConfig);
         changingConfiguration = true;
     }
 
+
+    /*
+     * Author: Gian Geyser
+     * Parameters: none
+     * Returns: none
+     * Description: Starts background service and makes location requests repeatedly with a looper function.
+     */
     public void requestLocationUpdates(){
         Common.setRequestingLocationUpdates(this, true);
         startService(new Intent(getApplicationContext(), BackgroundService.class));
@@ -119,6 +163,13 @@ public class BackgroundService extends Service {
         }
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: none
+     * Returns: none
+     * Description: Stops requesting location updates and ends background service.
+     */
     public void removeLocationUpdates(){
         try{
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
@@ -131,27 +182,38 @@ public class BackgroundService extends Service {
         }
     }
 
+
+    /*
+     * Author: Gian Geyser
+     * Parameters: none
+     * Returns: none
+     * Description: Tries to retrieve the last known location of the courier.
+     */
     private void getLastLocation(){
         try{
             fusedLocationProviderClient.getLastLocation()
                     .addOnCompleteListener(
-                        new OnCompleteListener<Location>(){
-                        @Override
-                        public void onComplete(@NonNull Task<Location> task) {
-                            if(task.isSuccessful() && task.getResult() != null){
-                                location = task.getResult();
-                            }
-                            else{
-                                Log.e("CTRLALTELITE_DEV", "Failed to get location");
-                            }
-                        }
-                    });
+                            task -> {
+                                if(task.isSuccessful() && task.getResult() != null){
+                                    location = task.getResult();
+                                }
+                                else{
+                                    Log.e("CTRLALTELITE_DEV", "Failed to get location");
+                                }
+                            });
         }
         catch (SecurityException ex){
             Log.e("CTRLALTELITE_DEV", "Lost location permission." + ex);
         }
     }
 
+
+    /*
+     * Author: Gian Geyser
+     * Parameters: none
+     * Returns: none
+     * Description: Sets the location request options.
+     */
     private void createLocationRequest(){
         locationRequest = new LocationRequest();
         locationRequest.setInterval(updateInterval);
@@ -159,16 +221,55 @@ public class BackgroundService extends Service {
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    private void onNewLocation(Location lastLocation){
-        location = lastLocation;
-        // EventBus.getDefault().postSticky(new SendLocationToActivity(location));
 
+    /*
+     * Author: Gian Geyser
+     * Parameters: Location of the courier
+     * Returns: none
+     * Description: When a new location is retrieved it updates the location variable.
+     */
+    private void onNewLocation(Location currentlocation){
+        location = currentlocation;
+
+        /*
         //if running in foreground
         if(serviceIsRunningInForeGround(this)){
             notificationManager.notify(notificationID, getNotification());
         }
+
+         */
     }
 
+
+    /*
+     * Author: Gian Geyser
+     * Parameters: Location object
+     * Returns: String
+     * Description: Takes a location object and creates a string from all the object variables.
+     */
+    private String locationToString(Location location){
+        String values = "";
+        values += location.getLatitude();
+        values += "," + location.getLongitude();
+        values += "," + location.getAccuracy();
+        values += "," + location.getAltitude();
+        values += "," + location.getSpeed();
+        values += "," + location.getBearing();
+        values += "," + location.getTime();
+
+        return values;
+    }
+
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: none
+     * Returns: Notification
+     * Description: Uses the current position and last position to determine
+     *              the distance traveled. Creates a notification if the position
+     *              has not sufficiently moved within the specified
+     *              cycles(_maxStopCount).
+     */
     private Notification getNotification(){
         Intent intent = new Intent(this, BackgroundService.class);
         String title = "Courier Tracker";
@@ -198,6 +299,13 @@ public class BackgroundService extends Service {
         return builder.build();
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: Context
+     * Returns: Boolean
+     * Description: Checks if application is running in the foreground.
+     */
     private boolean serviceIsRunningInForeGround(Context context){
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for(ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
@@ -210,12 +318,24 @@ public class BackgroundService extends Service {
         return false;
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Description: Local wrapper class for background service binder
+     */
     public class LocalBinder extends Binder {
         BackgroundService getService(){
             return BackgroundService.this;
         }
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: Intent
+     * Returns: IBinder
+     * Description: Overrides binders onBind function, removes background notification.
+     */
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -224,6 +344,13 @@ public class BackgroundService extends Service {
         return binder;
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: Intent
+     * Returns: none
+     * Description: Overrides binders onRebind function, removes background notification.
+     */
     @Override
     public void onRebind(Intent intent){
         stopForeground(true);
@@ -231,6 +358,13 @@ public class BackgroundService extends Service {
         super.onRebind(intent);
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: Intent
+     * Returns: boolean
+     * Description: Overrides binders onUnbind function, creates background notification.
+     */
     @Override
     public boolean onUnbind(Intent intent){
         if(!changingConfiguration && Common.requestingLocationUpdates(this)) {
@@ -239,6 +373,13 @@ public class BackgroundService extends Service {
         return true;
     }
 
+
+    /*
+     * Author: Jordan Nijs
+     * Parameters: none
+     * Returns: none
+     * Description: Overrides binders onDestroy function, removes callback functions.
+     */
     @Override
     public void onDestroy(){
         serviceHandler.removeCallbacks(null);
