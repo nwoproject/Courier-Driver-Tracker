@@ -6,7 +6,7 @@ env:
   
 on:
   push:
-    branches: [ master ]
+    branches: [ master, feature/companion-website ]
   pull_request:
     branches: [ master ]
 
