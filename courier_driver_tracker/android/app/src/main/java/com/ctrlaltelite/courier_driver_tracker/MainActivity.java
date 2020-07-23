@@ -1,5 +1,4 @@
 package com.ctrlaltelite.courier_driver_tracker;
-import io.flutter.embedding.android.FlutterActivity;
 import com.ctrlaltelite.courier_driver_tracker.location_service.*;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
