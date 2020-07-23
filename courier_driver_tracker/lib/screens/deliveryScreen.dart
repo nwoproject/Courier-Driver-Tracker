@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
 
-class DeliveryPage extends StatelessWidget {
+class DeliveryScreen extends StatelessWidget {
   final headingLabelStyle = TextStyle(
     fontSize: 20,
     fontFamily: 'OpenSans-Regular',

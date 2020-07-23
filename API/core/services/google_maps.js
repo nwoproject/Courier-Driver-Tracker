@@ -18,7 +18,7 @@ router.get('/web', (req, res) => {
               });
             resp.on('end', () => {
                 searchQueryResults = JSON.parse(data);
-                if(searchQueryResults.status === "OK")
+                if(searchQueryResults.status === "OK" && searchQueryResults.photos)
                 {
                     https.get(`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${searchQueryResults.candidates[0].photos[0].photo_reference}&key=${process.env.REACT_APP_GOOGLE_API}`, (photoresp)=>{
                         let photodata = ' ';
@@ -40,7 +40,14 @@ router.get('/web', (req, res) => {
                 }   
                 else
                 {
-                    return res.status(404).end();
+                    if(searchQueryResults.status==="OK")
+                    {
+                        res.status(206).json(searchQueryResults).end();
+                    }
+                    else
+                    {
+                        res.status(404).end();
+                    }
                 }
             });
         });

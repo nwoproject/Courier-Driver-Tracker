@@ -1,5 +1,7 @@
-import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
+import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
+import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,6 +9,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'deliveries.dart';
 
 class GMap extends StatefulWidget {
   @override
@@ -27,9 +31,6 @@ class MapSampleState extends State<GMap> {
   GeolocatorService _geolocatorService = GeolocatorService();
   Position _currentPosition;
 
-  //Abnormality service
-  AbnormalityService _abnormalityService = AbnormalityService();
-
   // Deliveries
   List<Position> deliveries = [
     new Position(latitude: -25.7815, longitude: 28.2759),
@@ -39,6 +40,11 @@ class MapSampleState extends State<GMap> {
     new Position(latitude: -25.7713, longitude: 28.2334)
   ];
   String _currentDelivery = 'Loading';
+  Deliveries polyDeliveries;
+  List<Delivery> deliveryList;
+  
+  // Storage
+  RouteLogging _routeLogging = RouteLogging();
 
 
   @override
@@ -103,13 +109,28 @@ class MapSampleState extends State<GMap> {
     // Calculating to check that
     // southwest coordinate <= northeast coordinate
     // Determines the screen bounds
-    if (_currentPosition.latitude <= deliveries[0].latitude) {
-      _southwestCoordinates = _currentPosition;
-      _northeastCoordinates = deliveries[0];
-    } else {
-      _southwestCoordinates = deliveries[0];
-      _northeastCoordinates = _currentPosition;
+    double minLat = deliveries[0].latitude;
+    double minLong = deliveries[0].longitude;
+    double maxLat = deliveries[0].latitude;
+    double maxLong = deliveries[0].longitude;
+
+    for(int del = 0; del < deliveries.length; del++){
+      if (minLat > deliveries[del].latitude) {
+        minLat = deliveries[del].latitude;
+      }
+      if(minLong > deliveries[del].longitude){
+        minLong = deliveries[del].longitude;
+      }
+      if (maxLat < deliveries[del].latitude) {
+        maxLat = deliveries[del].latitude;
+      }
+      if(maxLong < deliveries[del].longitude){
+        maxLong = deliveries[del].longitude;
+      }
     }
+
+    _southwestCoordinates = new Position(latitude: minLat, longitude: minLong);
+    _northeastCoordinates = new Position(latitude: maxLat, longitude: maxLong);
 
     LatLngBounds routeBounds = new LatLngBounds(
       northeast: LatLng(
@@ -181,14 +202,14 @@ class MapSampleState extends State<GMap> {
    */
   bool zoom(LatLngBounds markerBounds, LatLngBounds screenBounds){
     final bool northEastLatitudeCheck = screenBounds.northeast.latitude >= markerBounds.northeast.latitude + 0.005
-                                      && screenBounds.northeast.latitude <= markerBounds.northeast.latitude + 0.05;
+                                      && screenBounds.northeast.latitude <= markerBounds.northeast.latitude + 0.04;
     final bool northEastLongitudeCheck = screenBounds.northeast.longitude >= markerBounds.northeast.longitude + 0.005
-                                      && screenBounds.northeast.longitude <= markerBounds.northeast.longitude + 0.05;
+                                      && screenBounds.northeast.longitude <= markerBounds.northeast.longitude + 0.04;
 
     final bool southWestLatitudeCheck = screenBounds.southwest.latitude <= markerBounds.southwest.latitude - 0.015
-                                      && screenBounds.southwest.latitude >= markerBounds.southwest.latitude - 0.05;
+                                      && screenBounds.southwest.latitude >= markerBounds.southwest.latitude - 0.04;
     final bool southWestLongitudeCheck = screenBounds.southwest.longitude <= markerBounds.southwest.longitude - 0.005
-                                      && screenBounds.southwest.longitude >= markerBounds.southwest.longitude - 0.05;
+                                      && screenBounds.southwest.longitude >= markerBounds.southwest.longitude - 0.04;
 
     return !(northEastLatitudeCheck && northEastLongitudeCheck && southWestLatitudeCheck && southWestLongitudeCheck);
   }
@@ -253,6 +274,9 @@ class MapSampleState extends State<GMap> {
     // Initializing PolylinePoints
     polylinePoints = PolylinePoints();
 
+    // Create Coordinate List
+    // List<List<double>> coords;
+
     // Generating the list of coordinates to be used for
     // drawing the polylines
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
@@ -266,8 +290,12 @@ class MapSampleState extends State<GMap> {
     if (result.points.isNotEmpty) {
       result.points.forEach((PointLatLng point) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+        //coords.add([point.latitude, point.longitude]);
       });
+      // deliveryList.add(new Delivery(coordinates: coords, arrivalTime: "8:00",address: "The Address"));
     }
+
+
 
     // Defining an ID
     PolylineId id = PolylineId('poly');
@@ -301,9 +329,9 @@ class MapSampleState extends State<GMap> {
       }
       else{
         await _createPolylines(deliveries[position], deliveries[position + 1]);
-        //print(position);
       }
     }
+    // _abnormalityService.setDeliveries(polyDeliveries);
   }
 
 
@@ -314,7 +342,7 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null){
-      _abnormalityService.checkAllAbnormalities(_currentPosition);
+      _routeLogging.writeToFile(_geolocatorService.convertPositionToString(_currentPosition) + "\n", "locationFile");
     }
 
     // Google Map View
@@ -323,6 +351,7 @@ class MapSampleState extends State<GMap> {
       child: Column(
                 // Google map container with buttons stacked on top
                 children: <Widget>[
+                  LocalNotifications(),
                   Expanded(
                     flex: 5,
                     child: Stack(

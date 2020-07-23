@@ -10,8 +10,16 @@ class RouteLogging{
   final String locationPath ="/Download/test.txt";
   final String deliveriesPath = "/Download/deliveries.json";
 
-  static void getPermissions() async {
-    await Permission.storage.request();
+  static Future<bool> checkPermissions() async {
+    return await Permission.storage.isGranted;
+  }
+
+  static Future<bool> getPermissions() async {
+    PermissionStatus permissionStatus = await Permission.storage.request();
+    if(permissionStatus == PermissionStatus.granted){
+      return true;
+    }
+    return false;
   }
 
   //Gets the directory path for the file
@@ -55,16 +63,16 @@ class RouteLogging{
     }
   }
 
-  Future<File> writeToFile(String data, String text) async {
+  Future<File> writeToFile(String data, String fileType) async {
     File file;
-    if(text == "locationFile") {
+    if(fileType == "locationFile") {
       file = await locationFile;
     }
-    else {
+    else if(fileType == "deliveriesFile"){
       file = await deliveriesFile;
     }
 
     // Write the file
-    return file.writeAsString('data', mode: FileMode.append);
+    return file.writeAsString(data, mode: FileMode.append);
   }
 }

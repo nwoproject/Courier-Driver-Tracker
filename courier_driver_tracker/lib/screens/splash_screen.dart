@@ -1,8 +1,9 @@
+import 'package:courier_driver_tracker/services/location/route_logging.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import "login.dart";
 import "home.dart";
-import 'package:courier_driver_tracker/services/location/location_permissions.dart';
+import 'package:courier_driver_tracker/services/location/permissions.dart';
 import 'package:shimmer/shimmer.dart';
 
 
@@ -45,8 +46,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void _changeActiveWidget() async {
     bool service = await isLocationServiceEnabled();
     bool perm = await isLocationPermissionGranted();
+    bool storagePerm = await RouteLogging.checkPermissions();
 
-    if(service && perm){
+    if(service && perm && storagePerm){
       _checkFlutter().then(
               (status){
             if(!status){

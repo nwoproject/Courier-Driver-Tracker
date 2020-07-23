@@ -27,7 +27,7 @@ class Router {
         break;
 
       case '/delivery':
-        return MaterialPageRoute(builder: (_)=>DeliveryPage(),);
+        return MaterialPageRoute(builder: (_)=>DeliveryScreen(),);
 
       default: //If page is not found, redirect to loginpage
         return MaterialPageRoute(builder: (_)=>LoginPage(),);

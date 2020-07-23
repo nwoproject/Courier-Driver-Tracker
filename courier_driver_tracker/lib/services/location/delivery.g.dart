@@ -15,9 +15,11 @@ Delivery _$DeliveryFromJson(Map<String, dynamic> json) {
         ?.toList(),
   );
 }
-
+/*
 Map<String, dynamic> _$DeliveryToJson(Delivery instance) => <String, dynamic>{
       'coordinates': instance.coordinates,
       'address': instance.address,
       'arrivalTime': instance.arrivalTime,
     };
+
+ */

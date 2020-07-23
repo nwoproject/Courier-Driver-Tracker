@@ -15,3 +15,10 @@ Deliveries _$DeliveriesFromJson(Map<String, dynamic> json) {
         ?.toList(),
   );
 }
+/*
+Map<String, dynamic> _$DeliveriesToJson(Deliveries instance) =>
+    <String, dynamic>{
+      'route': instance.route,
+    };
+
+ */
