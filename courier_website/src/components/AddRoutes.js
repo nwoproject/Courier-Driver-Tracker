@@ -128,7 +128,7 @@ function AddRoutes(){
                                     type="text" 
                                     placeholder="Input Driver ID" 
                                     name="Route"
-                                    required="true"
+                                    required={true}
                                     onChange={handleChange}></Form.Control></Col>
                                 <Col xs={4}><Button variant="primary" type="submit">Submit Route</Button></Col>
                             </Row>
