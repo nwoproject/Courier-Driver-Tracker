@@ -1,3 +1,5 @@
+import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
+import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,22 +18,28 @@ class MapSampleState extends State<GMap> {
   // Google map setup
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
+  Set<Marker> markers = {};
+  PolylinePoints polylinePoints;
+  List<LatLng> polylineCoordinates = [];
+  Map<PolylineId, Polyline> polylines = {};
 
   //Location service
   GeolocatorService _geolocatorService = GeolocatorService();
   Position _currentPosition;
 
-  // Deliveries and Markers
-  Set<Marker> markers = {};
+  //Abnormality service
+  AbnormalityService _abnormalityService = AbnormalityService();
+
+  // Deliveries
   List<Position> deliveries = [
-    new Position(latitude: -25.7600, longitude: 28.2437)
+    new Position(latitude: -25.7815, longitude: 28.2759),
+    new Position(latitude: -25.7597, longitude: 28.2436),
+    new Position(latitude: -25.7545, longitude: 28.2314),
+    new Position(latitude: -25.7608, longitude: 28.2310),
+    new Position(latitude: -25.7713, longitude: 28.2334)
   ];
   String _currentDelivery = 'Loading';
 
-  // Route PolylinePoints
-  PolylinePoints polylinePoints;
-  List<LatLng> polylineCoordinates = [];
-  Map<PolylineId, Polyline> polylines = {};
 
   @override
   void initState() {
@@ -39,14 +47,28 @@ class MapSampleState extends State<GMap> {
     getCurrentLocation();
   }
 
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Sets current location and Google maps polylines if not set.
+   */
   getCurrentLocation() async {
     _currentPosition = await _geolocatorService.getPosition();
     moveToCurrentLocation();
     if(polylinePoints == null){
-      _createPolylines(_currentPosition, deliveries[0]);
+      _createRoute();
     }
   }
 
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Moves Google map camera to current location.
+   */
   moveToCurrentLocation(){
     // Move camera to the specified latitude & longitude
     mapController.animateCamera(
@@ -66,13 +88,21 @@ class MapSampleState extends State<GMap> {
     });
   }
 
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Moves Google map camera to show entire route.
+   */
   showEntireRoute(){
     // Define two position variables
     Position _northeastCoordinates;
     Position _southwestCoordinates;
 
-// Calculating to check that
-// southwest coordinate <= northeast coordinate
+    // Calculating to check that
+    // southwest coordinate <= northeast coordinate
+    // Determines the screen bounds
     if (_currentPosition.latitude <= deliveries[0].latitude) {
       _southwestCoordinates = _currentPosition;
       _northeastCoordinates = deliveries[0];
@@ -92,6 +122,7 @@ class MapSampleState extends State<GMap> {
       ),
     );
 
+    // Center of route
     final LatLng routeCenter = LatLng(
         (routeBounds.northeast.latitude + routeBounds.southwest.latitude)/2,
         (routeBounds.northeast.longitude + routeBounds.southwest.longitude)/2
@@ -103,6 +134,13 @@ class MapSampleState extends State<GMap> {
 
   }
 
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Zooms in or out on Google map camera to show route within screen bounds.
+   */
   Future<void> zoomToFit(GoogleMapController controller, LatLngBounds bounds, LatLng centerBounds) async {
     bool keepZooming = true;
     final double zoomLevel = await controller.getZoomLevel();
@@ -134,6 +172,13 @@ class MapSampleState extends State<GMap> {
     }
   }
 
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Moves Google map camera to current location
+   */
   bool zoom(LatLngBounds markerBounds, LatLngBounds screenBounds){
     final bool northEastLatitudeCheck = screenBounds.northeast.latitude >= markerBounds.northeast.latitude + 0.005
                                       && screenBounds.northeast.latitude <= markerBounds.northeast.latitude + 0.05;
@@ -158,16 +203,30 @@ class MapSampleState extends State<GMap> {
     return northEastLatitudeCheck && northEastLongitudeCheck && southWestLatitudeCheck && southWestLongitudeCheck;
   }
 
-  getNextDelivery(Position position) async {
 
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Gets the address of the delivery using coordinates.
+   */
+  getNextDelivery(Position position) async {
     String address = await _geolocatorService.getAddress(position);
     setState(() {
       _currentDelivery = address;
     });
   }
 
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Adds markers to the list of markers displayed on the Google map.
+   */
   addMarkers(List<Position> positions) async {
     for(Position position in positions){
+      String snippet = await getNextDelivery(position);
       Marker marker = Marker(
         markerId: MarkerId('$position'),
         position: LatLng(
@@ -176,7 +235,7 @@ class MapSampleState extends State<GMap> {
         ),
         infoWindow: InfoWindow(
         title: 'Coffee Break',
-        snippet: await getNextDelivery(position),
+        snippet: snippet,
         ),
         icon: BitmapDescriptor.defaultMarker,
       );
@@ -184,6 +243,12 @@ class MapSampleState extends State<GMap> {
     }
   }
 
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Creates polylines to be displayed on the Google Map.
+   */
   _createPolylines(Position start, Position destination) async {
     // Initializing PolylinePoints
     polylinePoints = PolylinePoints();
@@ -194,9 +259,8 @@ class MapSampleState extends State<GMap> {
       "AIzaSyBoXxuef1WtkCakSJ7MBMKksjH9FJMxE98", // Google Maps API Key
       PointLatLng(start.latitude, start.longitude),
       PointLatLng(destination.latitude, destination.longitude),
-      travelMode: TravelMode.transit,
+      travelMode: TravelMode.driving,
     );
-    print("Result: " + result.points.length.toString());
 
     // Adding the coordinates to the list
     if (result.points.isNotEmpty) {
@@ -216,32 +280,44 @@ class MapSampleState extends State<GMap> {
       width: 5,
     );
 
-    // Adding the polyline to the map
+    // adds polyline to the polylines to be displayed.
     polylines[id] = polyline;
   }
 
-  _createRoute(){
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Creates the whole routes polylines.
+   */
+  _createRoute() async {
     for(int position = 0; position < deliveries.length; position++){
       if(position == 0){
-        _createPolylines(_currentPosition, deliveries[position]);
-        _createPolylines(deliveries[position], deliveries[position + 1]);
+       await _createPolylines(_currentPosition, deliveries[position + 1]);
       }
-      else if(position == deliveries.length -1){
-        _createPolylines(deliveries[position], deliveries[0]);
+      else if(position == deliveries.length - 1){
+        await _createPolylines(deliveries[position], deliveries[0]);
       }
       else{
-        _createPolylines(deliveries[position], deliveries[position + 1]);
+        await _createPolylines(deliveries[position], deliveries[position + 1]);
+        //print(position);
       }
     }
   }
 
 
-
-
   @override
   Widget build(BuildContext context) {
+    // Stream of Position objects of current location.
     _currentPosition = Provider.of<Position>(context);
 
+    // Calls abnormality service
+    if(_currentPosition != null){
+      _abnormalityService.checkAllAbnormalities(_currentPosition);
+    }
+
+    // Google Map View
     return Container(
       color: Colors.black,
       child: Column(
