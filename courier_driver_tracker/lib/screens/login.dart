@@ -19,9 +19,6 @@ class _LoginPageState extends State<LoginPage>
   TextEditingController email = new TextEditingController();
   TextEditingController password = new TextEditingController();
 
-  //AnimationController _iconAnimationController;
-  //Animation<double> _iconAnimation;
-
   final headingLabelStyle = TextStyle(
     color: Colors.white,
     fontSize: 20,

@@ -76,17 +76,15 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
 
 
         new MethodChannel(getFlutterView(), "com.ctrlaltelite.messages").setMethodCallHandler(
-        new MethodChannel.MethodCallHandler()
-        {
-            @Override
-            public void onMethodCall(MethodCall methodCall, MethodChannel.Result result){
-                if(methodCall.method.equals("startService")){
-                    //startService();
-                    backgroundService.requestLocationUpdates();
-                    result.success("Service started");
-                }
-            }
-        });
+                (methodCall, result) -> {
+                    if(methodCall.method.equals("startService")){
+                        //startService();
+                        backgroundService.requestLocationUpdates();
+                        result.success("Service started");
+                    }
+                });
+
+
     }
 
     //new
@@ -115,7 +113,7 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         if(s.equals(Common.KEY_REQUESTING_LOCATION_UPDATES)){
             // he set weird button states
-            System.out.println("Mmmmmm, how you turn it off?");
+            System.out.println("Changing states");
         }
     }
 

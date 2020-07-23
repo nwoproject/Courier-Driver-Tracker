@@ -17,7 +17,6 @@ class _HomePageState extends State<HomePage> {
   final geolocationService = GeolocatorService();
   @override
   Widget build(BuildContext context) {
-
     return StreamProvider<Position>(
       create: (context) => geolocationService.locationStream,
       child: HomePageView(),
@@ -55,8 +54,8 @@ class _HomePageViewState extends State<HomePageView> {
     startServiceInPlatform();
   }
 
-  void startServiceInPlatform() async{
-    if(Platform.isAndroid){
+  void startServiceInPlatform() async {
+    if (Platform.isAndroid) {
       var methodChannel = MethodChannel("com.ctrlaltelite.messages");
       String data = await methodChannel.invokeMethod("startService");
       print(data);
@@ -84,10 +83,10 @@ class _HomePageViewState extends State<HomePageView> {
               new ListTile(
                 title: new Text("Deliveries"),
                 trailing: new Icon(Icons.local_shipping),
-                onTap: (){
+                onTap: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).pushNamed("/delivery");},
-                
+                  Navigator.of(context).pushNamed("/delivery");
+                },
               ),
               new ListTile(
                 title: new Text("Settings"),
@@ -97,9 +96,7 @@ class _HomePageViewState extends State<HomePageView> {
               new ListTile(
                 title: new Text("Close"),
                 trailing: new Icon(Icons.close),
-                onTap: ()=> Navigator.of(context).pop(),
-
-
+                onTap: () => Navigator.of(context).pop(),
               )
             ],
           ),
@@ -109,15 +106,13 @@ class _HomePageViewState extends State<HomePageView> {
             AppBar(
               backgroundColor: Colors.black,
               title: Text(
-                  'Route',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
+                'Route',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
               ),
             ),
-            Expanded(
-                child: GMap()
-            ),
+            Expanded(child: GMap()),
           ],
         ),
       ),

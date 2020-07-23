@@ -5,14 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:courier_driver_tracker/screens/login.dart';
 import 'package:courier_driver_tracker/screens/home.dart';
-
-/*@TODO
-   - add ryans permissions
-   - call ryans function in GoogleMap
-   - check on route
-   - tests
- */
-
+import 'package:courier_driver_tracker/services/location/route_logging.dart';
 
 
 /*
@@ -161,7 +154,8 @@ class Permissions extends StatefulWidget {
 class _PermissionsState extends State<Permissions> {
 
   static bool servicesEnabled = false;
-  static bool permissionGiven = false;
+  static bool locationPermissionGiven = false;
+  static bool writePermissionGiven = false;
 
   @override
   void initState(){
@@ -171,10 +165,12 @@ class _PermissionsState extends State<Permissions> {
 
   checkPermissionsAndServices() async {
     bool serv = await isLocationServiceEnabled();
-    bool perm = await isLocationPermissionGranted();
+    bool locPerm = await isLocationPermissionGranted();
+    bool storagePerm = await RouteLogging.checkPermissions();
     setState(() {
       servicesEnabled = serv;
-      permissionGiven = perm;
+      locationPermissionGiven = locPerm;
+      writePermissionGiven = storagePerm;
     });
   }
 
@@ -191,15 +187,23 @@ class _PermissionsState extends State<Permissions> {
         });
       }
     }
-    if(!permissionGiven){
+    if(!locationPermissionGiven){
       bool success = await requestLocationPermission();
       if(success){
         setState(() {
-          permissionGiven = true;
+          locationPermissionGiven = true;
         });
       }
     }
-    if(servicesEnabled && permissionGiven){
+    if(!writePermissionGiven){
+      bool success = await RouteLogging.getPermissions();
+      if(success){
+        setState(() {
+          locationPermissionGiven = true;
+        });
+      }
+    }
+    if(servicesEnabled && locationPermissionGiven){
       if(loggedIn){
         _navigateToHome();
       }
@@ -338,7 +342,7 @@ class _PermissionsState extends State<Permissions> {
                                           Divider(
                                             height: 20.0,
                                             thickness: 3.0,
-                                            color: permissionGiven ?
+                                            color: locationPermissionGiven ?
                                             Colors.green:
                                             Colors.red,
                                           ),
@@ -366,11 +370,76 @@ class _PermissionsState extends State<Permissions> {
                                     highlightedBorderColor: Colors.green,
                                     splashColor: Colors.green,
                                     child: Text(
-                                      permissionGiven ?
+                                      locationPermissionGiven ?
                                       "ENABLED" :
                                       "ENABLE",
                                       style: TextStyle(
-                                        color: permissionGiven ?
+                                        color: locationPermissionGiven ?
+                                        Colors.green :
+                                        Colors.blue,
+                                      ),
+                                    ),
+                                    onPressed: request,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ListTile(
+                                    title: Padding(
+                                      padding: const EdgeInsets.only(bottom: 10.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            "Location Permission",
+                                            style: TextStyle(
+                                              fontSize: 20.0,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          Divider(
+                                            height: 20.0,
+                                            thickness: 3.0,
+                                            color: writePermissionGiven ?
+                                            Colors.green:
+                                            Colors.red,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    subtitle: RichText(
+                                      text: TextSpan(
+                                        text: 'This application runs as a background service. Please select ',
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          color: Colors.grey[800],
+                                        ),
+                                        children: <TextSpan>[
+                                          TextSpan(text: 'Always', style: TextStyle(fontWeight: FontWeight.bold)),
+                                          TextSpan(text: ' when asked for location permissions to use the application.'),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: OutlineButton(
+                                    highlightedBorderColor: Colors.green,
+                                    splashColor: Colors.green,
+                                    child: Text(
+                                      writePermissionGiven ?
+                                      "ENABLED" :
+                                      "ENABLE",
+                                      style: TextStyle(
+                                        color: writePermissionGiven ?
                                         Colors.green :
                                         Colors.blue,
                                       ),
