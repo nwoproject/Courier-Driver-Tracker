@@ -7,11 +7,6 @@ import 'package:courier_driver_tracker/screens/login.dart';
 import 'package:courier_driver_tracker/screens/home.dart';
 import 'package:courier_driver_tracker/services/location/route_logging.dart';
 
-/*@TODO
-   - check on route
-   - tests
- */
-
 
 /*
    * Author: Gian Geyser

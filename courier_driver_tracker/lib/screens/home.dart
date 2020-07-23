@@ -56,8 +56,7 @@ class _HomePageViewState extends State<HomePageView> {
                   color: Colors.black,
                 ),
                 accountName: new Text("username"),
-                accountEmail: new Text(
-                    "username@gmail.com"), // data should be pulled from database
+                accountEmail: new Text("username@gmail.com"),   // data should be pulled from database
                 currentAccountPicture: new CircleAvatar(
                     backgroundColor: Colors.white, child: new Text("U")),
               ),

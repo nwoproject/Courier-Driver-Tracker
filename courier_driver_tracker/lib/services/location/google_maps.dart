@@ -1,5 +1,4 @@
 import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
-import 'package:courier_driver_tracker/services/location/deliveries.dart';
 import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:courier_driver_tracker/services/location/route_logging.dart';
@@ -309,7 +308,6 @@ class MapSampleState extends State<GMap> {
       points: polylineCoordinates,
       width: 5,
     );
-
 
     // adds polyline to the polylines to be displayed.
     polylines[id] = polyline;

@@ -43,19 +43,21 @@ class DeliveryScreen extends StatelessWidget {
         title: new Text("Deliveries"),
       ),
       body: Container(
-          padding: EdgeInsets.all(10),
-          child: ListView(
-            padding: const EdgeInsets.all(5),
-            children: <Widget>[
-              _deliveryCards("Menlyn Park Shopping Centre",
-                  "01-25-2020 12:00"), //mock data
-              _deliveryCards(
-                  "Aroma Gourmet Coffee Roastery", "01-25-2020 13:00"),
-              _deliveryCards("University of Pretoria", "01-25-2020 13:45"),
-              _deliveryCards(
-                  "Pretoria High School for boys", "01-25-2020 14:00"),
-            ],
-          )),
-    );
+        padding: EdgeInsets.all(10),
+        child: ListView(
+          padding: const EdgeInsets.all(5),
+          children: <Widget>[
+            _deliveryCards("Menlyn Park Shopping Centre","01-25-2020 12:00"),                       //mock data
+            _deliveryCards("Aroma Gourmet Coffee Roastery", "01-25-2020 13:00"),
+            _deliveryCards("University of Pretoria", "01-25-2020 13:45"),
+            _deliveryCards("Pretoria High School for boys", "01-25-2020 14:00"),
+          ],
+        )
+
+
+        ),
+      );
   }
 }
+
+
