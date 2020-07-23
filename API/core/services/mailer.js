@@ -32,7 +32,7 @@ transporter.verify((error, success) => {
    // console.log('User: %s', token.user)
    // console.log('Access Token: %s', token.accessToken)
    // console.log('Expires: %s', new Date(token.expires))
-  })
+  });
 });
 
 const mailer = (message) => {
