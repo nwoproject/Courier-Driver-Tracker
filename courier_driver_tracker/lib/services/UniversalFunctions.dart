@@ -10,7 +10,8 @@ bool isMoving(currentLoc, previousLoc){
       c(previousLoc.latitude * p) * c(currentLoc.latitude * p) *
           (1 - c((currentLoc.longitude - previousLoc.longitude) * p))/2;
   var distance = 12742 * asin(sqrt(a));
-
-  return true;
-
+  if(distance < 0) {
+    return true;
+  }
+  return false;
 }

@@ -15,6 +15,10 @@ jobs:
         with:
           java-version: '12.x'
       - uses: subosito/flutter-action@v1
+      - run: touch .env
+        working-directory: ./courier_driver_tracker
+      - run: echo $'BEARER_TOKEN=${{secrets.BEARER_TOKEN}}\nAPP_MAP_API_KEY=${{secrets.APP_MAP_API_KEY}}' > .env 
+        working-directory: ./courier_driver_tracker
       - run: flutter pub get
         working-directory: ./courier_driver_tracker
       - run: flutter test

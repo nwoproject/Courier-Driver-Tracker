@@ -17,6 +17,7 @@ env:
   REFRESH_TOKEN: ${{secrets.REFRESH_TOKEN}}
   CLIENT_ID: ${{secrets.CLIENT_ID}}
   CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
+  REACT_APP_GOOGLE_API: ${{secrets.REACT_APP_GOOGLE_API}}
   
 on:
   push:
@@ -25,7 +26,7 @@ on:
     branches: [ master ]
 
 jobs:
-  Run_API_tests:
+  Run-API-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,8 +42,8 @@ jobs:
     - run: npm test
       working-directory: ./API
   
-  deploy_API:
-    needs: Run_API_tests
+  deploy-API:
+    needs: Run-API-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

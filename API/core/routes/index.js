@@ -39,5 +39,6 @@ router.use('/drivers', require('./drivers'));
 router.use('/managers', require('./managers'));
 router.use('/location', require('./location'));
 router.use('/routes', require('./driver_routes'));
+router.use('/google-maps', require('../services/google_maps'));
 
 module.exports = router;

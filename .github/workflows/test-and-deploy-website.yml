@@ -1,0 +1,40 @@
+name: Test and deploy Website
+
+env:
+  BEARER_TOKEN: ${{secrets.BEARER_TOKEN}}
+  REACT_APP_BEARER_TOKEN: ${{secrets.REACT_APP_BEARER_TOKEN}}
+  
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  Run-website-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+    - run: npm ci
+      working-directory: ./courier_website
+    - run: npm test --watchAll
+      working-directory: ./courier_website
+  
+  deploy-Website:
+    needs: Run-website-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.0.5
+        with:
+            heroku_api_key: ${{secrets.HEROKU_WEB_DEPLOYMENT_KEY}}
+            heroku_app_name: ${{secrets.HEROKU_WEB_APP_NAME}}
+            heroku_email: ${{secrets.HEROKU_WEB_EMAIL}}
+            buildpack: heroku/nodejs
+            dontuseforce: false
+            appdir: ./courier_website
