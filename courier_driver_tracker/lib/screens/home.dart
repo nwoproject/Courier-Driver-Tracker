@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:courier_driver_tracker/services/location/google_maps.dart';
-
 import "dart:io" show Platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -31,23 +31,29 @@ class HomePageView extends StatefulWidget {
 }
 
 class _HomePageViewState extends State<HomePageView> {
+  final storage = new FlutterSecureStorage();
+  var userData = {
+    'name' : 'name',
+    'surname': 'surname'
+  };
+
+  Future<Null> readUserData() async {
+    var name = await storage.read(key: 'name');
+    var surname = await storage.read(key: 'surname');
+    setState(() {
+      return userData = {
+        'name' : name,
+        'surname': surname,
+      };
+    });
+  }
 
   @override
   void initState(){
+    readUserData();
     super.initState();
     startServiceInPlatform();
   }
-
-  void startServiceInPlatform() async{
-    if(Platform.isAndroid){
-      var methodChannel = MethodChannel("com.ctrlaltelite.messages");
-      String data = await methodChannel.invokeMethod("startService");
-      print(data);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
 
   void startServiceInPlatform() async{
     if(Platform.isAndroid){
@@ -68,11 +74,11 @@ class _HomePageViewState extends State<HomePageView> {
                 decoration: BoxDecoration(
                   color: Colors.black,
                 ),
-                accountName: new Text("username"),
-                accountEmail: new Text("username@gmail.com"),   // data should be pulled from database
+                accountName:Text(userData['name']),
+                accountEmail: new Text(userData['surname']),   // data should be pulled from database
                 currentAccountPicture: new CircleAvatar(
                     backgroundColor: Colors.white,
-                    child: new Text("U")
+                    child: new Text(userData['name'].toString()[0])
                 ),
               ),
               new ListTile(
