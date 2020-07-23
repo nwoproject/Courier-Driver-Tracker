@@ -1,0 +1,57 @@
+name: Test and deploy API
+
+env:
+  BEARER_TOKEN: ${{secrets.BEARER_TOKEN}}
+  DB_HOST: ${{secrets.DB_HOST}}
+  DB_NAME: ${{secrets.DB_NAME}}
+  DB_PASSWORD: ${{secrets.DB_PASSWORD}}
+  DB_USER: ${{secrets.DB_USER}}
+  DEV_STATUS: ${{secrets.DEV_STATUS}}
+  EMAIL_TEST_D: ${{secrets.EMAIL_TEST_D}}
+  EMAIL_TEST_M: ${{secrets.EMAIL_TEST_M}}
+  PASSWORD_TEST_D: ${{secrets.PASSWORD_TEST_D}}
+  PASSWORD_TEST_M: ${{secrets.PASSWORD_TEST_M}}
+  TOKEN_TEST_D: ${{secrets.TOKEN_TEST_D}}
+  TOKEN_TEST_M: ${{secrets.TOKEN_TEST_M}}
+  COMPANY_EMAIL: ${{secrets.COMPANY_EMAIL}}
+  REFRESH_TOKEN: ${{secrets.REFRESH_TOKEN}}
+  CLIENT_ID: ${{secrets.CLIENT_ID}}
+  CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
+  REACT_APP_GOOGLE_API: ${{secrets.REACT_APP_GOOGLE_API}}
+  
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  Run-API-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+    - run: npm ci
+      working-directory: ./API
+    - run: npm run build --if-present
+      working-directory: ./API
+    - run: npm test
+      working-directory: ./API
+  
+  deploy-API:
+    needs: Run-API-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.0.5
+        with:
+            heroku_api_key: ${{secrets.HEROKU_API_DEPLOYMENT_KEY}}
+            heroku_app_name: ${{secrets.HEROKU_API_APP_NAME}}
+            heroku_email: ${{secrets.HEROKU_API_EMAIL}}
+            buildpack: heroku/nodejs
+            dontuseforce: false
+            appdir: ./API
