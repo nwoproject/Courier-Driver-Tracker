@@ -1,6 +1,4 @@
 import 'dart:math';
-
-import 'package:courier_driver_tracker/services/location/deliveries.dart';
 import 'package:geolocator/geolocator.dart';
 
 class AbnormalityService{
@@ -12,31 +10,24 @@ class AbnormalityService{
   Position _currentPosition;      // Current position of the Device
   Position _lastPosition;         // Last position of significant movement
   int _minMovingDistance = 20;    // Distance considered to be significant movement
-  int _maxStopCount = 100;         // Amount of cycles the driver may stop
+  int _maxStopCount = 10;         // Amount of cycles the driver may stop
   int _stopCount = 0;             // Amount of cycles the driver have stopped
-  int _maxSpeedDifference = 1;    // Speed difference between cycles considered to be dangerous
-  Deliveries deliveries;
-  bool suddenStopped = false;
+  int _maxSpeedDifference = 40;    // Speed difference between cycles considered to be dangerous
+  bool stopped = false;
 
-
-  void setDeliveries(Deliveries deliveries){
-    this.deliveries = deliveries;
-  }
   void setCurrentLocation(Position position){
     _currentPosition = position;
     if(_lastPosition == null){
       _lastPosition = position;
     }
   }
-
-  void setLastLocation(Position position){
-    _lastPosition = position;
-  }
-
   Position getCurrentLocation(){
     return _currentPosition;
   }
 
+  void setLastLocation(Position position){
+    _lastPosition = position;
+  }
   Position getLastLocation(){
     return _lastPosition;
   }
@@ -44,6 +35,7 @@ class AbnormalityService{
   void setMaxStopCount(int i){
     _maxStopCount = i;
   }
+
 
 
   /*
@@ -70,10 +62,9 @@ class AbnormalityService{
       }
       else{
         _lastPosition = _currentPosition;
-        suddenStopped = false;
+        stopped = false;
       }
       return false;
-
   }
 
 
@@ -85,19 +76,6 @@ class AbnormalityService{
    *              if the driver is still following the specified route.
    */
   void offRoute(){
-    /*
-    double closestLatBefore = deliveries.route[0].coordinates[0][0];
-    double closestLongBefore = deliveries.route[0].coordinates[0][1];
-    double closestLatAfter = deliveries.route[0].coordinates[1][0];
-    double closestLongAfter = deliveries.route[0].coordinates[1][1];
-
-    for(Delivery del in deliveries.route){
-      for(List<double> each in del.coordinates){
-
-      }
-    }
-
-     */
 
   }
 
@@ -111,8 +89,8 @@ class AbnormalityService{
    *              cycles.
    */
   bool suddenStop(){
-    if(_lastPosition.speed - _currentPosition.speed > _maxSpeedDifference && !suddenStopped){
-      suddenStopped = true;
+    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
+      stopped = true;
       return true;
     }
     return false;

@@ -1,4 +1,3 @@
-import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
 import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:courier_driver_tracker/services/location/route_logging.dart';
@@ -9,6 +8,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+
+import 'deliveries.dart';
 
 class GMap extends StatefulWidget {
   @override
@@ -28,9 +29,6 @@ class MapSampleState extends State<GMap> {
   //Location service
   GeolocatorService _geolocatorService = GeolocatorService();
   Position _currentPosition;
-
-  //Abnormality service
-  AbnormalityService _abnormalityService = AbnormalityService();
 
   // Deliveries
   List<Position> deliveries = [
@@ -332,7 +330,7 @@ class MapSampleState extends State<GMap> {
         await _createPolylines(deliveries[position], deliveries[position + 1]);
       }
     }
-    _abnormalityService.setDeliveries(polyDeliveries);
+    // _abnormalityService.setDeliveries(polyDeliveries);
   }
 
 
@@ -343,7 +341,6 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null){
-      _abnormalityService.checkAllAbnormalities(_currentPosition);
       _routeLogging.writeToFile(_geolocatorService.convertPositionToString(_currentPosition) + "\n", "locationFile");
     }
 

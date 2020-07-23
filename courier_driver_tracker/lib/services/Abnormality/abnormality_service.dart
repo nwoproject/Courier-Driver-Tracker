@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:geolocator/geolocator.dart';
 
 class AbnormalityService{
@@ -13,7 +12,30 @@ class AbnormalityService{
   int _minMovingDistance = 20;    // Distance considered to be significant movement
   int _maxStopCount = 10;         // Amount of cycles the driver may stop
   int _stopCount = 0;             // Amount of cycles the driver have stopped
-  int maxSpeedDifference = 40;    // Speed difference between cycles considered to be dangerous
+  int _maxSpeedDifference = 40;    // Speed difference between cycles considered to be dangerous
+  bool stopped = false;
+
+  void setCurrentLocation(Position position){
+    _currentPosition = position;
+    if(_lastPosition == null){
+      _lastPosition = position;
+    }
+  }
+  Position getCurrentLocation(){
+    return _currentPosition;
+  }
+
+  void setLastLocation(Position position){
+    _lastPosition = position;
+  }
+  Position getLastLocation(){
+    return _lastPosition;
+  }
+
+  void setMaxStopCount(int i){
+    _maxStopCount = i;
+  }
+
 
 
   /*
@@ -25,23 +47,24 @@ class AbnormalityService{
    *              has not sufficiently moved within the specified
    *              cycles(_maxStopCount).
    */
-  void stoppingTooLong(){
+  bool stoppingTooLong(){
       double p = 0.017453292519943295;
       double a = 0.5 - cos((_currentPosition.latitude - _lastPosition.latitude) * p)/2 +
           cos(_lastPosition.latitude * p) * cos(_currentPosition.latitude * p) *
               (1 - cos((_currentPosition.longitude - _lastPosition.longitude) * p))/2;
       double distance = 12742 * asin(sqrt(a)) * 1000;
-      if(_stopCount > _maxStopCount && distance < _minMovingDistance) {
-        notify("stoppingTooLong");
+      if(_stopCount >= _maxStopCount && distance < _minMovingDistance) {
         _stopCount = 0;
+        return true;
       }
       else if(distance < 10){
         _stopCount += 1;
       }
       else{
         _lastPosition = _currentPosition;
+        stopped = false;
       }
-
+      return false;
   }
 
 
@@ -65,30 +88,12 @@ class AbnormalityService{
    *              if the courier made a sudden stop/decrease in speed between
    *              cycles.
    */
-  void suddenStop(){
-    if(_lastPosition.speed - _currentPosition.speed > _maxStopCount){
-      notify("quickStop");
+  bool suddenStop(){
+    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
+      stopped = true;
+      return true;
     }
-  }
-
-
-  /*
-   * Author: Gian Geyser
-   * Parameters: String containing the type of notification
-   * Returns: none
-   * Description: Creates a notification based on the type parameter to notify
-   *              the user of an abnormality occurring.
-   */
-  void notify(String type){
-    if(type == "quickStop"){
-      print("quickStop");
-    }
-    else if(type == "offRoute"){
-
-    }
-    else if(type == "stoppingTooLong"){
-      print("Stopped for too long.");
-    }
+    return false;
   }
 
 
