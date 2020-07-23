@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:courier_driver_tracker/services/UniversalFunctions.dart';
 import 'package:provider/provider.dart';
 
 void main() => runApp(MyApp());
@@ -28,6 +28,10 @@ class _LocalNotificationsState extends State<LocalNotifications> {
   AndroidInitializationSettings androidInitializationSettings;
   IOSInitializationSettings iosInitializationSettings;
   InitializationSettings initializationSettings;
+  Position _currentPosition;
+
+  //Abnormality service
+  AbnormalityService _abnormalityService = AbnormalityService();
 
   @override
   void initState() {
@@ -40,15 +44,15 @@ class _LocalNotificationsState extends State<LocalNotifications> {
     iosInitializationSettings = IOSInitializationSettings();
     initializationSettings = InitializationSettings(
         androidInitializationSettings, iosInitializationSettings);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings
+        );
   }
 
-  void _showNotifications() async {
-    await notification();
+  void _showNotifications(String header, String message) async {
+    await notification(header, message);
   }
 
-  Future<void> notification() async {
+  Future<void> notification(String header, String message) async {
     AndroidNotificationDetails androidNotificationDetails =
     AndroidNotificationDetails(
         'Channel ID', 'Channel title', 'channel body',
@@ -61,7 +65,7 @@ class _LocalNotificationsState extends State<LocalNotifications> {
     NotificationDetails notificationDetails =
     NotificationDetails(androidNotificationDetails, iosNotificationDetails);
     await flutterLocalNotificationsPlugin.show(
-        0, 'Test', 'You have not moved in a while!', notificationDetails);
+        0, header, message, notificationDetails);
   }
 
   onSelectNotification(String payLoad) {
@@ -72,27 +76,18 @@ class _LocalNotificationsState extends State<LocalNotifications> {
 
   @override
   Widget build(BuildContext context) {
-    Position position;
-    Position position2 = Provider.of<Position>(context);
-    const timeout = const Duration(seconds: 4);
-    const ms = const Duration(milliseconds: 1);
+    _currentPosition = Provider.of<Position>(context);
 
-    startTimeout([int milliseconds]) {
-      var duration = milliseconds == null ? timeout : ms * milliseconds;
+    // Calls abnormality service
+    if(_currentPosition != null){
+      _abnormalityService.setCurrentLocation(_currentPosition);
+      if(_abnormalityService.suddenStop()){
+        _showNotifications("Warning", "You stopped very quickly!");
+      }
+      if(_abnormalityService.stoppingTooLong()){
+          _showNotifications("Warning", "You haven't moved in a while!");
+      }
 
-      return new Timer(duration, ()=>{
-        if(isMoving(position, position2)){
-          position = new Position(latitude: position2.latitude, longitude: position2.longitude)}
-        else{
-          _showNotifications()
-        },
-        startTimeout()
-      });
-    }
-
-    if(position == null && position2 != null){
-      position = Position(latitude: position2.latitude, longitude: position2.longitude);
-      startTimeout();
     }
 
     return Container();

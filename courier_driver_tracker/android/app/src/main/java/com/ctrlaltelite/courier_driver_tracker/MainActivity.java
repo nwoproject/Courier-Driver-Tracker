@@ -41,22 +41,6 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
     //new vars
     BackgroundService backgroundService = null;
     boolean bound = false;
-    EventChannel.EventSink eventSink = new EventChannel.EventSink() {
-        @Override
-        public void success(Object event) {
-
-        }
-
-        @Override
-        public void error(String errorCode, String errorMessage, Object errorDetails) {
-
-        }
-
-        @Override
-        public void endOfStream() {
-
-        }
-    };
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -96,33 +80,14 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
 
 
         new MethodChannel(getFlutterView(), "com.ctrlaltelite.messages").setMethodCallHandler(
-        new MethodChannel.MethodCallHandler()
-        {
-            @Override
-            public void onMethodCall(MethodCall methodCall, MethodChannel.Result result){
-                if(methodCall.method.equals("startService")){
-                    //startService();
-                    backgroundService.setEventSink(eventSink);
-                    backgroundService.requestLocationUpdates();
+                (methodCall, result) -> {
+                    if(methodCall.method.equals("startService")){
+                        //startService();
+                        backgroundService.requestLocationUpdates();
+                        result.success("Service started");
+                    }
+                });
 
-                    result.success("Service started");
-                }
-            }
-        });
-
-        new EventChannel(getFlutterView(), "com.ctrlaltelite.locationstream").setStreamHandler(
-            new EventChannel.StreamHandler() {
-                @Override
-                public void onListen(Object arguments, EventChannel.EventSink events) {
-                    backgroundService.setEventSink(events);
-                }
-
-                @Override
-                public void onCancel(Object arguments) {
-                    backgroundService.setEventSink(null);
-                }
-            }
-        );
 
     }
 
@@ -152,7 +117,7 @@ public class MainActivity extends FlutterActivity implements SharedPreferences.O
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         if(s.equals(Common.KEY_REQUESTING_LOCATION_UPDATES)){
             // he set weird button states
-            System.out.println("Mmmmmm, how you turn it off?");
+            System.out.println("Changing states");
         }
     }
 

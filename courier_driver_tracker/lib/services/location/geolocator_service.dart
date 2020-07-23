@@ -69,5 +69,17 @@ class GeolocatorService{
     return _placemarkCoords;
   }
 
+  String convertPositionToString(Position position){
+    String positionString = "";
+    positionString += position.latitude.toString() + ",";
+    positionString += position.longitude.toString() + ",";
+    positionString += position.accuracy.toString() + ",";
+    positionString += position.heading.toString() + ",";
+    positionString += position.speed.toString() + ",";
+    positionString += position.timestamp.toString();
+
+    return positionString;
+  }
+
 
 }

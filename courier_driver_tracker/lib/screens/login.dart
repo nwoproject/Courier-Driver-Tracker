@@ -13,9 +13,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   TextEditingController emailController = new TextEditingController();
   TextEditingController passController = new TextEditingController();
 
-  AnimationController _iconAnimationController;
-  Animation<double>_iconAnimation;
-
   final headingLabelStyle = TextStyle(
     color: Colors.white,
     fontSize: 20,

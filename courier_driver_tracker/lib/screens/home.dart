@@ -1,4 +1,3 @@
-import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,7 +17,6 @@ class _HomePageState extends State<HomePage> {
   final geolocationService = GeolocatorService();
   @override
   Widget build(BuildContext context) {
-
     return StreamProvider<Position>(
       create: (context) => geolocationService.locationStream,
       child: HomePageView(),
@@ -32,15 +30,14 @@ class HomePageView extends StatefulWidget {
 }
 
 class _HomePageViewState extends State<HomePageView> {
-
   @override
-  void initState(){
+  void initState() {
     super.initState();
     startServiceInPlatform();
   }
 
-  void startServiceInPlatform() async{
-    if(Platform.isAndroid){
+  void startServiceInPlatform() async {
+    if (Platform.isAndroid) {
       var methodChannel = MethodChannel("com.ctrlaltelite.messages");
       String data = await methodChannel.invokeMethod("startService");
       print(data);
@@ -55,22 +52,33 @@ class _HomePageViewState extends State<HomePageView> {
           child: new ListView(
             children: <Widget>[
               new UserAccountsDrawerHeader(
-                accountName: new Text("username"),
-                accountEmail: new Text("username@gmail.com"),
-                currentAccountPicture: new CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: new Text("U")
+                decoration: BoxDecoration(
+                  color: Colors.black,
                 ),
+                accountName: new Text("username"),
+                accountEmail: new Text(
+                    "username@gmail.com"), // data should be pulled from database
+                currentAccountPicture: new CircleAvatar(
+                    backgroundColor: Colors.white, child: new Text("U")),
               ),
               new ListTile(
                 title: new Text("Deliveries"),
                 trailing: new Icon(Icons.local_shipping),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed("/delivery");
+                },
               ),
               new ListTile(
                 title: new Text("Settings"),
                 trailing: new Icon(Icons.settings),
               ),
-              new Divider(),
+              new Divider(height: 10.0),
+              new ListTile(
+                title: new Text("Close"),
+                trailing: new Icon(Icons.close),
+                onTap: () => Navigator.of(context).pop(),
+              )
             ],
           ),
         ),
@@ -79,15 +87,13 @@ class _HomePageViewState extends State<HomePageView> {
             AppBar(
               backgroundColor: Colors.black,
               title: Text(
-                  'Route',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
+                'Route',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
               ),
             ),
-            Expanded(
-                child: GMap()
-            ),
+            Expanded(child: GMap()),
           ],
         ),
       ),

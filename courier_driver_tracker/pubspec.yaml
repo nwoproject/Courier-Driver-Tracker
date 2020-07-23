@@ -30,6 +30,7 @@ dependencies:
   geolocator: ^5.3.2+2
   google_maps_flutter: ^0.5.28+1
   flutter_polyline_points: ^0.2.2
+  permission_handler: ^5.0.1+1
 
   # notifications
   flutter_local_notifications: ^1.4.4+1
@@ -46,6 +47,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  json_serializable: ^3.3.0
+  build_runner: ^1.10.0
+  mockito: ^4.1.1
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
