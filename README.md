@@ -2,10 +2,16 @@
 ## Courier Driver Tracker
 ### Project Description
 The system is for tracking a courier fleet. It will monitor them and report suspicious behavior and detect patterns. The System will mainly run from an App, but will also have a website that will be used for reporting purposes. 
+### Demo One
+[Link to Video on Youtube](https://youtu.be/3eAq-aJkn40)
 ### Latest Demo
-[Link to Video on YouTube](https://youtu.be/3eAq-aJkn40)
+[Link to Video on Google Drive](https://drive.google.com/file/d/16d59JDQPIuUwE9LoyA8EPGkKK0BDIXZN/view?usp=sharing)
 ### Functional Requirements Document
 [Viewable Link](https://www.overleaf.com/read/scbvxcvmwpzd)
+### Coding Standards Document
+[Viewable Link](https://www.overleaf.com/read/sxyjnxkhdmvf)
+### User Manual
+[Viewable Link](https://www.overleaf.com/read/sxyjnxkhdmvf)
 ### Project Management Tool
 [Clubhouse](https://app.clubhouse.io/ctraltelite/stories/space/24/everything)
 ### Member Profiles
