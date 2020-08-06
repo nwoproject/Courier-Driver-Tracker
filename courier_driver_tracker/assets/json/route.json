@@ -1,0 +1,205 @@
+{
+  "geocoded_waypoints" : [
+    {
+      "geocoder_status" : "OK",
+      "place_id" : "ChIJaw7QIa9hlR4RvZ3xdWE4ELw",
+      "types" : [ "cafe", "establishment", "food", "point_of_interest", "store" ]
+    },
+    {
+      "geocoder_status" : "OK",
+      "place_id" : "ChIJ21GOtr1hlR4RAS3_-ORB_DE",
+      "types" : [ "premise" ]
+    }
+  ],
+  "routes" : [
+    {
+      "bounds" : {
+        "northeast" : {
+          "lat" : -25.7538884,
+          "lng" : 28.2436209
+        },
+        "southwest" : {
+          "lat" : -25.7596385,
+          "lng" : 28.2319059
+        }
+      },
+      "copyrights" : "Map data ©2020 AfriGIS (Pty) Ltd, Google",
+      "legs" : [
+        {
+          "distance" : {
+            "text" : "1,7 km",
+            "value" : 1670
+          },
+          "duration" : {
+            "text" : "5 mins",
+            "value" : 273
+          },
+          "end_address" : "Student Centre, South St, Hillcrest, Pretoria, 0083, South Africa",
+          "end_location" : {
+            "lat" : -25.7541761,
+            "lng" : 28.23197
+          },
+          "start_address" : "4, Florents Heights 255 Lynnwood Rd &, Pienaar St, Brooklyn, Pretoria, 0011, South Africa",
+          "start_location" : {
+            "lat" : -25.7596385,
+            "lng" : 28.2436209
+          },
+          "steps" : [
+            {
+              "distance" : {
+                "text" : "0,8 km",
+                "value" : 790
+              },
+              "duration" : {
+                "text" : "2 mins",
+                "value" : 91
+              },
+              "end_location" : {
+                "lat" : -25.7577604,
+                "lng" : 28.2360164
+              },
+              "html_instructions" : "Head \u003cb\u003ewest\u003c/b\u003e on \u003cb\u003eLynnwood Rd\u003c/b\u003e/\u003cwbr/\u003e\u003cb\u003eM6\u003c/b\u003e toward \u003cb\u003ePienaar St\u003c/b\u003e",
+              "polyline" : {
+                "points" : "vdf|CsikkDOx@CRq@~Ek@lDCPIb@E^O|@c@|CQfAc@hCERCLUdAa@zBUxAIX_@~CEV"
+              },
+              "start_location" : {
+                "lat" : -25.7596385,
+                "lng" : 28.2436209
+              },
+              "travel_mode" : "DRIVING"
+            },
+            {
+              "distance" : {
+                "text" : "0,2 km",
+                "value" : 152
+              },
+              "duration" : {
+                "text" : "1 min",
+                "value" : 30
+              },
+              "end_location" : {
+                "lat" : -25.7564423,
+                "lng" : 28.236416
+              },
+              "html_instructions" : "Turn \u003cb\u003eright\u003c/b\u003e onto \u003cb\u003eHerold St\u003c/b\u003e",
+              "maneuver" : "turn-right",
+              "polyline" : {
+                "points" : "~xe|CczikDQE[GyEaA"
+              },
+              "start_location" : {
+                "lat" : -25.7577604,
+                "lng" : 28.2360164
+              },
+              "travel_mode" : "DRIVING"
+            },
+            {
+              "distance" : {
+                "text" : "74 m",
+                "value" : 74
+              },
+              "duration" : {
+                "text" : "1 min",
+                "value" : 28
+              },
+              "end_location" : {
+                "lat" : -25.7563254,
+                "lng" : 28.2357358
+              },
+              "html_instructions" : "At the roundabout, take the \u003cb\u003e1st\u003c/b\u003e exit onto \u003cb\u003eRing Rd\u003c/b\u003e",
+              "maneuver" : "roundabout-left",
+              "polyline" : {
+                "points" : "vpe|Cs|ikD?@?@A??@A@A@A??@EVA@@L?B?DAD?DABABADEDAD?D?D?BFR"
+              },
+              "start_location" : {
+                "lat" : -25.7564423,
+                "lng" : 28.236416
+              },
+              "travel_mode" : "DRIVING"
+            },
+            {
+              "distance" : {
+                "text" : "0,3 km",
+                "value" : 295
+              },
+              "duration" : {
+                "text" : "1 min",
+                "value" : 54
+              },
+              "end_location" : {
+                "lat" : -25.7546499,
+                "lng" : 28.2350375
+              },
+              "html_instructions" : "At the roundabout, take the \u003cb\u003e2nd\u003c/b\u003e exit and stay on \u003cb\u003eRing Rd\u003c/b\u003e",
+              "maneuver" : "roundabout-left",
+              "polyline" : {
+                "points" : "`pe|CkxikD?@@??@@@@@?@@@?@?@?@?@?@?@?@?@?@A@?@A@A@?@A?A@A@A?A?A@A?A?A?AAA?A?AAA?AA?AA??AAA?AAA?A?A?A?A?A?A?A?AQKyDw@GAE?C?A@CBA@ABADAHOhAGb@AFELCDGHEFOJ"
+              },
+              "start_location" : {
+                "lat" : -25.7563254,
+                "lng" : 28.2357358
+              },
+              "travel_mode" : "DRIVING"
+            },
+            {
+              "distance" : {
+                "text" : "0,3 km",
+                "value" : 325
+              },
+              "duration" : {
+                "text" : "1 min",
+                "value" : 62
+              },
+              "end_location" : {
+                "lat" : -25.7538884,
+                "lng" : 28.231908
+              },
+              "html_instructions" : "Turn \u003cb\u003eleft\u003c/b\u003e to stay on \u003cb\u003eRing Rd\u003c/b\u003e",
+              "maneuver" : "turn-left",
+              "polyline" : {
+                "points" : "pee|C_tikDEVEXUpBi@vC?NQbAY`BEXYdB"
+              },
+              "start_location" : {
+                "lat" : -25.7546499,
+                "lng" : 28.2350375
+              },
+              "travel_mode" : "DRIVING"
+            },
+            {
+              "distance" : {
+                "text" : "34 m",
+                "value" : 34
+              },
+              "duration" : {
+                "text" : "1 min",
+                "value" : 8
+              },
+              "end_location" : {
+                "lat" : -25.7541761,
+                "lng" : 28.23197
+              },
+              "html_instructions" : "Turn \u003cb\u003eleft\u003c/b\u003e\u003cdiv style=\"font-size:0.9em\"\u003eDestination will be on the right\u003c/div\u003e",
+              "maneuver" : "turn-left",
+              "polyline" : {
+                "points" : "x`e|Cm`ikDZ?D?B?DCLG"
+              },
+              "start_location" : {
+                "lat" : -25.7538884,
+                "lng" : 28.231908
+              },
+              "travel_mode" : "DRIVING"
+            }
+          ],
+          "traffic_speed_entry" : [],
+          "via_waypoint" : []
+        }
+      ],
+      "overview_polyline" : {
+        "points" : "vdf|CsikkDSlA}AlKc@rCu@dFi@|CYrAw@tEi@xDEVQEuFiA?@?@A@CBGX?XERIP?JFV@BBD@HAJEFMDMGEM?GQMaEy@ODEJ[~BIRMPOJEV[jCuAlI_@~B`@?VK"
+      },
+      "summary" : "Lynnwood Rd/M6 and Ring Rd",
+      "warnings" : [],
+      "waypoint_order" : []
+    }
+  ],
+  "status" : "OK"
+}
