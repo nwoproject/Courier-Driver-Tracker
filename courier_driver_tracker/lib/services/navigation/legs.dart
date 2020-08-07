@@ -19,4 +19,19 @@ class Legs{
   Legs({this.distance,this.steps, this.duration, this.endAddress, this.endLocation, this.startAddress, this.startLocation});
   factory Legs.fromJson(Map<String, dynamic> data) => _$LegsFromJson(data);
   Map<String, dynamic> toJson() => _$LegsToJson(this);
+  String getHTMLInstruction(int step){
+    return steps[step].getHTMLInstruction();
+  }
+
+  String getManeuver(int step){
+    return steps[step].getManeuver();
+  }
+
+  int getDuration(int step){
+    return steps[step].getDuration();
+  }
+
+  int getDistance(int step){
+    return steps[step].getDistance();
+  }
 }

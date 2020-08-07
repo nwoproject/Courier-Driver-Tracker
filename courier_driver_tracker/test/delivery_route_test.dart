@@ -10,7 +10,8 @@ Future<void> main() async {
 
     String filename = "route.json";
     Map<String, dynamic> json = await JsonHandler().parseJson(filename);
-    print(json);
+    //print(json);
+    print("\u003c");
     DeliveryRoute deliveryRoute = DeliveryRoute.fromJson(json);
 
     if(deliveryRoute is DeliveryRoute){

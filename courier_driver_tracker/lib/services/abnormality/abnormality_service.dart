@@ -5,12 +5,13 @@ class AbnormalityService{
   /*
    * Author: Gian Geyser
    * Description: Service that detects and notifies any abnormalities during deliveries.
+   * Gets called inside notification Service
    */
 
   Position _currentPosition;      // Current position of the Device
   Position _lastPosition;         // Last position of significant movement
   int _minMovingDistance = 20;    // Distance considered to be significant movement
-  int _maxStopCount = 10;         // Amount of cycles the driver may stop
+  int _maxStopCount = 100;         // Amount of cycles the driver may stop
   int _stopCount = 0;             // Amount of cycles the driver have stopped
   int _maxSpeedDifference = 40;    // Speed difference between cycles considered to be dangerous
   bool stopped = false;
@@ -55,13 +56,15 @@ class AbnormalityService{
       double distance = 12742 * asin(sqrt(a)) * 1000;
       if(_stopCount >= _maxStopCount && distance < _minMovingDistance) {
         _stopCount = 0;
+        stopped = true;
         return true;
       }
-      else if(distance < 10){
+      else if(distance < _minMovingDistance){
         _stopCount += 1;
       }
       else{
         _lastPosition = _currentPosition;
+        _stopCount = 0;
         stopped = false;
       }
       return false;

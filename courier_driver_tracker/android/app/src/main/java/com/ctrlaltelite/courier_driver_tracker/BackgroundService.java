@@ -262,6 +262,8 @@ public class BackgroundService extends Service {
         String title = "Courier Tracker";
         String message = "Application is running in the background.";
 
+
+
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
         PendingIntent servicePendingIntent = PendingIntent.getService(this, 0,intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
