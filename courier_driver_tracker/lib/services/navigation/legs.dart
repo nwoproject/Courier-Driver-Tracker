@@ -20,6 +20,9 @@ class Legs{
   factory Legs.fromJson(Map<String, dynamic> data) => _$LegsFromJson(data);
   Map<String, dynamic> toJson() => _$LegsToJson(this);
   String getHTMLInstruction(int step){
+    if(step >= steps.length){
+      return "Delivery";
+    }
     return steps[step].getHTMLInstruction();
   }
 
@@ -33,5 +36,13 @@ class Legs{
 
   int getDistance(int step){
     return steps[step].getDistance();
+  }
+
+  int getDeliveryDuration(){
+    return duration.value;
+  }
+
+  int getDeliveryDistance(){
+    return distance.value;
   }
 }

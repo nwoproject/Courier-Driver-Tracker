@@ -33,4 +33,12 @@ class Routes{
   int getDistance(int leg, int step){
     return legs[leg].getDistance(step);
   }
+
+  int getDeliveryDuration(int leg){
+    return legs[leg].getDeliveryDuration();
+  }
+
+  int getDeliveryDistance(int leg){
+    return legs[leg].getDeliveryDistance();
+  }
 }

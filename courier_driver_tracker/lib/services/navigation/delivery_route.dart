@@ -20,7 +20,7 @@ class DeliveryRoute{
     return routes.length;
   }
 
-  String getHTMLInstructions(int delivery, int leg, int step){
+  String getHTMLInstruction(int delivery, int leg, int step){
     return routes[delivery].getHTMLInstruction(leg, step);
   }
 
@@ -34,5 +34,13 @@ class DeliveryRoute{
 
   int getDistance(int delivery, int leg, int step){
     return routes[delivery].getDistance(leg, step);
+  }
+
+  int getDeliveryDuration(int delivery, int leg){
+    return routes[delivery].getDeliveryDuration(leg);
+  }
+
+  int getDeliveryDistance(int delivery, int leg){
+    return routes[delivery].getDeliveryDistance(leg);
   }
 }

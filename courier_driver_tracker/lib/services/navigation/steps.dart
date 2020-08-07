@@ -21,6 +21,9 @@ class Steps{
   Map<String, dynamic> toJson() => _$StepsToJson(this);
 
   String getHTMLInstruction(){
+    if(htmlInstructions == null){
+      return "Straight";
+    }
     return htmlInstructions;
   }
 

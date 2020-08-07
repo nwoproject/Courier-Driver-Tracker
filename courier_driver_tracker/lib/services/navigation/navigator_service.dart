@@ -14,10 +14,26 @@ class NavigatorService{
 
 
   NavigatorService({this.jsonFile}){
+    getRoutes();
     _currentDelivery = 0;
     _currentStep = 0;
     _currentLeg = 0;
-    getRoutes();
+  }
+
+  DeliveryRoute getDeliveryRoute(){
+    return _deliveryRoutes;
+  }
+
+  int getStep(){
+    return _currentStep;
+  }
+
+  int getLeg(){
+    return _currentLeg;
+  }
+
+  int getDelivery(){
+    return _currentDelivery;
   }
 
   /*
@@ -48,9 +64,12 @@ class NavigatorService{
     return 12742 * asin(sqrt(a)) * 1000 as int;
   }
 
-  updateCurrentPolyline(){} // create new polylines for map to show the route already travveled
-  updateDeliveryPolyline(){} // change the previous delivery route polyline colour to show the delivery has been comleted
-  getNextDirection(){} // gets the next directions
+  updateCurrentPolyline(Position currentPosition){} // create new polylines for map to show the route already travveled
+  updateDeliveryPolyline(Position currentPosition){} // change the previous delivery route polyline colour to show the delivery has been comleted
+
+  String getNextDirection(){
+    return _deliveryRoutes.getHTMLInstruction(_currentDelivery, _currentLeg, _currentStep + 1);
+  } // gets the next directions
 
   /*
    * Author: Gian Geyser
@@ -59,8 +78,8 @@ class NavigatorService{
    * Description: Gets street names for directions.
    *              \u003c = opening tag and \u003e = closing tags
    */
-  String getStreetNames(){
-    return _deliveryRoutes.getHTMLInstructions(_currentDelivery, _currentLeg, _currentStep);
+  String getDirection(){
+    return _deliveryRoutes.getHTMLInstruction(_currentDelivery, _currentLeg, _currentStep);
   }
 
   getDirectionIcon(){
@@ -75,15 +94,24 @@ class NavigatorService{
       case "roundabout-left":
         break;
       default:
-        
+
     }
 
   } // gets icon to display directions such as right arrow for turn right
-  getArrivalTime(){
 
+  int getArrivalTime(){
+    return _deliveryRoutes.getDuration(_currentDelivery, _currentLeg, _currentStep);
   } // gets arrival time
-  getTotalDistance(){
 
+  int getDistance(){
+    return _deliveryRoutes.getDistance(_currentDelivery, _currentLeg, _currentStep);
+  }
+
+  getDeliveryArrivalTime(){
+    return _deliveryRoutes.getDeliveryDuration(_currentDelivery, _currentLeg);
+  } // gets arrival time
+  getDeliveryDistance(){
+    return _deliveryRoutes.getDeliveryDistance(_currentDelivery, _currentLeg);
   }
 
   int getRemainingDeliveries(){
