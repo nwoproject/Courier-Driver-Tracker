@@ -15,8 +15,12 @@ function CreateManager(){
     const [password2, setPass2] = useState("");
     const [requestSent, setRequest] = useState(false);
     const [PassSame, testPass] = useState(true);
+    const [PassValid, TestValidPass] = useState(true);
     
     function handleChange(event){
+        testPass(true);
+        TestValidPass(true);
+        setRequest(false);
         if(event.target.name==="email"){
             setMail(event.target.value);
         }
@@ -36,25 +40,30 @@ function CreateManager(){
 
     function handleSubmit(event){
         event.preventDefault();
+        var ValidPassRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
         if(password1===password2){
             testPass(true);
-            fetch("https://drivertracker-api.herokuapp.com/api/managers",{
-                method : "POST",
-                headers:{
-                    'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
-                    'Content-Type' : 'application/json' 
-                },
-                body : JSON.stringify({
-                    email : email,
-                    password: password1,
-                    name : name,
-                    surname: surname
+            if(ValidPassRegex.test(password1)){
+                fetch("https://drivertracker-api.herokuapp.com/api/managers",{
+                    method : "POST",
+                    headers:{
+                        'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                        'Content-Type' : 'application/json' 
+                    },
+                    body : JSON.stringify({
+                        email : email,
+                        password: password1,
+                        name : name,
+                        surname: surname
+                    })
                 })
-            })
-            .then(response=>{
-                console.log(response);
-                setRequest(true);
-            })
+                .then(response=>{
+                    setRequest(true);
+                })
+            }
+            else{
+                TestValidPass(false);    
+            }
         }
         else{
             testPass(false);
@@ -78,7 +87,8 @@ function CreateManager(){
                                         required={true}
                                         onChange={handleChange} />
                                 </Col>
-                            </Row> <br />
+                            </Row>
+                            <Row><p>Passwords must contain :<br />At least one Uppercase Letter, <br />At least one Lowercase Letter, <br />At least one Number,<br /> Must at least be eight characters long.</p></Row>
                             <Row>
                                 <Col xs={6}>
                                     <Form.Control 
@@ -121,8 +131,9 @@ function CreateManager(){
                         </Form.Group>
                     </Form>
                 </Container>
-                {PassSame ? "" : <Alert variant="warning">Passwords do not match!</Alert>}
-                {requestSent ? <Alert variant="primary">Account Made</Alert> : ""}
+                {PassSame ? null : <Alert variant="warning">Passwords do not match!</Alert>}
+                {requestSent ? <Alert variant="primary">Account Made</Alert> : null}
+                {PassValid ? null : <Alert variant="warning">Passwords is not Valid, see instructions above Password field.</Alert>}
             </Card.Body>
         </Card>
     );

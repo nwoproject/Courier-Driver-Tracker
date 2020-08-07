@@ -21,13 +21,13 @@ function ManagerAcc(){
         <Card className="LoginCard">
             <Card.Header>You are logged in, Welcome</Card.Header> 
             <Card.Body>
-            <Form onSubmit={Logout}>
+                <CreateDriver /> <br />
+                <CreateManager /> <br />
+                <Form onSubmit={Logout}>
                 <Button variant="primary" type="submit">
                     Logout
                 </Button>
-            </Form><br />
-            <CreateDriver /> <br />
-            <CreateManager />
+            </Form>
             </Card.Body>
         </Card>
     )

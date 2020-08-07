@@ -12,8 +12,11 @@ function CreateDriver(){
     const [name, setName] = useState("");
     const [surname, setSurname] = useState("");
     const [requestSent, setRequest] = useState(false);
+    const [validEmail, setValid] = useState(true);
     
     function handleChange(event){
+        setRequest(false);
+        setValid(true);
         if(event.target.name==="email"){
             setMail(event.target.value);
         }
@@ -27,7 +30,9 @@ function CreateDriver(){
 
     function handleSubmit(event){
         event.preventDefault();
-        fetch("https://drivertracker-api.herokuapp.com/api/drivers",{
+        var EmailRegex = /\S+@\S+\.\S+/;
+        if(EmailRegex.test(email)){
+            fetch("https://drivertracker-api.herokuapp.com/api/drivers",{
             method : "POST",
             headers:{
                 'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
@@ -39,11 +44,16 @@ function CreateDriver(){
                 surname: surname
             })
             
-        })
-        .then(response=>{
-            console.log(response);
-            setRequest(true);
-        })
+            })
+            .then(response=>{
+                console.log(response);
+                setRequest(true);
+            })
+        }
+        else{
+            setValid(false);
+        }
+        
     }
 
     return(
@@ -88,6 +98,7 @@ function CreateDriver(){
                     </Form>
                 </Container>
                 {requestSent ? <Alert variant="primary">Account Made</Alert> : null}
+                {validEmail ? null:<Alert variant="warning">The Email Entered is not Valid</Alert>}
             </Card.Body>
         </Card>
     );
