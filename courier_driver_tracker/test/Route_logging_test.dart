@@ -1,5 +1,6 @@
 import 'package:courier_driver_tracker/services/location/RouteLogging.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 void main() {
   group('PathProvider', () {
     TestWidgetsFlutterBinding.ensureInitialized();
