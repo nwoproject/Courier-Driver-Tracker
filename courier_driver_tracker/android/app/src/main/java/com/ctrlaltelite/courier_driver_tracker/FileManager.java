@@ -32,5 +32,30 @@ public class FileManager {
             return false;
         }
     }
+
+    public String read(String fileName){
+
+        BufferedReader br = null;
+        String response = null;
+
+        try {
+
+            StringBuffer output = new StringBuffer();
+            String fpath = "/sdcard/"+fileName+".txt";
+
+            br = new BufferedReader(new FileReader(fpath));
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                output.append(line +"n");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+
+        }
+        return response;
+
+    }
 }
 
