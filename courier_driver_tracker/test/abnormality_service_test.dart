@@ -1,4 +1,5 @@
 import 'package:courier_driver_tracker/services/abnormality/abnormality_service.dart';
+import 'package:courier_driver_tracker/services/navigation/location.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -66,6 +67,29 @@ void main(){
 
     bool stopped = abnormalityService.suddenStop();
     expect(stopped, false);
+  });
+
+  test("Test off route should return false",(){
+    Position current = Position(latitude: 7.0, longitude: 7.0, accuracy: 5.0);
+    Location start = Location(lat: 0.0, lng: 0.0);
+    Location end = Location(lat: 15.0, lng: 15.0);
+
+    abnormalityService.setCurrentLocation(current);
+    bool offRoute = abnormalityService.offRoute(start, end);
+
+    expect(offRoute, false);
+
+  });
+
+  test("Test off route should return true",(){
+    Position current = Position(latitude: 7.0005, longitude: 7.0, accuracy: 5.0);
+    Location start = Location(lat: 0.0, lng: 0.0);
+    Location end = Location(lat: 15.0, lng: 15.0);
+
+    abnormalityService.setCurrentLocation(current);
+    bool offRoute = abnormalityService.offRoute(start, end);
+
+    expect(offRoute, true);
   });
 
 }

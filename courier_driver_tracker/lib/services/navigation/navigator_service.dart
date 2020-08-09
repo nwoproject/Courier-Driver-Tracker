@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:courier_driver_tracker/services/abnormality/abnormality_service.dart';
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
 import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
+import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 
 class NavigatorService{
@@ -11,7 +13,9 @@ class NavigatorService{
   int _currentLeg;
   int _currentStep;
   String jsonFile;
-
+  LocalNotifications _notificationManager = LocalNotifications();
+  AbnormalityService _abnormalityService = AbnormalityService();
+  Position _position;
 
   NavigatorService({this.jsonFile}){
     getRoutes();
@@ -20,6 +24,28 @@ class NavigatorService{
     _currentLeg = 0;
   }
 
+  /*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: none
+   * Description: Uses a current position to determine distance away from next point.
+   *
+   */
+  int calculateDistanceBetween(Position currentPosition, Position lastPosition){
+    double p = 0.017453292519943295;
+    double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
+        cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
+            (1 - cos((currentPosition.longitude - lastPosition.longitude) * p))/2;
+    return 12742 * asin(sqrt(a)) * 1000 as int;
+  }
+
+  updateCurrentPolyline(Position currentPosition){} // create new polylines for map to show the route already travveled
+  updateDeliveryPolyline(Position currentPosition){} // change the previous delivery route polyline colour to show the delivery has been comleted
+
+
+  /*
+  * -- Getters --
+  */
   DeliveryRoute getDeliveryRoute(){
     return _deliveryRoutes;
   }
@@ -48,24 +74,6 @@ class NavigatorService{
     Map<String, dynamic> json = await handler.parseJson(jsonFile);
     _deliveryRoutes = DeliveryRoute.fromJson(json);
   }
-
-  /*
-   * Author: Jordan Nijs
-   * Parameters: none
-   * Returns: none
-   * Description: Uses a current position to determine distance away from next point.
-   *
-   */
-  int calculateDistanceBetween(Position currentPosition, Position lastPosition){
-    double p = 0.017453292519943295;
-    double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
-        cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
-            (1 - cos((currentPosition.longitude - lastPosition.longitude) * p))/2;
-    return 12742 * asin(sqrt(a)) * 1000 as int;
-  }
-
-  updateCurrentPolyline(Position currentPosition){} // create new polylines for map to show the route already travveled
-  updateDeliveryPolyline(Position currentPosition){} // change the previous delivery route polyline colour to show the delivery has been comleted
 
   String getNextDirection(){
     return _deliveryRoutes.getHTMLInstruction(_currentDelivery, _currentLeg, _currentStep + 1);
@@ -122,8 +130,16 @@ class NavigatorService{
     return _deliveryRoutes.getTotalDeliveries();
   }
 
+
+  /*
+  * -- Setters --
+  */
   setRouteFilename(String filename){
     jsonFile = filename;
+  }
+
+  setCurrentPosition(Position position){
+    _position = position;
   }
 
 }
