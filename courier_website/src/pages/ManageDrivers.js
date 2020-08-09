@@ -1,9 +1,10 @@
 import React from 'react';
+import DriverList from "../components/DriverList";
 
 function ManageDrivers(){
     return(
         <div>
-            <p>We are getting there. Trust me</p>
+            <DriverList />
         </div>
     );
 }
