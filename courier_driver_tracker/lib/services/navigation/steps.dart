@@ -1,5 +1,3 @@
-import 'package:courier_driver_tracker/services/navigation/distance.dart';
-import 'package:courier_driver_tracker/services/navigation/drive_duration.dart';
 import 'package:courier_driver_tracker/services/navigation/location.dart';
 import 'package:courier_driver_tracker/services/navigation/overview_polyline.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -8,8 +6,8 @@ part 'steps.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Steps{
-  Distance distance;
-  DriveDuration duration;
+  int distance;
+  int duration;
   Location endLocation;
   String htmlInstructions;
   String maneuver;
@@ -32,10 +30,10 @@ class Steps{
   }
 
   int getDuration(){
-    return duration.value;
+    return duration;
   }
 
   int getDistance(){
-    return distance.value;
+    return distance;
   }
 }

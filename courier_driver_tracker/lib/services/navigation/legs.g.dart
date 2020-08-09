@@ -10,14 +10,14 @@ Legs _$LegsFromJson(Map<String, dynamic> json) {
   return Legs(
     distance: json['distance'] == null
         ? null
-        : Distance.fromJson(json['distance'] as Map<String, dynamic>),
+        : json['distance'],
     steps: (json['steps'] as List)
         ?.map(
             (e) => e == null ? null : Steps.fromJson(e as Map<String, dynamic>))
         ?.toList(),
     duration: json['duration'] == null
         ? null
-        : DriveDuration.fromJson(json['duration'] as Map<String, dynamic>),
+        : json['duration'],
     endAddress: json['end_address'] as String,
     endLocation: json['end_location'] == null
         ? null
@@ -30,8 +30,8 @@ Legs _$LegsFromJson(Map<String, dynamic> json) {
 }
 
 Map<String, dynamic> _$LegsToJson(Legs instance) => <String, dynamic>{
-      'distance': instance.distance?.toJson(),
-      'duration': instance.duration?.toJson(),
+      'distance': instance.distance,
+      'duration': instance.duration,
       'end_address': instance.endAddress,
       'end_location': instance.endLocation?.toJson(),
       'start_address': instance.startAddress,

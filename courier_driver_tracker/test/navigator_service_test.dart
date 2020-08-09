@@ -62,7 +62,7 @@ Future<void> main() async {
       await navigatorService.getRoutes();
     }
     int direction = navigatorService.getArrivalTime();
-    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["steps"][navigatorService.getStep()]["duration"]["value"]);
+    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["steps"][navigatorService.getStep()]["duration"]);
   });
 
   test("getDistance Test",() async {
@@ -71,7 +71,7 @@ Future<void> main() async {
       await navigatorService.getRoutes();
     }
     int direction = navigatorService.getDistance();
-    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["steps"][navigatorService.getStep()]["distance"]["value"]);
+    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["steps"][navigatorService.getStep()]["distance"]);
   });
 
   test("getDeliveryArrivalTime Test",() async {
@@ -80,7 +80,7 @@ Future<void> main() async {
       await navigatorService.getRoutes();
     }
     int direction = navigatorService.getDeliveryArrivalTime();
-    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["duration"]["value"]);
+    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["duration"]);
   });
 
   test("getDeliveryDistance Test",() async {
@@ -89,7 +89,7 @@ Future<void> main() async {
       await navigatorService.getRoutes();
     }
     int direction = navigatorService.getDeliveryDistance();
-    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["distance"]["value"]);
+    expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["distance"]);
   });
 
 

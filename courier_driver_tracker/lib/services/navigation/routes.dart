@@ -8,14 +8,10 @@ part 'routes.g.dart';
 @JsonSerializable(explicitToJson: true)
 class Routes{
   Bounds bounds;
-  String copyrights;
   List<Legs> legs;
   OverviewPolyline overviewPolyline;
-  String summary;
-  List<String> warnings;
-  List<String> waypointOrder;
 
-  Routes({this.overviewPolyline, this.bounds, this.copyrights, this.legs, this.summary, this.warnings, this.waypointOrder});
+  Routes({this.overviewPolyline, this.bounds, this.legs});
   factory Routes.fromJson(Map<String, dynamic> data) => _$RoutesFromJson(data);
   Map<String, dynamic> toJson() => _$RoutesToJson(this);
   String getHTMLInstruction(int leg, int step){

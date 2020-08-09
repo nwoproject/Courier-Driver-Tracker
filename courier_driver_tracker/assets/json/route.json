@@ -1,16 +1,4 @@
 {
-  "geocoded_waypoints" : [
-    {
-      "geocoder_status" : "OK",
-      "place_id" : "ChIJaw7QIa9hlR4RvZ3xdWE4ELw",
-      "types" : [ "cafe", "establishment", "food", "point_of_interest", "store" ]
-    },
-    {
-      "geocoder_status" : "OK",
-      "place_id" : "ChIJ21GOtr1hlR4RAS3_-ORB_DE",
-      "types" : [ "premise" ]
-    }
-  ],
   "routes" : [
     {
       "bounds" : {
@@ -23,17 +11,10 @@
           "lng" : 28.2319059
         }
       },
-      "copyrights" : "Map data ©2020 AfriGIS (Pty) Ltd, Google",
       "legs" : [
         {
-          "distance" : {
-            "text" : "1,7 km",
-            "value" : 1670
-          },
-          "duration" : {
-            "text" : "5 mins",
-            "value" : 273
-          },
+          "distance" : 1670,
+          "duration" : 273,
           "end_address" : "Student Centre, South St, Hillcrest, Pretoria, 0083, South Africa",
           "end_location" : {
             "lat" : -25.7541761,
@@ -46,14 +27,8 @@
           },
           "steps" : [
             {
-              "distance" : {
-                "text" : "0,8 km",
-                "value" : 790
-              },
-              "duration" : {
-                "text" : "2 mins",
-                "value" : 91
-              },
+              "distance" : 790,
+              "duration" : 91,
               "end_location" : {
                 "lat" : -25.7577604,
                 "lng" : 28.2360164
@@ -65,18 +40,11 @@
               "start_location" : {
                 "lat" : -25.7596385,
                 "lng" : 28.2436209
-              },
-              "travel_mode" : "DRIVING"
+              }
             },
             {
-              "distance" : {
-                "text" : "0,2 km",
-                "value" : 152
-              },
-              "duration" : {
-                "text" : "1 min",
-                "value" : 30
-              },
+              "distance" : 152,
+              "duration" : 30,
               "end_location" : {
                 "lat" : -25.7564423,
                 "lng" : 28.236416
@@ -89,18 +57,11 @@
               "start_location" : {
                 "lat" : -25.7577604,
                 "lng" : 28.2360164
-              },
-              "travel_mode" : "DRIVING"
+              }
             },
             {
-              "distance" : {
-                "text" : "74 m",
-                "value" : 74
-              },
-              "duration" : {
-                "text" : "1 min",
-                "value" : 28
-              },
+              "distance" : 74,
+              "duration" : 28,
               "end_location" : {
                 "lat" : -25.7563254,
                 "lng" : 28.2357358
@@ -113,18 +74,11 @@
               "start_location" : {
                 "lat" : -25.7564423,
                 "lng" : 28.236416
-              },
-              "travel_mode" : "DRIVING"
+              }
             },
             {
-              "distance" : {
-                "text" : "0,3 km",
-                "value" : 295
-              },
-              "duration" : {
-                "text" : "1 min",
-                "value" : 54
-              },
+              "distance" : 295,
+              "duration" : 54,
               "end_location" : {
                 "lat" : -25.7546499,
                 "lng" : 28.2350375
@@ -137,18 +91,11 @@
               "start_location" : {
                 "lat" : -25.7563254,
                 "lng" : 28.2357358
-              },
-              "travel_mode" : "DRIVING"
+              }
             },
             {
-              "distance" : {
-                "text" : "0,3 km",
-                "value" : 325
-              },
-              "duration" : {
-                "text" : "1 min",
-                "value" : 62
-              },
+              "distance" : 325,
+              "duration" : 62,
               "end_location" : {
                 "lat" : -25.7538884,
                 "lng" : 28.231908
@@ -161,18 +108,11 @@
               "start_location" : {
                 "lat" : -25.7546499,
                 "lng" : 28.2350375
-              },
-              "travel_mode" : "DRIVING"
+              }
             },
             {
-              "distance" : {
-                "text" : "34 m",
-                "value" : 34
-              },
-              "duration" : {
-                "text" : "1 min",
-                "value" : 8
-              },
+              "distance" : 34,
+              "duration" : 8,
               "end_location" : {
                 "lat" : -25.7541761,
                 "lng" : 28.23197
@@ -185,21 +125,14 @@
               "start_location" : {
                 "lat" : -25.7538884,
                 "lng" : 28.231908
-              },
-              "travel_mode" : "DRIVING"
+              }
             }
-          ],
-          "traffic_speed_entry" : [],
-          "via_waypoint" : []
+          ]
         }
       ],
       "overview_polyline" : {
         "points" : "vdf|CsikkDSlA}AlKc@rCu@dFi@|CYrAw@tEi@xDEVQEuFiA?@?@A@CBGX?XERIP?JFV@BBD@HAJEFMDMGEM?GQMaEy@ODEJ[~BIRMPOJEV[jCuAlI_@~B`@?VK"
-      },
-      "summary" : "Lynnwood Rd/M6 and Ring Rd",
-      "warnings" : [],
-      "waypoint_order" : []
+      }
     }
-  ],
-  "status" : "OK"
+  ]
 }

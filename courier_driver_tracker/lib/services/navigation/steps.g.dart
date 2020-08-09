@@ -16,10 +16,10 @@ Steps _$StepsFromJson(Map<String, dynamic> json) {
         : Location.fromJson(json['end_location'] as Map<String, dynamic>),
     duration: json['duration'] == null
         ? null
-        : DriveDuration.fromJson(json['duration'] as Map<String, dynamic>),
+        : json['duration'],
     distance: json['distance'] == null
         ? null
-        : Distance.fromJson(json['distance'] as Map<String, dynamic>),
+        : json['distance'],
     polyline: json['polyline'] == null
         ? null
         : OverviewPolyline.fromJson(json['polyline'] as Map<String, dynamic>),
@@ -29,8 +29,8 @@ Steps _$StepsFromJson(Map<String, dynamic> json) {
 }
 
 Map<String, dynamic> _$StepsToJson(Steps instance) => <String, dynamic>{
-      'distance': instance.distance?.toJson(),
-      'duration': instance.duration?.toJson(),
+      'distance': instance.distance,
+      'duration': instance.duration,
       'end_location': instance.endLocation?.toJson(),
       'htmlIntructions': instance.htmlInstructions,
       'maneuver': instance.maneuver,
