@@ -13,6 +13,11 @@ function CreateDriver(){
     const [surname, setSurname] = useState("");
     const [requestSent, setRequest] = useState(false);
     const [validEmail, setValid] = useState(true);
+    const [CenterPoint, setCenter] = useState({Lat:"", Lng:""});
+    const [useCenter, toggleCenter] = useState(false);
+    const [SearchQuery, setQuery] = useState("");
+    const [Searched, setSearched] = useState(false);
+    const [Location, setLocation] = useState({Geo:"", AddName:"",ImgSrc:""});
     
     function handleChange(event){
         setRequest(false);
@@ -23,9 +28,68 @@ function CreateDriver(){
         else if(event.target.name==="name"){
             setName(event.target.value);
         }
-        else{
+        else if(event.target.name==="surname"){
             setSurname(event.target.value);
         }
+        else if(event.target.name==="LocSearch"){
+            setQuery(event.target.value);
+        }
+        else{
+            if(event.target.name==="LatCo"){
+                setCenter(this.Lat = event.target.value);
+            }
+            else{
+                setCenter(this.Lng = event.target.value);
+            }
+        }
+    }
+
+    function changeCenter(){
+        if(useCenter){
+            toggleCenter(false);
+        }
+        else{
+            toggleCenter(true);
+        }
+    }
+
+    function Search(){
+        setSearched(false);
+        if(SearchQuery===""){
+            window.alert("No Search Query Entered");
+        }
+        else{
+            var URL = "https://drivertracker-api.herokuapp.com/api/google-maps/web?searchQeury="+SearchQuery;
+            fetch(encodeURI(URL),{
+                method: 'GET',
+                headers:{
+                    'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                    'Content-Type' : 'application/json'    
+                }
+            })
+            .then(response=>response.json())
+            .then(result=>{
+                console.log(result);
+                let TempLoc = {Geo:"", AddName:"",ImgSrc:""};
+                TempLoc.AddName = result.candidates[0].name;
+                TempLoc.Geo = result.candidates[0].geometry.location;
+                TempLoc.ImgSrc = result.candidates[0].photos[0].photo_reference;
+                setLocation(TempLoc);
+                setSearched(true); 
+                console.log(TempLoc);
+                console.log(Location);
+            });
+        }
+    }
+
+    function AddLocationAsCenter(){
+        let tempGeo = {Lat:"", Lng:""};
+        tempGeo.Lat = Location.Geo.lat;
+        tempGeo.Lng = Location.Geo.lng;
+        setCenter(tempGeo);
+        document.getElementsByName("LatCo").value = tempGeo.Lat;
+        document.getElementsByName("LonCo").value = tempGeo.Lng;
+        console.log(CenterPoint);
     }
 
     function handleSubmit(event){
@@ -90,6 +154,64 @@ function CreateDriver(){
                                     required={true}
                                     onChange={handleChange}/>
                                 </Col>
+                                <Col xs={4}>
+                                    <Button variant="secondary" onClick={changeCenter}>Add Center Point</Button>
+                                </Col>
+                            </Row>
+                            {useCenter ? 
+                                <div><br />
+                                    <Row>
+                                        <Col xs={2}>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="Latitude"
+                                                name="LatCo"
+                                                required={false}
+                                                value={CenterPoint.Lat}
+                                                onChange={handleChange}/>
+                                        </Col>
+                                        <Col xs={2}>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="Longitude"
+                                                name="LonCo"
+                                                required={false}
+                                                value={CenterPoint.Lng}
+                                                onChange={handleChange}/>
+                                        </Col>
+                                        <Col xs={4}>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="Search for Location"
+                                                name="LocSearch"
+                                                required={false}
+                                                onChange={handleChange}/>
+                                        </Col>
+                                        <Col xs={4}>
+                                            <Button variant="secondary" onClick={Search}>Search Location</Button>
+                                        </Col>
+                                    </Row>
+                                    {Searched ? 
+                                        <Row>
+                                            <Col xs={4}>
+                                                <br/>
+                                                <Card>
+                                                    <Card.Header>{Location.AddName}</Card.Header>
+                                                    <Card.Body>
+                                                        <Card.Img variant="top" src={Location.ImgSrc}/><br/>
+                                                        <Button variant="secondary" onClick={AddLocationAsCenter}>Add As Center Point</Button>
+                                                    </Card.Body> 
+                                                </Card>
+                                            </Col>
+                                        </Row>
+                                        : 
+                                        null}
+                                </div>
+                                : 
+                                null
+                            }
+                            <br />
+                            <Row>
                                 <Col xs={4}>
                                     <Button variant="primary" type="submit">Create Driver</Button>
                                 </Col>

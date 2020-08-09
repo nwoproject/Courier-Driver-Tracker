@@ -91,15 +91,17 @@ function CreateManager(){
                                 </Col>
                             </Row>
                             <Row>
-                            <p className="PasswordInstructions">
-                                Passwords must contain :<br />
-                                <div className="PasswordInstructions">
-                                    At least one Uppercase Letter, <br />
-                                    At least one Lowercase Letter, <br />
-                                    At least one Number,<br /> 
-                                    Must at least be eight characters long.
+                                <div>
+                                    <div className="PasswordInstructions">
+                                        Passwords must contain: 
+                                        <div className="PasswordInstructions">
+                                                At least one Uppercase Letter, <br />
+                                                At least one Lowercase Letter, <br />
+                                                At least one Number,<br /> 
+                                                Must at least be eight characters long.
+                                        </div>
+                                    </div>
                                 </div>
-                            </p>
                             </Row>
                             <Row>
                                 <Col xs={6}>

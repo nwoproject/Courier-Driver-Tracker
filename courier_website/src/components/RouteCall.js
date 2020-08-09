@@ -37,11 +37,7 @@ function RouteCall(props){
                     console.log(result);*/
                 result.candidates.map(CurrentElement=>{
                     let Location = {};
-                    let geo = CurrentElement.geometry.location;
-                    let ForAdd = CurrentElement.formatted_address;
-                    let AddName = CurrentElement.name;
-                    let ImgSrc = "";
-                    
+                    let ImgSrc = "";                  
                     try{
                         ImgSrc = CurrentElement.photos[0].photo_reference;
                     }
@@ -51,11 +47,11 @@ function RouteCall(props){
                         setBool(false);
                         ImgSrc=CurrentElement.photos[0].photo_reference;
                         console.log(CurrentElement);
-                        Location.Name = AddName;
-                        Location.ForAdd = ForAdd;
+                        Location.Name = CurrentElement.name;
+                        Location.ForAdd = CurrentElement.formatted_address;
                         console.log(ImgSrc);
                         Location.IMG = ImgSrc;
-                        Location.geo = geo;
+                        Location.geo = CurrentElement.geometry.location;
                         setLocs(prevState=>{return ([...prevState, Location])});
                         setBool(true);
                     
