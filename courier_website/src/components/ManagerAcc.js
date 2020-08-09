@@ -18,7 +18,7 @@ function ManagerAcc(){
     }
 
     return(
-        <Card className="LoginCard">
+        <Card className="OuterCard">
             <Card.Header>You are logged in, Welcome</Card.Header> 
             <Card.Body>
                 <CreateDriver /> <br />

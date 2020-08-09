@@ -7,6 +7,8 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Alert from 'react-bootstrap/Alert';
 
+import './style/style.css';
+
 function CreateManager(){
     const [email, setMail] = useState("");
     const [name, setName] = useState("");
@@ -72,7 +74,7 @@ function CreateManager(){
     }
 
     return(
-        <Card>
+        <Card className="InnerCard">
             <Card.Header>Create New Manager</Card.Header>
             <Card.Body>
                 <Container>
@@ -88,7 +90,17 @@ function CreateManager(){
                                         onChange={handleChange} />
                                 </Col>
                             </Row>
-                            <Row><p>Passwords must contain :<br />At least one Uppercase Letter, <br />At least one Lowercase Letter, <br />At least one Number,<br /> Must at least be eight characters long.</p></Row>
+                            <Row>
+                            <p className="PasswordInstructions">
+                                Passwords must contain :<br />
+                                <div className="PasswordInstructions">
+                                    At least one Uppercase Letter, <br />
+                                    At least one Lowercase Letter, <br />
+                                    At least one Number,<br /> 
+                                    Must at least be eight characters long.
+                                </div>
+                            </p>
+                            </Row>
                             <Row>
                                 <Col xs={6}>
                                     <Form.Control 

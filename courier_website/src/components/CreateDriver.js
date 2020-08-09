@@ -57,7 +57,7 @@ function CreateDriver(){
     }
 
     return(
-        <Card>
+        <Card className="InnerCard">
             <Card.Header>Create New Driver</Card.Header>
             <Card.Body>
                 <Container>

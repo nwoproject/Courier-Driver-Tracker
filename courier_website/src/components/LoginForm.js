@@ -45,7 +45,7 @@ function LoginForm(){
 
 
     return(
-        <Card className="LoginCard">
+        <Card className="OuterCard">
             <Card.Header className="Title">Login</Card.Header>
             <Card.Body>
                 <Form className="ActualForm" onSubmit={RealSubmit}> 

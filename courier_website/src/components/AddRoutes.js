@@ -98,7 +98,7 @@ function AddRoutes(){
     }
 
     return(
-        <Card className="SearchCard">
+        <Card className="OuterCard">
             <Card.Header>Search For Location</Card.Header>
             <Card.Body>
                 <Card.Title>Search for a Location to Add to the Drivers Route</Card.Title>

@@ -20,7 +20,7 @@ function RouteCall(props){
             })
             .then(response=>response.json())
             .then(result=>{
-                    let Location = {};
+                    /*let Location = {};
                     let geo = result.candidates[0].geometry.location;
                     let ForAdd = result.candidates[0].formatted_address;
                     let AddName = result.candidates[0].name;
@@ -32,23 +32,24 @@ function RouteCall(props){
                     Location.geo = geo;
                     setLocs(prevState=>{return ([...prevState, Location])});
                     setBool(true);
-                /*setBool(false);
-                var ImgSrc = result.photo;
-                console.log(ImgSrc);
+                    setBool(false);
+                    //var ImgSrc = result.photo;
+                    console.log(result);*/
                 result.candidates.map(CurrentElement=>{
                     let Location = {};
                     let geo = CurrentElement.geometry.location;
                     let ForAdd = CurrentElement.formatted_address;
                     let AddName = CurrentElement.name;
+                    let ImgSrc = "";
                     
                     try{
-                        let ImgSrcII = CurrentElement.photos[0].photo_reference;
+                        ImgSrc = CurrentElement.photos[0].photo_reference;
                     }
                     catch(err){
                         ImgSrc = "../images/404.png";
                     }
                         setBool(false);
-                        ImgSrc=CurrentElement.photo;
+                        ImgSrc=CurrentElement.photos[0].photo_reference;
                         console.log(CurrentElement);
                         Location.Name = AddName;
                         Location.ForAdd = ForAdd;
@@ -58,7 +59,7 @@ function RouteCall(props){
                         setLocs(prevState=>{return ([...prevState, Location])});
                         setBool(true);
                     
-                    fetch("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+ImgSrc+"&key="+process.env.REACT_APP_GOOGLE_API,{
+                    /*fetch("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+ImgSrc+"&key="+process.env.REACT_APP_GOOGLE_API,{
                         method: "GET"
                     })
                     .then(response=>{
@@ -70,8 +71,8 @@ function RouteCall(props){
                         Location.geo = geo;
                         setLocs(prevState=>{return ([...prevState, Location])});
                         setBool(true);
-                    });
-                }); */
+                    });*/
+                }); 
                 })
             }
             catch(err){
