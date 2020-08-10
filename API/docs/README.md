@@ -12,9 +12,12 @@ The following header field should be present in each request: `Authorization: Be
 		2.1		[Create Driver](#create-driver)  
         2.2     [Authenticate Driver](#authenticate-driver)  
         2.3     [Update Driver Password](#update-driver-password)  
+        2.4     [Delete Driver](#delete-driver)  
+        2.5     [Reset driver password](#reset-driver-password)  
 3.  [Manager Endpoints](#manager-endpoints)  
         3.1     [Create Manager](#create-manager)  
         3.2     [Authenticate Manager](#authenticate-manager)  
+        3.3     [Update Passsword](#update-password)
 4.  [Location Endpoints](#location-endpoints)  
         4.1     [Set Location](#set-location)  
         4.2     [Get Location](#get-location)  
@@ -32,7 +35,9 @@ The following header field should be present in each request: `Authorization: Be
 |---------|-----------------------------------------|------------------|
 | `POST` | `/api/drivers` | Create new driver | 
 | `POST` | `/api/drivers/authenticate` | Authenticates driver |
-| `PUT` | `/api/drivers/:driverid/password` | Updates the drivers password |
+| `PUT` | `/api/drivers/:driverid/password` | Updates the driver's password |
+| `DELETE`| `/api/drivers/:driverid`| Deletes a driver and deallocates their assigned routes |
+| `PUT` | `/api/drivers/forgotpassword` | Resets password and provides a temporary one via email |
 
 ## Manager Endpoint Summary
 
@@ -40,6 +45,7 @@ The following header field should be present in each request: `Authorization: Be
 |---------|-----------------------------------------|------------------|
 | `POST` | `/api/managers` | Create new manager | 
 | `POST` | `/api/managers/authenticate` | Authenticates manager |
+| `PUT` | `/api/managers/:managerid/password` | Updates the manager's password | 
 
 ## Location Endpoint Summary
 
@@ -157,6 +163,67 @@ This request returns no body.
 | `404` | Invalid :driverid or token|
 | `500` | Server error |
 
+## Delete Driver
+
+Removes a driver from the database, this will permanently delete all the drivers data from the database and deallocate repeating routes that the driver was assinged to.
+
+##### Http Request
+
+`DELETE /api/drivers/:driverid`
+
+##### Request Body
+
+```json
+{
+    "id" : 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "manager": true
+}
+```
+>**NOTE:** The example shown above is the case where a manager wishes to delete a driver, thus a manager id and token is expected for authorization purposes. If the request is made from the app from a driver wishing to remove himself from the system (this feature might be removed in the future, meaning only a manager will only ever be able to delete a driver) then the id in the request body can be omitted since the driver id is passed in as a request parameter. The value of manager however should then be set to false.
+
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Driver successfully deleted | 
+| `400` | Missing or empty parameters in the request body |
+| `401` | Invalid manager id or token |
+| `404` | Driver with that driver id doesn't exist |
+| `500` | Server error | 
+
+## Reset driver password
+
+This requests resets the drivers password to a temporary password that is 8 characters long and generated randomly. The password consisting of random characters is then sent to the driver via email. The driver can then use that password to log in to the app and update their password.
+
+##### Http Request
+
+`PUT /api/drivers/forgotpassword`
+
+##### Request Body
+
+```json
+{
+    "email": "example@example.com"
+}
+```
+
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Driver password reset and an email was sent | 
+| `404` | Driver with that email address does not exist |
+| `500` | Server error | 
+
 # Manager Endpoints
 
 ## Create Manager
@@ -231,6 +298,34 @@ Authenticates a manager.
 | `200` | Authentication successful |
 | `401` | Incorrect email or password | 
 | `404` | Manager does not exist |
+| `500` | Server error |
+
+## Update Passsword
+
+Used to update a manager's password
+
+##### Http Request
+
+`PUT /api/managers/:managerid/password`
+
+##### Request Body
+
+```json
+{
+    "password": "5RqwKzK1A7Tcacd1JvF5lM0963qFbxMw",
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw"
+}
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Password has been updated | 
+| `404` | Invalid :managerid or token|
 | `500` | Server error |
 
 # Location Endpoints
