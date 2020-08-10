@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:courier_driver_tracker/routing.dart';
+import 'package:courier_driver_tracker/screens/deliveryScreen.dart';
+import 'package:courier_driver_tracker/screens/home.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -68,10 +72,15 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         0, header, message, notificationDetails);
   }
 
-  onSelectNotification(String payLoad) {
+  //Opens app on notification feedback page
+  Future onSelectNotification(String payLoad) async {
     if (payLoad != null) {
       print(payLoad);
     }
+    await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+    );
   }
 
   @override

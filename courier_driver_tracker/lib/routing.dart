@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
 import 'screens/splash_screen.dart';
+import 'screens/abnormalityReporting.dart';
 
 class Router {
   static Route<dynamic> generateRoute(RouteSettings settings) {
