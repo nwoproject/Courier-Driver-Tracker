@@ -402,7 +402,7 @@ This request has no body.
 
 ## Search place and get coordinates
 
-Takes in a string parameter which is then used to search for a specific location using the google maps API, if multiple results are found then the first result is returned. The returned results contains all the important information about a location like the coordinates, street address and a link to a photo of the location.
+Takes in a string parameter which is then used to search for a specific location using the google maps API. Multiple candidates can be returned, the returned results contains all the important information about a location like the coordinates, street address and a link to a photo of the location. If no photo was found for a candidate, then the photo field of the candidate will simply contain `404`.
 
 ##### Http Request
 
@@ -425,45 +425,35 @@ Example usage: `/api/google-maps/web?searchQeury=university+of+pretoria`
 {
     "candidates": [
         {
-            "formatted_address": "24 Duxbury Rd, Hillcrest, Pretoria, 0083, South Africa",
+            "formatted_address": "Lynnwood Rd, Hatfield, Pretoria, 0002, South Africa",
             "geometry": {
                 "location": {
-                    "lat": -25.7544078,
-                    "lng": 28.231784
+                    "lat": -25.7545492,
+                    "lng": 28.2314476
                 },
                 "viewport": {
                     "northeast": {
-                        "lat": -25.75305797010728,
-                        "lng": 28.23313382989273
+                        "lat": -25.74999825,
+                        "lng": 28.24116345
                     },
                     "southwest": {
-                        "lat": -25.75575762989272,
-                        "lng": 28.23043417010728
+                        "lat": -25.75869965,
+                        "lng": 28.22178205
                     }
                 }
             },
-            "name": "UP Student Centre",
-            "photos": [
-                {
-                    "height": 2322,
-                    "html_attributions": [
-                        "<a href=\"https://maps.google.com/maps/contrib/107282224746449458000\">Thato0 Mmetwane</a>"
-                    ],
-                    "photo_reference": "CmRaAAAAlp-mTMNnwypzkV6TUenYKgmnXkkYyEhr9sgtioMqD9ECPN-7sZFPcv0qoqufqVI9wnYoIIiQ49LV1VuXZ6aYi4gifXZOftfzX9DjFcl6Ez5ADb9an1umoMMeJadvkQcyEhCoAUrHeuF4vx6s5lsFtP5sGhQQJLZiPXzHCdG2vJtUxdrOkQUvxQ",
-                    "width": 4128
-                }
-            ]
+            "name": "University of Pretoria",
+            "place_id": "ChIJ0zuFF71hlR4RAslCW-07CKc",
+            "photo": "https://lh3.googleusercontent.com/p/AF1QipM_W8dIy7pl7emNnT3PGh0xINyh8-jNoYeoLeGG=s1600-w400"
         }
     ],
-    "status": "OK",
-    "photo": "https://lh3.googleusercontent.com/p/AF1QipObDXCqc_uAPYGK3Viai-J52qlDxXjb0uWpIAKG=s1600-w400"
+    "status": "OK"
 }
 ```
 ##### Response status codes
 
 | Status Code | Description |
 |-------------|-------------|
-| `200` | Location and photo was returned |
-| `206` | Location returned but no photo was found | 
+| `200` | Location found and details returned |
 | `404` | No location was found |
 | `500` | Server error |
