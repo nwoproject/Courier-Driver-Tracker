@@ -482,4 +482,98 @@ Example usage: `/api/google-maps/web?searchQeury=university+of+pretoria`
 
 ## Log driver abnormality
 
+This endpoint is used to store any driver abnormalities in the database so that it can later be used to train the AI as well as generate driver reports. Each abnormality has a specific code assigned to it to make it easy to differentiate between diffrent types of abnormalities.
 
+| Abnormality Code | Description |
+|-------------|-------------|
+| `100` | Standing still for too long. |
+| `101` | Driver came to a sudden stop. | 
+| `102` | Driver exceeded the speed limit.|
+| `103` | Driver took a diffrent route than what was prescribed. |
+| `104` | Driver was driving with the company car when no deliveries were scheduled. |
+
+##### Http Request
+
+`POST /api/abnormalities/:driverid`
+
+##### Request Body
+
+```json
+ {   
+    "code": 101,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "description": "Tree jumped in to the middle of the road, tried to avoid it but ended up crashing in to it",
+    "latitude": "-25.7",
+    "longitude": "28.7",
+    "timestamp": "2020-08-11 09:00:00"
+ }
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `201` | Abnormality was successfully logged |
+| `400` | Bad request (missing parameters in request body) | 
+| `401` | Invalid :driverid and token combination |
+| `500` | Server error |
+
+## Get all driver abnormalities
+
+This endpoint returns all abnormalities that were logged of a specific driver.
+
+##### Http Request
+
+`GET /api/abnormalities/:driverid`
+
+##### Request Body
+
+This request expects no body.
+
+##### Response Body
+
+```json
+{
+    "driver_id": "1",
+    "abnormalities": {
+        "code_100": {
+            "code_description": "Standing still for too long.",
+            "driver_abnormalities": []
+        },
+        "code_101": {
+            "code_description": "Driver came to a sudden stop.",
+            "driver_abnormalities": [
+                {
+                    "driver_description": "Tree jumped in to the middle of the road, tried to avoid it but ended up crashing in to it",
+                    "latitude": "-25.7",
+                    "longitude": "28.7",
+                    "timestamp": "2020-08-11 09:00:00"
+                }
+            ]
+        },
+        "code_102": {
+            "code_description": "Driver exceeded the speed limit.",
+            "driver_abnormalities": []
+        },
+        "code_103": {
+            "code_description": "Driver took a diffrent route than what prescribed.",
+            "driver_abnormalities": []
+        },
+        "code_104": {
+            "code_description": "Driver was driving with the company car when no deliveries were scheduled.",
+            "driver_abnormalities": []
+        }
+    }
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | All logged abnormalities of driver returned |
+| `204` | Request executed successfully, but driver either has no logged abnormalities or doesn't exist. No request body returned | 
+| `500` | Server error |

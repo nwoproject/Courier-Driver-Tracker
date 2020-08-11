@@ -13,7 +13,7 @@ const abnormalityDescription = (code) =>
         case 102:
             return 'Driver exceeded the speed limit.'
         case 103:
-            return 'Driver took a diffrent route than what prescribed.'
+            return 'Driver took a diffrent route than what was prescribed.'
         case 104:
             return 'Driver was driving with the company car when no deliveries were scheduled.'
         default :
