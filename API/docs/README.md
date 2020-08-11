@@ -23,6 +23,9 @@ The following header field should be present in each request: `Authorization: Be
         5.2     [Get Driver Route](#get-driver-route)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
+7.  [Abnormality Endpoints](#abnormality-ednpoints)  
+        7.1     [Log driver abnormality](#log-driver-abnormality)  
+        7.2     [Get all driver abnormalities](#get-all-driver-abnormalities)  
 
 # Endpoint Summary
 
@@ -60,6 +63,13 @@ The following header field should be present in each request: `Authorization: Be
 | Method | Path | Usage |
 |---------|-----------------------------------------|------------------|
 | `GET` | `/api/google-maps/web` | Returns location details with a nice picture |
+
+## Driver Abnormalities Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `POST` | `/api/abnormalities/:driverid` | Logs a new abnormality for a specific driver |
+| `GET` | `/api/abnormalities/:driverid` | Gets all abnormality entries of a specific driver |
 
 # Driver Endpoints
 
@@ -467,3 +477,9 @@ Example usage: `/api/google-maps/web?searchQeury=university+of+pretoria`
 | `206` | Location returned but no photo was found | 
 | `404` | No location was found |
 | `500` | Server error |
+
+## Abnormality Endpoints
+
+## Log driver abnormality
+
+
