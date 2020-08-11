@@ -1,22 +1,22 @@
 import 'package:courier_driver_tracker/services/navigation/location.dart';
-import 'package:courier_driver_tracker/services/navigation/steps.dart';
+import 'package:courier_driver_tracker/services/navigation/step.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'legs.g.dart';
+part 'leg.g.dart';
 
 @JsonSerializable(explicitToJson: true)
-class Legs{
+class Leg{
   int distance;
   int duration;
   String endAddress;
   Location endLocation;
   String startAddress;
   Location startLocation;
-  List<Steps> steps;
+  List<Step> steps;
 
-  Legs({this.distance,this.steps, this.duration, this.endAddress, this.endLocation, this.startAddress, this.startLocation});
-  factory Legs.fromJson(Map<String, dynamic> data) => _$LegsFromJson(data);
-  Map<String, dynamic> toJson() => _$LegsToJson(this);
+  Leg({this.distance,this.steps, this.duration, this.endAddress, this.endLocation, this.startAddress, this.startLocation});
+  factory Leg.fromJson(Map<String, dynamic> data) => _$LegFromJson(data);
+  Map<String, dynamic> toJson() => _$LegToJson(this);
   String getHTMLInstruction(int step){
     if(step >= steps.length){
       return "Delivery";

@@ -1,13 +1,13 @@
 import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'package:courier_driver_tracker/services/navigation/navigator_service.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'deliveries.dart';
@@ -23,7 +23,6 @@ class MapSampleState extends State<GMap> {
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
   Set<Marker> markers = {};
-  PolylinePoints polylinePoints;
   List<LatLng> polylineCoordinates = [];
   Map<PolylineId, Polyline> polylines = {};
 
@@ -46,11 +45,17 @@ class MapSampleState extends State<GMap> {
   // Storage
   RouteLogging _routeLogging = RouteLogging();
 
+  // Navigation
+  int _route;
+  NavigatorService _navigatorService = NavigatorService();
+
 
   @override
   void initState() {
     super.initState();
+    getRoutes();
     getCurrentLocation();
+    getCurrentRoute();
   }
 
 
@@ -63,11 +68,15 @@ class MapSampleState extends State<GMap> {
   getCurrentLocation() async {
     _currentPosition = await _geolocatorService.getPosition();
     moveToCurrentLocation();
-    if(polylinePoints == null){
-      _createRoute();
-    }
   }
 
+  getRoutes() async {
+    await _navigatorService.getRoutes();
+  }
+
+  getCurrentRoute(){
+    _route = String.fromEnvironment('CURRENT_ROUTE', defaultValue: DotEnv().env['CURRENT_ROUTE']) as int;
+  }
 
   /*
    * Author: Gian Geyser
@@ -243,95 +252,16 @@ class MapSampleState extends State<GMap> {
    * Author: Gian Geyser
    * Parameters: none
    * Returns: none
-   * Description: Adds markers to the list of markers displayed on the Google map.
-   */
-  addMarkers(List<Position> positions) async {
-    for(Position position in positions){
-      String snippet = await getNextDelivery(position);
-      Marker marker = Marker(
-        markerId: MarkerId('$position'),
-        position: LatLng(
-          position.latitude,
-          position.longitude,
-        ),
-        infoWindow: InfoWindow(
-        title: 'Coffee Break',
-        snippet: snippet,
-        ),
-        icon: BitmapDescriptor.defaultMarker,
-      );
-      markers.add(marker);
-    }
-  }
-
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Creates polylines to be displayed on the Google Map.
-   */
-  _createPolylines(Position start, Position destination) async {
-    // Initializing PolylinePoints
-    polylinePoints = PolylinePoints();
-
-    // Create Coordinate List
-    // List<List<double>> coords;
-
-    // Generating the list of coordinates to be used for
-    // drawing the polylines
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      String.fromEnvironment('APP_MAP_API_KEY', defaultValue: DotEnv().env['APP_MAP_API_KEY']), // Google Maps API Key
-      PointLatLng(start.latitude, start.longitude),
-      PointLatLng(destination.latitude, destination.longitude),
-      travelMode: TravelMode.driving,
-    );
-
-    // Adding the coordinates to the list
-    if (result.points.isNotEmpty) {
-      result.points.forEach((PointLatLng point) {
-        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-        //coords.add([point.latitude, point.longitude]);
-      });
-      // deliveryList.add(new Delivery(coordinates: coords, arrivalTime: "8:00",address: "The Address"));
-    }
-
-
-
-    // Defining an ID
-    PolylineId id = PolylineId('poly');
-
-    // Initializing Polyline
-    Polyline polyline = Polyline(
-      polylineId: id,
-      color: Colors.purple,
-      points: polylineCoordinates,
-      width: 5,
-    );
-
-    // adds polyline to the polylines to be displayed.
-    polylines[id] = polyline;
-  }
-
-
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Creates the whole routes polylines.
+   * Description: Creates the whole routes polylines and sets markers.
    */
   _createRoute() async {
-    for(int position = 0; position < deliveries.length; position++){
-      if(position == 0){
-       await _createPolylines(_currentPosition, deliveries[position + 1]);
-      }
-      else if(position == deliveries.length - 1){
-        await _createPolylines(deliveries[position], deliveries[0]);
-      }
-      else{
-        await _createPolylines(deliveries[position], deliveries[position + 1]);
-      }
-    }
-    // _abnormalityService.setDeliveries(polyDeliveries);
+    /*TODO
+      - make new function to replace polylines.
+     */
+
+    _navigatorService.setInitialPolyPointsAndMarkers(_route);
+    polylines = _navigatorService.polylines;
+    markers = _navigatorService.markers;
   }
 
 
@@ -342,6 +272,7 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null){
+      _navigatorService.setCurrentPosition(_currentPosition);
       _routeLogging.writeToFile(_geolocatorService.convertPositionToString(_currentPosition) + "\n", "locationFile");
     }
 
@@ -371,7 +302,7 @@ class MapSampleState extends State<GMap> {
                               zoomControlsEnabled: false,
                               onMapCreated: (GoogleMapController controller) {
                                 mapController = controller;
-                                addMarkers(deliveries);
+                                _createRoute();
                               },
                             ),
                           ),

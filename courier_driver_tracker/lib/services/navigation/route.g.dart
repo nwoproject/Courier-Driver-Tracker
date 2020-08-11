@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'routes.dart';
+part of 'route.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Routes _$RoutesFromJson(Map<String, dynamic> json) {
-  return Routes(
+Route _$RouteFromJson(Map<String, dynamic> json) {
+  return Route(
     overviewPolyline: json['overview_polyline'] == null
         ? null
         : OverviewPolyline.fromJson(
@@ -17,12 +17,12 @@ Routes _$RoutesFromJson(Map<String, dynamic> json) {
         : Bounds.fromJson(json['bounds'] as Map<String, dynamic>),
     legs: (json['legs'] as List)
         ?.map(
-            (e) => e == null ? null : Legs.fromJson(e as Map<String, dynamic>))
+            (e) => e == null ? null : Leg.fromJson(e as Map<String, dynamic>))
         ?.toList()
   );
 }
 
-Map<String, dynamic> _$RoutesToJson(Routes instance) => <String, dynamic>{
+Map<String, dynamic> _$RouteToJson(Route instance) => <String, dynamic>{
       'bounds': instance.bounds?.toJson(),
       'legs': instance.legs?.map((e) => e?.toJson())?.toList(),
       'overview_polyline': instance.overviewPolyline?.toJson()

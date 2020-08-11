@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'steps.dart';
+part of 'step.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Steps _$StepsFromJson(Map<String, dynamic> json) {
-  return Steps(
+Step _$StepFromJson(Map<String, dynamic> json) {
+  return Step(
     startLocation: json['start_location'] == null
         ? null
         : Location.fromJson(json['start_location'] as Map<String, dynamic>),
@@ -28,7 +28,7 @@ Steps _$StepsFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$StepsToJson(Steps instance) => <String, dynamic>{
+Map<String, dynamic> _$StepToJson(Step instance) => <String, dynamic>{
       'distance': instance.distance,
       'duration': instance.duration,
       'end_location': instance.endLocation?.toJson(),

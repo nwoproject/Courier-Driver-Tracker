@@ -1,19 +1,19 @@
 import 'package:courier_driver_tracker/services/navigation/bounds.dart';
-import 'package:courier_driver_tracker/services/navigation/legs.dart';
+import 'package:courier_driver_tracker/services/navigation/leg.dart';
 import 'package:courier_driver_tracker/services/navigation/overview_polyline.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'routes.g.dart';
+part 'route.g.dart';
 
 @JsonSerializable(explicitToJson: true)
-class Routes{
+class Route{
   Bounds bounds;
-  List<Legs> legs;
+  List<Leg> legs;
   OverviewPolyline overviewPolyline;
 
-  Routes({this.overviewPolyline, this.bounds, this.legs});
-  factory Routes.fromJson(Map<String, dynamic> data) => _$RoutesFromJson(data);
-  Map<String, dynamic> toJson() => _$RoutesToJson(this);
+  Route({this.overviewPolyline, this.bounds, this.legs});
+  factory Route.fromJson(Map<String, dynamic> data) => _$RouteFromJson(data);
+  Map<String, dynamic> toJson() => _$RouteToJson(this);
   String getHTMLInstruction(int leg, int step){
     return legs[leg].getHTMLInstruction(step);
   }

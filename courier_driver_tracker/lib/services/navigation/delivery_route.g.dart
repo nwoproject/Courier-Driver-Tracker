@@ -10,7 +10,7 @@ DeliveryRoute _$DeliveryRouteFromJson(Map<String, dynamic> json) {
   return DeliveryRoute(
     routes: (json['routes'] as List)
         ?.map((e) =>
-            e == null ? null : Routes.fromJson(e as Map<String, dynamic>))
+            e == null ? null : Route.fromJson(e as Map<String, dynamic>))
         ?.toList()
   );
 }

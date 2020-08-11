@@ -1,4 +1,5 @@
 import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
+import 'package:courier_driver_tracker/services/navigation/route.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:courier_driver_tracker/services/navigation/navigator_service.dart';
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
@@ -90,6 +91,45 @@ Future<void> main() async {
     }
     int direction = navigatorService.getDeliveryDistance();
     expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["distance"]);
+  });
+
+  test("See if polylines and markers are made correctly", () async {
+    if(navigatorService == null){
+      navigatorService = NavigatorService(jsonFile: filename);
+      await navigatorService.getRoutes();
+    }
+
+    navigatorService.setInitialPolyPointsAndMarkers(navigatorService.getDelivery());
+
+    DeliveryRoute routes = navigatorService.getDeliveryRoute();
+    int delivery = navigatorService.getDelivery();
+    bool markersCorrect;
+    bool polysCorrect;
+    int numPolys = 0;
+
+    for(int leg = 0; leg < routes.routes[delivery].legs.length; leg++){
+      for(int step = 0; step < routes.routes[delivery].legs[leg].steps.length; step++){
+        numPolys += 1;
+      }
+    }
+
+    if(navigatorService.markers.length == routes.routes[delivery].legs.length){
+      markersCorrect = true;
+    }
+    else{
+      markersCorrect = false;
+    }
+
+    if(navigatorService.polylines.length == numPolys){
+      polysCorrect = true;
+    }
+    else{
+      polysCorrect = false;
+    }
+
+    expect((markersCorrect && polysCorrect), true);
+
+
   });
 
 

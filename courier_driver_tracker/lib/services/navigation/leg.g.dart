@@ -1,19 +1,19 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'legs.dart';
+part of 'leg.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Legs _$LegsFromJson(Map<String, dynamic> json) {
-  return Legs(
+Leg _$LegFromJson(Map<String, dynamic> json) {
+  return Leg(
     distance: json['distance'] == null
         ? null
         : json['distance'],
     steps: (json['steps'] as List)
         ?.map(
-            (e) => e == null ? null : Steps.fromJson(e as Map<String, dynamic>))
+            (e) => e == null ? null : Step.fromJson(e as Map<String, dynamic>))
         ?.toList(),
     duration: json['duration'] == null
         ? null
@@ -29,7 +29,7 @@ Legs _$LegsFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$LegsToJson(Legs instance) => <String, dynamic>{
+Map<String, dynamic> _$LegToJson(Leg instance) => <String, dynamic>{
       'distance': instance.distance,
       'duration': instance.duration,
       'end_address': instance.endAddress,
