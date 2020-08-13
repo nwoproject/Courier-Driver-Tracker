@@ -1,5 +1,12 @@
 const Pool = require('pg').Pool
 
+//Keeps nodejs from formatting timestamps without timezones
+var pg = require('pg');
+var types = pg.types;
+types.setTypeParser(1114, function(stringValue) {
+return stringValue;
+});
+
 //For connecting to the DB
 const DB_HOST = process.env.DB_HOST;
 const DB_NAME = process.env.DB_NAME;

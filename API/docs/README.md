@@ -23,10 +23,13 @@ The following header field should be present in each request: `Authorization: Be
         4.2     [Get Location](#get-location)  
 5.  [Route Endpoints](#route-endpoints)  
         5.1     [Create Route](#create-route)  
-        5.2     [Get Driver Route](#get-driver-route)  
+        5.2     [Get Driver Route (uncalculated)](#get-driver-route-(uncalculated))  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
-        6.2     [Calculate route](#calculate-route)
+        6.2     [Calculate route](#calculate-route)  
+7.  [Abnormality Endpoints](#abnormality-ednpoints)  
+        7.1     [Log driver abnormality](#log-driver-abnormality)  
+        7.2     [Get all driver abnormalities](#get-all-driver-abnormalities)  
 
 # Endpoint Summary
 
@@ -68,6 +71,13 @@ The following header field should be present in each request: `Authorization: Be
 |---------|-----------------------------------------|------------------|
 | `GET` | `/api/google-maps/web` | Returns location details with a nice picture |
 | `POST` | `/api/google-maps/navigation` | Uses the google maps api to calculate a delivery route |
+
+## Driver Abnormalities Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `POST` | `/api/abnormalities/:driverid` | Logs a new abnormality for a specific driver |
+| `GET` | `/api/abnormalities/:driverid` | Gets all abnormality entries of a specific driver |
 
 # Driver Endpoints
 
@@ -453,9 +463,9 @@ This request returns no body.
 | `404` | Invalid driver_id |
 | `500` | Server error |
 
-## Get Driver Route
+## Get Driver Route (Uncalculated)
 
-Returns all active routes currently assgined to a specific driver. It will return an array of routes that each contain an array of locations consisting of coordinates. Each location is an address that the driver must make a delivery too on his route.
+Returns all active routes currently assgined to a specific driver. It will return an array of routes that each contain an array of locations consisting of coordinates. Each location is an address that the driver must make a delivery to on his route.
 
 ##### Http Request
 
@@ -588,3 +598,103 @@ The calculate route endpoint does just that, it calculates the route that the dr
 | `404` | Route with that route_id not found |
 | `500` | Server error |
 | `501` | Route could not be calculated |
+
+## Abnormality Endpoints
+
+## Log driver abnormality
+
+This endpoint is used to store any driver abnormalities in the database so that it can later be used to train the AI as well as generate driver reports. Each abnormality has a specific code assigned to it to make it easy to differentiate between diffrent types of abnormalities.
+
+| Abnormality Code | Description |
+|-------------|-------------|
+| `100` | Standing still for too long. |
+| `101` | Driver came to a sudden stop. | 
+| `102` | Driver exceeded the speed limit.|
+| `103` | Driver took a diffrent route than what was prescribed. |
+| `104` | Driver was driving with the company car when no deliveries were scheduled. |
+
+##### Http Request
+
+`POST /api/abnormalities/:driverid`
+
+##### Request Body
+
+```json
+ {   
+    "code": 101,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "description": "Tree jumped in to the middle of the road, tried to avoid it but ended up crashing in to it",
+    "latitude": "-25.7",
+    "longitude": "28.7",
+    "timestamp": "2020-08-11 09:00:00"
+ }
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `201` | Abnormality was successfully logged |
+| `400` | Bad request (missing parameters in request body) | 
+| `401` | Invalid :driverid and token combination |
+| `500` | Server error |
+
+## Get all driver abnormalities
+
+This endpoint returns all abnormalities that were logged of a specific driver.
+
+##### Http Request
+
+`GET /api/abnormalities/:driverid`
+
+##### Request Body
+
+This request expects no body.
+
+##### Response Body
+
+```json
+{
+    "driver_id": 1,
+    "abnormalities": {
+        "code_100": {
+            "code_description": "Standing still for too long.",
+            "driver_abnormalities": []
+        },
+        "code_101": {
+            "code_description": "Driver came to a sudden stop.",
+            "driver_abnormalities": [
+                {
+                    "driver_description": "Tree jumped in to the middle of the road, tried to avoid it but ended up crashing in to it",
+                    "latitude": "-25.7",
+                    "longitude": "28.7",
+                    "timestamp": "2020-08-11 09:00:00"
+                }
+            ]
+        },
+        "code_102": {
+            "code_description": "Driver exceeded the speed limit.",
+            "driver_abnormalities": []
+        },
+        "code_103": {
+            "code_description": "Driver took a diffrent route than what prescribed.",
+            "driver_abnormalities": []
+        },
+        "code_104": {
+            "code_description": "Driver was driving with the company car when no deliveries were scheduled.",
+            "driver_abnormalities": []
+        }
+    }
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | All logged abnormalities of driver returned |
+| `204` | Request executed successfully, but driver either has no logged abnormalities or doesn't exist. No request body returned | 
+| `500` | Server error |
