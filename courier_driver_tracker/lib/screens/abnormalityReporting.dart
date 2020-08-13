@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class UserFeedback extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
@@ -29,15 +30,66 @@ class Feedback extends StatefulWidget {
 class _FeedbackState extends State<Feedback> {
   Abnormality _character = Abnormality.fuelstop;
   TextEditingController _controller;
+  TextEditingController textController;
+  bool textNeeded = false;
 
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    textController = TextEditingController();
   }
 
   void dispose() {
     _controller.dispose();
+    textController.dispose();
     super.dispose();
+  }
+
+  checkForEmptyText() {
+    String other;
+
+    other = textController.text;
+
+    if ((_character == Abnormality.other) && (other == "")) {
+      textNeeded = true;
+      Fluttertoast.showToast(
+          msg: 'Please specify the reason for this abnormality.',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white
+      );
+    }
+    else {
+      if(textNeeded == false) {
+        report();
+      }
+    }
+  }
+
+  bool report() {
+    if (_character == Abnormality.fuelstop)
+      {
+        //write to database
+        return true;
+      }
+    if (_character == Abnormality.lunch)
+    {
+      //write to database
+      return true;
+    }
+    if (_character == Abnormality.traffic)
+    {
+      //write to database
+      return true;
+    }
+    if (_character == Abnormality.other)
+    {
+      //write to database
+      return true;
+    }
+    return false;
   }
 
   Widget build(BuildContext context) {
@@ -97,6 +149,7 @@ class _FeedbackState extends State<Feedback> {
         ),
 
         TextField(
+          controller: textController,
           decoration: InputDecoration(
               border: InputBorder.none,
               hintText: 'Specify reason'
@@ -105,7 +158,9 @@ class _FeedbackState extends State<Feedback> {
 
         const SizedBox(height: 30),
         RaisedButton(
-          onPressed: () {},
+          onPressed: (){
+            checkForEmptyText();
+            },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),
       ],
