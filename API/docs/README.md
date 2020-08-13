@@ -23,6 +23,7 @@ The following header field should be present in each request: `Authorization: Be
         5.2     [Get Driver Route](#get-driver-route)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
+        6.2     [Calculate route](#calculate-route)
 
 # Endpoint Summary
 
@@ -60,6 +61,7 @@ The following header field should be present in each request: `Authorization: Be
 | Method | Path | Usage |
 |---------|-----------------------------------------|------------------|
 | `GET` | `/api/google-maps/web` | Returns location details with a nice picture |
+| `POST` | `/api/google-maps/navigation` | Uses the google maps api to calculate a delivery route |
 
 # Driver Endpoints
 
@@ -372,10 +374,10 @@ This request has no body.
 
 ```json
 {
-    "driver_id": 14,
+    "driver_id": 1,
     "active_routes: ": [
         {
-            "route_id": "6",
+            "route_id": 1,
             "locations": [
                 {
                     "latitude": "-25.7542559",
@@ -412,7 +414,7 @@ Takes in a string parameter which is then used to search for a specific location
 
 No request body, however the following parameters is expected in the query string.
 
-| Parameter | Descriptiom |
+| Parameter | Description |
 |-------------|-------------|
 | `searchQeury` | Location to be seached for |
 
@@ -457,3 +459,37 @@ Example usage: `/api/google-maps/web?searchQeury=university+of+pretoria`
 | `200` | Location found and details returned |
 | `404` | No location was found |
 | `500` | Server error |
+
+## Calculate Route
+
+The calculate route endpoint does just that, it calculates the route that the driver should take when making deliveries. This endpoint takes the coordinates of each delivery address that forms part of the route as well as the starting point (warehouse) from the database and sends the data through to the `google maps api` in order to calculate the most optimum route as well as get directions for the driver to follow. The requested route data is then sent back in the response body as one big json object. This json object can be thousands of lines long, so an example can not be given here, instead a short example can be seen [here](https://github.com/COS301-SE-2020/Courier-Driver-Tracker/blob/feature/navigation/courier_driver_tracker/assets/json/route.json).
+
+##### Http Request
+
+`POST api/google-maps/navigation`
+
+##### Request Body
+
+```json
+{   
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "route_id": 1
+}
+```
+
+##### Response Body
+
+[Short example](https://github.com/COS301-SE-2020/Courier-Driver-Tracker/blob/feature/navigation/courier_driver_tracker/assets/json/route.json)
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Route successully caclulated and returned |
+| `204` | Route found but no delivery addresses were assigned to it, no response body returned |
+| `400` | Bad request. (Missing or invalid parameters in body) |
+| `401` | Unauthorized |
+| `404` | Route with that route_id not found |
+| `500` | Server error |
+| `501` | Route could not be calculated |

@@ -160,7 +160,7 @@ router.post('/navigation', (req, res) => {
                                                     if(mapData.status != 'OK')
                                                     {
                                                         //Something went wrong when calculating route
-                                                        res.status(500).end();
+                                                        res.status(501).end();
                                                     }
                                                     else
                                                     {
