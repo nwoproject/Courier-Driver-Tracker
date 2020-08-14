@@ -70,10 +70,10 @@ class _FeedbackState extends State<Feedback> {
 
   bool report() {
     if (_character == Abnormality.fuelstop)
-      {
-        //write to database
-        return true;
-      }
+    {
+       //write to database
+       return true;
+    }
     if (_character == Abnormality.lunch)
     {
       //write to database
