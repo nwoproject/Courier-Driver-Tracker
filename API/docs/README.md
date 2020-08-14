@@ -24,6 +24,8 @@ The following header field should be present in each request: `Authorization: Be
 5.  [Route Endpoints](#route-endpoints)  
         5.1     [Create Route](#create-route)  
         5.2     [Get Driver Route (uncalculated)](#get-driver-route-(uncalculated))  
+        5.3     [Timestamp Delivery Location](#timestamp-delivery-location)
+        5.4     [Complete Route](#complete-route)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
         6.2     [Calculate route](#calculate-route)  
@@ -64,6 +66,8 @@ The following header field should be present in each request: `Authorization: Be
 |---------|-----------------------------------------|------------------|
 | `POST` | `/api/routes` | Creates a new delivery route | 
 | `GET` | `/api/routes/:driverid` | Returns a driver's active delivery routes |
+| `PUT` | `api/routes/location/:locationid` | Stores a timestamp of when a driver reached a delivery on his route |
+| `PUT` | `api/routes/completed/:routeid` | Stores a timestamp of when a route was completed by a driver |
 
 ## Google Maps Endpoint Summary
 
@@ -463,7 +467,7 @@ This request returns no body.
 | `404` | Invalid driver_id |
 | `500` | Server error |
 
-## Get Driver Route (Uncalculated)
+## Get Driver Route (uncalculated)
 
 Returns all active routes currently assgined to a specific driver. It will return an array of routes that each contain an array of locations consisting of coordinates. Each location is an address that the driver must make a delivery to on his route.
 
@@ -485,10 +489,12 @@ This request has no body.
             "route_id": 1,
             "locations": [
                 {
+                    "location_id": 1,
                     "latitude": "-25.7542559",
                     "longitude": "28.2321043"
                 },
                 {
+                    "location_id": 2,
                     "latitude": "-25.7674421",
                     "longitude": "28.1991501"
                 }
@@ -503,6 +509,71 @@ This request has no body.
 |-------------|-------------|
 | `200` | Driver's active routes successfully retrieved |
 | `404` | Driver not found or currently has no active routes | 
+| `500` | Server error |
+
+## Timestamp Delivery Location
+
+Stores a timestamp of when a driver reached a specfic location/delivery that formed part of their route.
+
+##### Http Request
+
+`PUT api/routes/location/:locationid`
+
+##### Request Body
+
+```json
+ {   
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "timestamp": "2020-08-15 09:00:00"
+ }
+```
+
+### Response body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Timestamp successfully stored. |
+| `400` | Bad request (missing parameters in request body). | 
+| `401` | Unauthorized (incorrect id and token combination). |
+| `404` | Location with that :locationid does not exist. |
+| `500` | Server error |
+
+## Complete Route
+
+Marks the route that was assigned to the driver as complete and stores the completion date and time as a timestamp. This endpoint will also check that each delivery address (henceforth referred to as location) that formed part of the route has a timestamp associated with it which would indicate that the driver did indeed visit each location that formed part of his route. (The actual path he took is not checked, the endpoint only checks if the driver visted each location of the route to make sure he could of actually made all the deliveries regardless of the path the took).
+
+##### Http Request
+
+`PUT api/routes/completed/:routeid`
+
+##### Request Body
+
+```json
+ {   
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "timestamp": "2020-08-15 12:00:00"
+ }
+```
+
+### Response body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Route successfully marked as completed and timestamp stored. |
+| `206` | Route marked as complete but one or more locations that formed part of the route was never visited by the driver. |
+| `400` | Bad request (missing parameters in request body). | 
+| `401` | Unauthorized (incorrect id and token combination). |
+| `404` | There is no route with that :routeid assigned to the driver. |
 | `500` | Server error |
 
 ## Google Maps

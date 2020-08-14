@@ -145,12 +145,45 @@ router.get('/:driverid', (req,res)=>{
     });
 });
 
+// PUT api/routes/location/:locationid
+router.put('/location/:locationid',async(req,res)=>{
+    const location_id = req.params.locationid;
+    if(!req.body.timestamp || !req.body.id || !req.body.token)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        await checks.driverCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded)
+        {
+            DB.pool.query('UPDATE route."location" SET "timestamp_completed"=($1) WHERE "location_id"=($2)',[req.body.timestamp,location_id], (err,results)=>{
+                if(err)
+                {
+                    DB.dbErrorHandler(res,err);
+                }
+                else
+                {
+                    if(results.rowCount == 0) // No location with that location_id
+                    {
+                        res.status(404).end();
+                    }
+                    else
+                    {
+                        res.status(204).end();
+                    }
+                }
+            });
+        }
+    }
+});
+
 // PUT api/routes/completed/:routeid
 router.put('/completed/:routeid',async(req,res)=>{
     const route_id = req.params.routeid;
     if(!req.body.timestamp || !req.body.id || !req.body.token)
     {
-        req.status(400).end();
+        res.status(400).end();
     }
     else
     {
@@ -189,7 +222,5 @@ router.put('/completed/:routeid',async(req,res)=>{
         }
     }
 });
-
-// PUT api/routes/location/:locationid
 
 module.exports = router;
