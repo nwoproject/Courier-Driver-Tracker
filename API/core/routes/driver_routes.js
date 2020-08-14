@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
 const async = require('async');
+const checks = require('./utility/database_checks');
 
 const routeFormatter = (locRes,routeRes,routeNum) =>
 {
@@ -9,6 +10,7 @@ const routeFormatter = (locRes,routeRes,routeNum) =>
     for(var k = 0; k < locRes.rowCount;k++)
     {
         location.push({
+        "location_id":locRes.rows[k].location_id,
         "latitude":locRes.rows[k].latitude,
         "longitude":locRes.rows[k].longitude});
     }
@@ -142,5 +144,52 @@ router.get('/:driverid', (req,res)=>{
         }
     });
 });
+
+// PUT api/routes/completed/:routeid
+router.put('/completed/:routeid',async(req,res)=>{
+    const route_id = req.params.routeid;
+    if(!req.body.timestamp || !req.body.id || !req.body.token)
+    {
+        req.status(400).end();
+    }
+    else
+    {
+        await checks.driverCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded) // driver is valid
+        {
+            DB.pool.query('UPDATE route."route" SET "completed"=($1),"timestamp_completed"=($2) WHERE "route_id"=($3) AND "driver_id"=($4)',
+            [true,req.body.timestamp,route_id,req.body.id], async (err,results)=>{
+                if(err)
+                {
+                    DB.dbErrorHandler(res,err);
+                }
+                else
+                {
+                    if(results.rowCount == 0)// No route with that route_id OR driver was not assigned to that route
+                    {
+                        res.status(404).end();
+                    }
+                    else
+                    {
+                        const completed = await checks.routeLocationsCheck(route_id,res);
+                        if(!res.writableEnded)
+                        {
+                            if(completed)
+                            {
+                                res.status(204).end();
+                            }
+                            else // TODO Log that driver potentially missed a delivery
+                            {
+                                res.status(206).end();
+                            }   
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+
+// PUT api/routes/location/:locationid
 
 module.exports = router;

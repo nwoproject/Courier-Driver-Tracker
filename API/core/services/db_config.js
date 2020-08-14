@@ -3,7 +3,7 @@ const Pool = require('pg').Pool
 //Keeps nodejs from formatting timestamps without timezones
 var pg = require('pg');
 var types = pg.types;
-types.setTypeParser(1114, function(stringValue) {
+types.setTypeParser(1114, (stringValue) => {
 return stringValue;
 });
 
