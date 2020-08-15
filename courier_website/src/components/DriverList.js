@@ -1,4 +1,4 @@
-/*import React, {useState} from 'react';
+import React, {useState} from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -6,7 +6,7 @@ import Card from 'react-bootstrap/Card';
 
 import DriverProfile from "./DriverProfile";
 
-import Drivers from '../MockData/Drivers.json';
+//import Drivers from '../MockData/Drivers.json';
 
 import './style/style.css'
 
@@ -24,7 +24,7 @@ function DriverList(){
         ToggleSelected(true);
     }
 
-    return(
+    /*return(
         <Card className="OuterCard">
             <Card.Body>
                 <Row>
@@ -39,6 +39,9 @@ function DriverList(){
                 </Row>
             </Card.Body>
         </Card>
-    );
+    );*/
+    return(<div>
+        <p>whoops</p>
+    </div>)
 }
-export default DriverList;*/
+export default DriverList;
