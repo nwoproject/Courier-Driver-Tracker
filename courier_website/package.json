@@ -15,7 +15,7 @@
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
-    "serve" : "11.3.2"
+    "serve": "11.3.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -23,7 +23,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "heroku-run-build-script" : true,
+  "heroku-run-build-script": true,
   "eslintConfig": {
     "extends": "react-app"
   },
