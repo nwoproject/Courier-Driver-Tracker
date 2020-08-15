@@ -3,6 +3,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 
 class UserFeedback extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
@@ -35,6 +37,7 @@ class _FeedbackState extends State<Feedback> {
   TextEditingController _controller;
   TextEditingController textController;
   String other;
+  final storage = new FlutterSecureStorage();
 
   void initState() {
     super.initState();
@@ -79,6 +82,8 @@ class _FeedbackState extends State<Feedback> {
  
 
   void report() async{
+    var token = await storage.read(key: 'token');
+    var driverID = await storage.read(key: 'id');
 
     String resp = "";
 
@@ -99,11 +104,9 @@ class _FeedbackState extends State<Feedback> {
       resp = other;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
-
     Map data = {
       "code": 100,
-      "token": bearerToken,
+      "token": token,
       "description": resp,
       "latitude": "-25.7",
       "longitude": "28.7",
@@ -112,11 +115,11 @@ class _FeedbackState extends State<Feedback> {
 
     Map<String, String> requestHeaders = {
       'Accept': 'application/json',
-      'Authorization':'Bearer $bearerToken'
+      'Authorization':'Bearer $token'
     };
 
     var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/:driver?id",
+        "https://drivertracker-api.herokuapp.com/api/abnormalities/:driverID",
         headers: requestHeaders,
         body: data);
 
