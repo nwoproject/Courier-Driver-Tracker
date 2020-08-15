@@ -18,10 +18,13 @@ function CreateDriver(){
     const [SearchQuery, setQuery] = useState("");
     const [Searched, setSearched] = useState(false);
     const [Location, setLocation] = useState({Geo:"", AddName:"",ImgSrc:""});
+    const [ServerError, setServerErr] = useState(false);
+    const [InvalidEmail, setInEmail] = useState(false);
     
     function handleChange(event){
         setRequest(false);
         setValid(true);
+        setInEmail(false);
         if(event.target.name==="email"){
             setMail(event.target.value);
         }
@@ -110,8 +113,16 @@ function CreateDriver(){
             
             })
             .then(response=>{
-                console.log(response);
-                setRequest(true);
+                if(response.status===201){
+                    setRequest(true);
+                }
+                else if(response.status===500){
+                    setServerErr(true);
+                }
+                else{
+                    setInEmail(true);
+                }
+                
             })
         }
         else{
@@ -221,6 +232,8 @@ function CreateDriver(){
                 </Container>
                 {requestSent ? <Alert variant="primary">Account Made</Alert> : null}
                 {validEmail ? null:<Alert variant="warning">The Email Entered is not Valid</Alert>}
+                {ServerError ? <Alert variant="warning">There is an error with the Server, Please try again later</Alert>:null}
+                {InvalidEmail ? <Alert variant="danger">Email already in use</Alert>:null}
             </Card.Body>
         </Card>
     );

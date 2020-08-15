@@ -18,11 +18,14 @@ function CreateManager(){
     const [requestSent, setRequest] = useState(false);
     const [PassSame, testPass] = useState(true);
     const [PassValid, TestValidPass] = useState(true);
+    const [UsedEmail, setUsed] = useState(false);
+    const [ServerError, setServer] = useState(false);
     
     function handleChange(event){
         testPass(true);
         TestValidPass(true);
         setRequest(false);
+        setUsed(false);
         if(event.target.name==="email"){
             setMail(event.target.value);
         }
@@ -60,7 +63,16 @@ function CreateManager(){
                     })
                 })
                 .then(response=>{
-                    setRequest(true);
+                    if(response.status===201){
+                        setRequest(true);
+                    }
+                    else if(response.status===500){
+                        setServer(true);
+                    }
+                    else{
+                        setUsed(true);
+                    }
+                    
                 })
             }
             else{
@@ -148,6 +160,8 @@ function CreateManager(){
                 {PassSame ? null : <Alert variant="warning">Passwords do not match!</Alert>}
                 {requestSent ? <Alert variant="primary">Account Made</Alert> : null}
                 {PassValid ? null : <Alert variant="warning">Passwords is not Valid, see instructions above Password field.</Alert>}
+                {ServerError ? <Alert variant="warning">There is an error with the Server, Please try again later</Alert>:null}
+                {UsedEmail ? <Alert variant="danger">Email already in use</Alert>:null}
             </Card.Body>
         </Card>
     );

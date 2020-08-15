@@ -1,4 +1,4 @@
-import React from 'react';
+/*import React from 'react';
 import DriverList from "../components/DriverList";
 
 function ManageDrivers(){
@@ -9,4 +9,4 @@ function ManageDrivers(){
     );
 }
 
-export default ManageDrivers;
+export default ManageDrivers;*/
