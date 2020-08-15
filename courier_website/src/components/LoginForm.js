@@ -26,6 +26,7 @@ function LoginForm(){
             localStorage.setItem("Login", "true");
             localStorage.setItem("ID", result.id);
             localStorage.setItem("Token", result.token);
+            localStorage.setItem("Email", emaill);
             window.location.reload(false);
         })
         .catch(error=>{
