@@ -24,7 +24,7 @@ class MapSampleState extends State<GMap> {
   GoogleMapController mapController;
   Set<Marker> markers = {};
   List<LatLng> polylineCoordinates = [];
-  Map<PolylineId, Polyline> polylines = {};
+  Map<String, Polyline> polylines = {};
 
   //Location service
   GeolocatorService _geolocatorService = GeolocatorService();
@@ -258,7 +258,6 @@ class MapSampleState extends State<GMap> {
     /*TODO
       - make new function to replace polylines.
      */
-
     _navigatorService.setInitialPolyPointsAndMarkers(_route);
     polylines = _navigatorService.polylines;
     markers = _navigatorService.markers;

@@ -3,6 +3,8 @@ import 'package:courier_driver_tracker/services/navigation/route.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:courier_driver_tracker/services/navigation/navigator_service.dart';
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 
 Future<void> main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -128,6 +130,29 @@ Future<void> main() async {
     }
 
     expect((markersCorrect && polysCorrect), true);
+  });
+
+  test("Get Polyline test", () async {
+    if(navigatorService == null){
+      navigatorService = NavigatorService(jsonFile: filename);
+      await navigatorService.getRoutes();
+    }
+    bool created;
+    String ID = "0-0-0";
+    navigatorService.setInitialPolyPointsAndMarkers(0);
+    Polyline poly = navigatorService.getPolyline(ID);
+
+
+
+    if(poly is Polyline){
+      created  = true;
+    }
+    else{
+      created = false;
+    }
+
+    expect(created, true);
+
   });
 
 

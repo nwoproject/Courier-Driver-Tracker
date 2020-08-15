@@ -21,7 +21,7 @@ class NavigatorService{
   Position _position;
 
   // Map polylines and markers
-  Map<PolylineId, Polyline> polylines = {};
+  Map<String, Polyline> polylines = {};
   Polyline currentPolyline;
   Polyline splitPolylineBefore;
   List<LatLng> splitPolylineCoordinatesBefore;
@@ -70,16 +70,27 @@ class NavigatorService{
     return 12742 * asin(sqrt(a)) * 1000 as int;
   }
 
-  findCurrentPoint(){}
+  findCurrentPoint(){
+    for(int i = 0; i < splitPolylineCoordinatesAfter.length -1; i++){
+      double d1 = sqrt(pow((_position.latitude - splitPolylineCoordinatesAfter[i].latitude),2) + pow(_position.longitude - splitPolylineCoordinatesAfter[i].longitude,2));
+      double d2 = sqrt(pow((splitPolylineCoordinatesAfter[i+1].latitude - splitPolylineCoordinatesAfter[i].latitude),2) + pow(splitPolylineCoordinatesAfter[i+1].longitude - splitPolylineCoordinatesAfter[i].longitude,2));
+
+      if(d1 < d2){
+        _currentPoint = i;
+        return;
+      }
+    }
+  }
+
+  bool passedStepPoint(){
+
+  }
+
+  reachedDeliveryPoint(){}
 
   moveToNextStep(){}
 
   moveToNextLeg(){}
-
-  passedStepPoint(){}
-
-  reachedDeliveryPoint(){}
-
   moveToNextDelivery(){}
 
   /*
@@ -126,7 +137,7 @@ class NavigatorService{
     polylines.remove(splitPolylineAfter.polylineId);
 
     // add the delivery route again with lighter colour
-    polylines[currentPolyline.polylineId] = Polyline(
+    polylines[currentPolyline.polylineId.value] = Polyline(
       polylineId: currentPolyline.polylineId,
       color: Colors.purple[200],
       points: currentPolyline.points,
@@ -152,6 +163,10 @@ class NavigatorService{
 
   int getDelivery(){
     return _currentRoute;
+  }
+
+  Polyline getPolyline(String ID){
+    return polylines.remove(ID);
   }
 
   /*
@@ -302,7 +317,6 @@ class NavigatorService{
           int numPolyPoints = 0;
           result.forEach((PointLatLng point) {
             numPolyPoints += 1;
-            print(numPolyPoints);
             polylineCoordinates.add(LatLng(point.latitude, point.longitude));
           });
         }
@@ -319,7 +333,7 @@ class NavigatorService{
         );
 
         // adds polyline to the polylines to be displayed.
-        polylines[id] = polyline;
+        polylines[polyId] = polyline;
       }
     }
     // after all polylines are created set current polyline and split it for navigation.
@@ -332,12 +346,16 @@ class NavigatorService{
   }
 
   setCurrentSplitPolylines(){
+    if(_position == null){
+      return;
+    }
+
     splitPolylineCoordinatesBefore = [];
     splitPolylineCoordinatesAfter.add(LatLng(_position.latitude, _position.longitude));
     splitPolylineCoordinatesAfter.addAll(currentPolyline.points);
 
-    PolylineId polyBeforeID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-before");
-    PolylineId polyAfterID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-after");
+    PolylineId polyBeforeID = PolylineId("${_currentRoute}-${_currentLeg}-${_currentStep}-before");
+    PolylineId polyAfterID = PolylineId("${_currentRoute}-${_currentLeg}-${_currentStep}-after");
 
     splitPolylineBefore = Polyline(
         polylineId: polyBeforeID,
@@ -353,8 +371,8 @@ class NavigatorService{
     );
 
     // add split polys to the polylines
-    polylines[polyBeforeID] = splitPolylineBefore;
-    polylines[polyAfterID] = splitPolylineAfter;
+    polylines[polyBeforeID.value] = splitPolylineBefore;
+    polylines[polyAfterID.value] = splitPolylineAfter;
   }
 
 }
