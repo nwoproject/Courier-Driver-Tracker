@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:async';
 
 class UserFeedback extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
@@ -31,7 +34,7 @@ class _FeedbackState extends State<Feedback> {
   Abnormality _character = Abnormality.fuelstop;
   TextEditingController _controller;
   TextEditingController textController;
-  bool textNeeded = false;
+  String other;
 
   void initState() {
     super.initState();
@@ -45,13 +48,10 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-  checkForEmptyText() {
-    String other;
-
+  void checkForEmptyText() {
     other = textController.text;
 
-    if ((_character == Abnormality.other) && (other == "")) {
-      textNeeded = true;
+    if ((other == "") && (_character == Abnormality.other)) {
       Fluttertoast.showToast(
           msg: 'Please specify the reason for this abnormality.',
           toastLength: Toast.LENGTH_SHORT,
@@ -61,36 +61,88 @@ class _FeedbackState extends State<Feedback> {
           textColor: Colors.white
       );
     }
-    else {
-      if(textNeeded == false) {
+      else{
         report();
-      }
     }
   }
 
-  bool report() {
+  void responseCheck(String r) {
+    Fluttertoast.showToast(
+          msg: r,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white
+      );
+    }
+ 
+
+  void report() async{
+
+    String resp = "";
+
     if (_character == Abnormality.fuelstop)
     {
-       //write to database
-       return true;
+      resp = "Filled the vehicle with fuel";
     }
     if (_character == Abnormality.lunch)
     {
-      //write to database
-      return true;
+      resp = "Stopped for lunch";
     }
     if (_character == Abnormality.traffic)
     {
-      //write to database
-      return true;
+      resp = "Filled the vehicle with fuel";
     }
     if (_character == Abnormality.other)
     {
-      //write to database
-      return true;
+      resp = other;
     }
-    return false;
+
+    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
+
+    Map data = {
+      "code": 100,
+      "token": bearerToken,
+      "description": resp,
+      "latitude": "-25.7",
+      "longitude": "28.7",
+      "timestamp": "2020-08-11 09:00:00"
+    };
+
+    Map<String, String> requestHeaders = {
+      'Accept': 'application/json',
+      'Authorization':'Bearer $bearerToken'
+    };
+
+    var response = await http.post(
+        "https://drivertracker-api.herokuapp.com/api/abnormalities/:driver?id",
+        headers: requestHeaders,
+        body: data);
+
+    String respCode ="";
+
+    switch(response.statusCode)
+    {
+      case 201:
+        respCode = "Abnormality was successfully logged";
+        responseCheck(respCode);
+        break;
+      case 400:
+        respCode = "Bad request (missing parameters in request body)";
+        responseCheck(respCode);
+        break;
+      case 401:
+        respCode = "Invalid :driverid and token combination";
+        responseCheck(respCode);
+        break;
+      case 500:
+        respCode = "Server error";
+        responseCheck(respCode);
+        break;
+    }
   }
+
 
   Widget build(BuildContext context) {
     return Column(
