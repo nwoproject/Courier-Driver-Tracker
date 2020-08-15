@@ -1,0 +1,17 @@
+#root{
+    
+    position:absolute;
+    top:0px;
+    right:0px;
+    bottom:0px;
+    left:0px
+}
+
+.theBody{
+    background-color: rgb(184, 243, 223);
+}
+
+html, body, Container{
+    margin: 0px;
+}
+

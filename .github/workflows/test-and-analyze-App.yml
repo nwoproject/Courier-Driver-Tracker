@@ -1,0 +1,27 @@
+name: Run App tests
+
+on:
+  push:
+    branches: [ master, development]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test-and-analyze-App:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+      - uses: subosito/flutter-action@v1
+      - run: touch .env
+        working-directory: ./courier_driver_tracker
+      - run: echo $'BEARER_TOKEN=${{secrets.BEARER_TOKEN}}\nAPP_MAP_API_KEY=${{secrets.APP_MAP_API_KEY}}' > .env 
+        working-directory: ./courier_driver_tracker
+      - run: flutter pub get
+        working-directory: ./courier_driver_tracker
+      - run: flutter test
+        working-directory: ./courier_driver_tracker
+      - run: flutter analyze
+        working-directory: ./courier_driver_tracker

@@ -1,0 +1,71 @@
+.LoginCard{
+    margin-left: 20vw;
+    margin-right: 20vw;
+    margin-top: 5vw;
+    margin-bottom: 9vw;
+
+}
+
+.Title{
+    font-weight: bold;
+}
+
+.FormLabel{
+    margin-top: 0.4vw;
+    margin-bottom: 0;
+}
+
+.BrandHome{
+    font-weight: bolder;
+}
+
+.BrandLogo{
+    width: 4vw;
+    height: 4vw;
+    margin: 0;
+    padding: 0;
+}
+
+.SearchCard{
+    margin: 2vw;
+    margin-bottom: 10vw;
+}
+
+.LocationCard{
+    margin-top:1vw;
+    padding:1vw;
+}
+
+.TheFoot{
+    /*height: 10%;*/
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 1000px;   
+    padding: 0;
+    padding-left:1vw;
+}
+
+.BottomText{
+    padding: 0;
+    margin: 0;
+    font-size: small;
+}
+
+.CardImg{
+    width: 50px;
+}
+
+.DeleteCard{
+    margin-bottom: 0.8vw;
+}
+
+.TrackingCard{
+    margin: 2%;
+    margin-bottom: 9%;
+}
+
+.MapDiv:first-child{
+    position: relative !important;
+    height: 500px !important;
+}
