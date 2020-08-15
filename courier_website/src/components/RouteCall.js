@@ -31,11 +31,8 @@ function RouteCall(props){
                         ImgSrc = "../images/404.png";
                     }
                         setBool(false);
-                        //ImgSrc=CurrentElement.photos[0].photo_reference;
-                        console.log(CurrentElement);
                         Location.Name = CurrentElement.name;
                         Location.ForAdd = CurrentElement.formatted_address;
-                        console.log(ImgSrc);
                         Location.IMG = ImgSrc;
                         Location.geo = CurrentElement.geometry.location;
                         setLocs(prevState=>{return ([...prevState, Location])});
