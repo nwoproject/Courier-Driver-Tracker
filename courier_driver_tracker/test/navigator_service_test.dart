@@ -128,8 +128,6 @@ Future<void> main() async {
     }
 
     expect((markersCorrect && polysCorrect), true);
-
-
   });
 
 

@@ -272,7 +272,7 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null){
-      _navigatorService.setCurrentPosition(_currentPosition);
+      _navigatorService.updateCurrentPosition(_currentPosition);
       _routeLogging.writeToFile(_geolocatorService.convertPositionToString(_currentPosition) + "\n", "locationFile");
     }
 
@@ -282,7 +282,6 @@ class MapSampleState extends State<GMap> {
       child: Column(
                 // Google map container with buttons stacked on top
                 children: <Widget>[
-                  LocalNotifications(),
                   Expanded(
                     flex: 5,
                     child: Stack(

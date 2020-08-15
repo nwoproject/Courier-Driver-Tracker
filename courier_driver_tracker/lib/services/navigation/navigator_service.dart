@@ -14,6 +14,7 @@ class NavigatorService{
   int _currentRoute;
   int _currentLeg;
   int _currentStep;
+  int _currentPoint;
   String jsonFile;
   LocalNotifications _notificationManager = LocalNotifications();
   AbnormalityService _abnormalityService = AbnormalityService();
@@ -21,13 +22,38 @@ class NavigatorService{
 
   // Map polylines and markers
   Map<PolylineId, Polyline> polylines = {};
+  Polyline currentPolyline;
+  Polyline splitPolylineBefore;
+  List<LatLng> splitPolylineCoordinatesBefore;
+  Polyline splitPolylineAfter;
+  List<LatLng> splitPolylineCoordinatesAfter;
   Set<Marker> markers = {};
 
   NavigatorService({this.jsonFile}){
     getRoutes();
     _currentRoute = 0;
-    _currentStep = 0;
     _currentLeg = 0;
+    _currentStep = 0;
+    _currentPoint = 0;
+  }
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: Position
+   * Returns: int
+   * Description: Navigation function that implements all the required steps for navigation.
+   */
+  navigate(Position currentPosition){
+    /*
+    - set current location
+    - find the current point
+    - check if on route -> if not start creating black poly
+    - check if close to step or leg
+    - set step/leg as required
+    - update current polyline
+    - update the info vars for map
+     */
+
   }
 
   /*
@@ -44,11 +70,68 @@ class NavigatorService{
     return 12742 * asin(sqrt(a)) * 1000 as int;
   }
 
-  updateCurrentPolyline(Position currentPosition){
+  findCurrentPoint(){}
 
-  } // create new polylines for map to show the route already travveled
-  updateDeliveryPolyline(Position currentPosition){
-    
+  moveToNextStep(){}
+
+  moveToNextLeg(){}
+
+  passedStepPoint(){}
+
+  reachedDeliveryPoint(){}
+
+  moveToNextDelivery(){}
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Creates 2 new polylines with different colours to display that
+   *              the driver is moving along the route between the points.
+   */
+  updateCurrentPolyline(){
+    // remove previous position from before and after polyline
+    splitPolylineCoordinatesBefore.removeLast();
+    splitPolylineCoordinatesAfter.removeAt(0);
+
+    while(splitPolylineCoordinatesBefore.length < _currentPoint){
+      splitPolylineCoordinatesBefore.add(splitPolylineCoordinatesAfter.removeAt(0));
+    }
+    splitPolylineCoordinatesAfter.insertAll(0,[LatLng(_position.latitude, _position.longitude)]);
+    splitPolylineCoordinatesBefore.add(LatLng(_position.latitude, _position.longitude));
+    splitPolylineBefore = Polyline(
+      polylineId: splitPolylineBefore.polylineId,
+      color: Colors.purple[200],
+      points: splitPolylineCoordinatesBefore,
+      width: 5
+    );
+    splitPolylineAfter = Polyline(
+      polylineId: splitPolylineAfter.polylineId,
+      color: Colors.purple,
+      points: splitPolylineCoordinatesAfter,
+      width: 5
+    );
+  } // create new polylines for map to show the route already traveled
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: After driver has reached the next step update the previous
+   *              polyline to show the step has been completed.
+   */
+  updatePreviousStepPolyline(){
+    // remove before and after split polys
+    polylines.remove(splitPolylineBefore.polylineId);
+    polylines.remove(splitPolylineAfter.polylineId);
+
+    // add the delivery route again with lighter colour
+    polylines[currentPolyline.polylineId] = Polyline(
+      polylineId: currentPolyline.polylineId,
+      color: Colors.purple[200],
+      points: currentPolyline.points,
+      width: 5
+    );
   } // change the previous delivery route polyline colour to show the delivery has been comleted
 
 
@@ -187,7 +270,7 @@ class NavigatorService{
     jsonFile = filename;
   }
 
-  setCurrentPosition(Position position){
+  updateCurrentPosition(Position position){
     _position = position;
   }
 
@@ -216,7 +299,10 @@ class NavigatorService{
 
         // Adding the coordinates to the list
         if (result.isNotEmpty) {
+          int numPolyPoints = 0;
           result.forEach((PointLatLng point) {
+            numPolyPoints += 1;
+            print(numPolyPoints);
             polylineCoordinates.add(LatLng(point.latitude, point.longitude));
           });
         }
@@ -236,6 +322,49 @@ class NavigatorService{
         polylines[id] = polyline;
       }
     }
+    // after all polylines are created set current polyline and split it for navigation.
+    setCurrentPolyline();
+    setCurrentSplitPolylines();
+  }
+
+  setCurrentPolyline(){
+    currentPolyline = polylines.remove(polylines["$_currentRoute-$_currentLeg-$_currentStep"].polylineId);
+  }
+
+  setCurrentSplitPolylines(){
+    splitPolylineCoordinatesBefore = [];
+    splitPolylineCoordinatesAfter.add(LatLng(_position.latitude, _position.longitude));
+    splitPolylineCoordinatesAfter.addAll(currentPolyline.points);
+
+    PolylineId polyBeforeID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-before");
+    PolylineId polyAfterID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-after");
+
+    splitPolylineBefore = Polyline(
+        polylineId: polyBeforeID,
+        color: Colors.purple[200],
+        points: splitPolylineCoordinatesBefore,
+        width: 5
+    );
+    splitPolylineAfter = Polyline(
+        polylineId: polyAfterID,
+        color: Colors.purple,
+        points: splitPolylineCoordinatesAfter,
+        width: 5
+    );
+
+    // add split polys to the polylines
+    polylines[polyBeforeID] = splitPolylineBefore;
+    polylines[polyAfterID] = splitPolylineAfter;
   }
 
 }
+
+/*
+TODO
+  - check if close enough to step
+  - check if close enough to leg
+  - check where the driver is between points
+  - write function to handle the navigation checks above
+  - if off route add black poly where they drive
+
+ */
