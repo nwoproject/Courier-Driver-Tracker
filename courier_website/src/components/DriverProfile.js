@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import Card from 'react-bootstrap/Card';
 
-import Drivers from "../MockData/Drivers.json";
+//import Drivers from "../MockData/Drivers.json";
 
 function DriverProfile(props){
-    const [DriverName, setName] = useState("");
+    /*const [DriverName, setName] = useState("");
     const [DriverSurname, setSurname] = useState("");
 
     useEffect(()=>{
@@ -25,6 +25,9 @@ function DriverProfile(props){
                 <p>we are getting there</p>
             </Card.Body>
         </Card>
+    )*/
+    return(
+        <p>lol</p>
     )
 }
 

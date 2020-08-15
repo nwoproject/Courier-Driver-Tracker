@@ -12,7 +12,7 @@ import './style/style.css'
 
 function DriverList(){
 
-    const [DriverSelected, ToggleSelected] = useState(false);
+    /*const [DriverSelected, ToggleSelected] = useState(false);
     const [DriverID, setID] = useState("");
 
     function Clicked(event){
@@ -22,7 +22,7 @@ function DriverList(){
         console.log("CLICKED");
         console.log(DriverID);
         ToggleSelected(true);
-    }
+    }*/
 
     /*return(
         <Card className="OuterCard">
