@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 
 
 class UserFeedback extends StatelessWidget {
@@ -38,6 +40,9 @@ class _FeedbackState extends State<Feedback> {
   TextEditingController textController;
   String other;
   final storage = new FlutterSecureStorage();
+
+  GeolocatorService _geolocatorService = GeolocatorService();
+  Position _currentPosition;
 
   void initState() {
     super.initState();
@@ -84,6 +89,9 @@ class _FeedbackState extends State<Feedback> {
   void report() async{
     var token = await storage.read(key: 'token');
     var driverID = await storage.read(key: 'id');
+    String lat = _currentPosition.latitude.toString();
+    String long = _currentPosition.longitude.toString();
+    String time = _currentPosition.timestamp.toString();
 
     String resp = "";
 
@@ -108,9 +116,9 @@ class _FeedbackState extends State<Feedback> {
       "code": 100,
       "token": token,
       "description": resp,
-      "latitude": "-25.7",
-      "longitude": "28.7",
-      "timestamp": "2020-08-11 09:00:00"
+      "latitude": lat,
+      "longitude": long,
+      "timestamp": time
     };
 
     Map<String, String> requestHeaders = {
