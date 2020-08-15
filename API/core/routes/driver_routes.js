@@ -3,99 +3,30 @@ const router = express.Router();
 const DB = require('../services/db_config');
 const async = require('async');
 const checks = require('./utility/database_checks');
-
-const routeFormatter = (locRes,routeRes,routeNum) =>
-{
-    var location = [];
-    for(var k = 0; k < locRes.rowCount;k++)
-    {
-        location.push({
-        "location_id":locRes.rows[k].location_id,
-        "latitude":locRes.rows[k].latitude,
-        "longitude":locRes.rows[k].longitude});
-    }
-    var route = {
-                "route_id": routeRes.rows[routeNum].route_id,
-                "locations": location};
-    return route;
-}
+const format = require('./utility/json_formatter');
+const db_query = require('./utility/common_queries');
 
 // POST api/routes
-router.post('/', (req, res)=>{
-    var datetime = new Date();
-    var assinged_Date = datetime.toISOString().slice(0,10);
+router.post('/', async (req, res)=>{
     if(!req.body.id || !req.body.token || !req.body.driver_id || !req.body.route)
     {
         res.status(400).end();
     }
     else
     {
-        DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."manager" WHERE "token"=($1) AND "id"=($2))',[req.body.token,req.body.id],(err,managerCheck)=>{
-            if(err)
+        await checks.managerCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded)
+        {
+            await checks.driverExistsCheck(req.body.driver_id,res);
+            if(!res.writableEnded)
             {
-                DB.dbErrorHandler(res,err);
-            }
-            else
-            {
-                if(managerCheck.rows[0].exists)
+                await db_query.addRoute(req,res);
+                if(!res.writableEnded)
                 {
-                    DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."driver" WHERE "id"=($1))',[req.body.driver_id],(driverCheckError,driverCheck)=>{
-                        if(driverCheckError)
-                        {
-                            DB.dbErrorHandler(res,driverCheckError);
-                        }
-                        else
-                        {
-                            if(driverCheck.rows[0].exists)
-                            {
-                                DB.pool.query('INSERT INTO route."route"("driver_id","completed","date_assigned")VALUES($1,$2,$3) RETURNING *',[req.body.driver_id,false,assinged_Date],(error,routeResult)=>{
-                                    if(error)
-                                    {
-                                        DB.dbErrorHandler(res,error);
-                                    }
-                                    else
-                                    {
-                                        
-                                       var series = [];
-                                       for(var k=0; k < req.body.route.length;k++)
-                                       {
-                                           series.push(k);
-                                       }
-
-                                       async.eachSeries(series,(i,callback)=>{
-                                            DB.pool.query('INSERT INTO route."location"("route_id","latitude","longitude")VALUES($1,$2,$3)',[routeResult.rows[0].route_id,req.body.route[i].latitude,req.body.route[i].longitude],(locationError,locationResult)=>{
-                                                if(locationError)
-                                                {
-                                                    DB.dbErrorHandler(res,locationError);
-                                                }
-                                                callback(null);
-                                            });
-                                       },(insertErr)=>{
-                                            if(insertErr)
-                                            {
-                                                DB.dbErrorHandler(res,insertErr);
-                                            }
-                                            else
-                                            {
-                                                res.status(201).end();
-                                            }
-                                       });
-                                    }
-                                });
-                            }
-                            else
-                            {
-                                res.status(404).end();
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    res.status(401).end();
+                    res.status(500).end();
                 }
             }
-        });
+        }
     }
 });
 
@@ -127,7 +58,7 @@ router.get('/:driverid', (req,res)=>{
                         {
                             DB.dbErrorHandler(res,locationError);
                         }
-                        routes.push(routeFormatter(locationResult,result,i));
+                        routes.push(format.routeFormatter(locationResult,result,i));
                         callback(null);
                     });
                },(queryError)=>{

@@ -35,4 +35,12 @@ const dbErrorHandler = (res,err) =>
     }
 }
 
-module.exports = {pool,dbErrorHandler};
+const dbErrorHandlerNoResponse = (err) =>
+{
+    if(!PRODUCTION)
+    {
+        console.log("DB ERROR: " + err.message);
+    }
+}
+
+module.exports = {pool,dbErrorHandler,dbErrorHandlerNoResponse};

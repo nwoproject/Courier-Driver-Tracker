@@ -1,4 +1,3 @@
-//Add common DB queries here in order to reuse them
 const DB = require('../../services/db_config');
 
 const driverCheck = async (driver_id,driver_token,res) =>
@@ -19,6 +18,46 @@ const driverCheck = async (driver_id,driver_token,res) =>
         resolve(checkResults);
     });
   }); 
+}
+
+const managerCheck = async (manager_id, manager_token,res)=>
+{
+  return await new Promise((resolve)=>{
+    DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."manager" WHERE "id"=($1) AND "token"=($2))',[manager_id,manager_token], (managerCheckError,checkResults)=>{
+        if(managerCheckError)
+        {
+            DB.dbErrorHandler(res,managerCheckError);
+        }
+        else
+        {
+            if(!checkResults.rows[0].exists)
+            {
+                res.status(401).end();
+            }
+        }
+        resolve(checkResults);
+    });
+  }); 
+}
+
+const driverExistsCheck = async (driver_id,res) =>
+{
+  return await new Promise((resolve)=>{
+    DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."driver" WHERE "id"=($1))',[driver_id], (err,checkResults)=>{
+        if(err)
+        {
+            DB.dbErrorHandler(res,err);
+        }
+        else
+        {
+            if(!checkResults.rows[0].exists)
+            {
+                res.status(404).end();
+            }
+        }
+        resolve(checkResults); 
+    });
+  });
 }
 
 /*
@@ -54,4 +93,4 @@ const routeLocationsCheck = async (route_id,res) =>
 }
 
 
-module.exports = {driverCheck,routeLocationsCheck};
+module.exports = {driverCheck,routeLocationsCheck,managerCheck,driverExistsCheck};

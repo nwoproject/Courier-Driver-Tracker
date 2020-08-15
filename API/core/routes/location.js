@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
+const format = require('./utility/json_formatter');
 
 const objectConverter = (results) =>
 {
@@ -59,7 +60,7 @@ router.get('/driver', (req, res)=>{
                 }
                 else
                 {
-                    res.status(200).json({"drivers": objectConverter(results)}).end();
+                    res.status(200).json({"drivers": format.objectConverter(results)}).end();
                 }
             }
         });
@@ -79,7 +80,7 @@ router.get('/driver', (req, res)=>{
                 }
                 else
                 {
-                    res.status(200).json({"drivers": objectConverter(results)}).end();
+                    res.status(200).json({"drivers": format.objectConverter(results)}).end();
                 }
             }
         });

@@ -24,7 +24,7 @@ The following header field should be present in each request: `Authorization: Be
 5.  [Route Endpoints](#route-endpoints)  
         5.1     [Create Route](#create-route)  
         5.2     [Get Driver Route (uncalculated)](#get-driver-route-(uncalculated))  
-        5.3     [Timestamp Delivery Location](#timestamp-delivery-location)
+        5.3     [Timestamp Delivery Location](#timestamp-delivery-location)  
         5.4     [Complete Route](#complete-route)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
