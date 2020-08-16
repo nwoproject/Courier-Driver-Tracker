@@ -20,7 +20,6 @@ function RouteCall(props){
             })
             .then(response=>response.json())
             .then(result=>{
-                console.log(result);
                 result.candidates.map(CurrentElement=>{
                     let Location = {};
                     let ImgSrc = "";                  

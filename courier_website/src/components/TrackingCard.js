@@ -39,7 +39,7 @@ function TrackingCard(){
                         Submit
                     </Button>
                 </Form>
-                {Searched ? <TrackMap ID={DriverID}/> : <div></div>}
+                {Searched ? <TrackMap ID={DriverID}/> : null}
             </Card.Body>
         </Card>
     );

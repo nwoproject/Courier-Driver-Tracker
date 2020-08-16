@@ -24,25 +24,26 @@ function LoginForm(){
             body: JSON.stringify({email: emaill, password: pass})
         })
         .then(result=>{
+            console.log(result);
             if(result.status===200){
-                localStorage.setItem("Login", "true");
-                localStorage.setItem("ID", result.id);
-                localStorage.setItem("Token", result.token);
-                localStorage.setItem("Email", emaill);
-                window.location.reload(false);
+                result.json()
+                .then(respone=>{
+                    localStorage.setItem("Login", "true");
+                    localStorage.setItem("ID", respone.id);
+                    localStorage.setItem("Token", respone.token);
+                    localStorage.setItem("Email", emaill);
+                    window.location.reload(false);
+                })
             }
             else if(result.status===500){
                 setError(true);
+                return null;
             }
             else{
                 setFail(true);
+                return null;
             }
-            
         })
-        .catch(error=>{
-            console.log(error);
-        });
-        
     }
 
     function handleChange(event){
