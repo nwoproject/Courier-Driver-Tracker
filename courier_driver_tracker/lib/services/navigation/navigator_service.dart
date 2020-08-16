@@ -19,6 +19,7 @@ class NavigatorService{
   LocalNotifications _notificationManager = LocalNotifications();
   AbnormalityService _abnormalityService = AbnormalityService();
   Position _position;
+  bool _doneWithDelivery;
 
   // Map polylines and markers
   Map<String, Polyline> polylines = {};
@@ -70,6 +71,13 @@ class NavigatorService{
     return 12742 * asin(sqrt(a)) * 1000 as int;
   }
 
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Determines the point within the step where the driver is at.
+   *              Used to split the polyline for UI purposes.
+   */
   findCurrentPoint(){
     for(int i = 0; i < splitPolylineCoordinatesAfter.length -1; i++){
       double d1 = sqrt(pow((_position.latitude - splitPolylineCoordinatesAfter[i].latitude),2) + pow(_position.longitude - splitPolylineCoordinatesAfter[i].longitude,2));
@@ -83,15 +91,49 @@ class NavigatorService{
   }
 
   bool passedStepPoint(){
+    int nextStep = _currentStep + 1;
+    LatLng lastPoint = getPolyline("$_currentRoute-$_currentLeg-$_currentStep").points.last;
+    LatLng nextPoint = getPolyline("$_currentRoute-$_currentLeg-$nextStep").points.first;
+    double d1 = sqrt(pow((_position.latitude - lastPoint.latitude),2) + pow((_position.longitude - lastPoint.longitude),2));
+    double d2 = sqrt(pow((nextPoint.latitude - lastPoint.latitude),2) + pow(nextPoint.longitude - lastPoint.longitude,2));
 
+    if(d1 < d2){
+      return true;
+    }
+    else{
+      return false;
+    }
   }
 
-  reachedDeliveryPoint(){}
+  bool reachedDeliveryPoint(){
+    if(_currentPoint == getPolyline("$_currentRoute-$_currentLeg-$_currentStep").points.length -1){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
 
-  moveToNextStep(){}
+  moveToNextStep(){
+    if(passedStepPoint()){
+      _currentStep += 1;
+      updatePreviousStepPolyline();
+      setCurrentPolyline();
+      setCurrentSplitPolylines();
+    }
+  }
 
-  moveToNextLeg(){}
-  moveToNextDelivery(){}
+  moveToNextLeg(){
+    if(reachedDeliveryPoint() && _doneWithDelivery){
+      _currentLeg += 1;
+      _currentStep = 0;
+      updatePreviousStepPolyline();
+      setCurrentPolyline();
+      setCurrentSplitPolylines();
+      _doneWithDelivery = false;
+    }
+  }
+
 
   /*
    * Author: Gian Geyser
@@ -122,7 +164,7 @@ class NavigatorService{
       points: splitPolylineCoordinatesAfter,
       width: 5
     );
-  } // create new polylines for map to show the route already traveled
+  }
 
   /*
    * Author: Gian Geyser
@@ -143,45 +185,7 @@ class NavigatorService{
       points: currentPolyline.points,
       width: 5
     );
-  } // change the previous delivery route polyline colour to show the delivery has been comleted
-
-
-  /*
-  * -- Getters --
-  */
-  DeliveryRoute getDeliveryRoute(){
-    return _deliveryRoutes;
   }
-
-  int getStep(){
-    return _currentStep;
-  }
-
-  int getLeg(){
-    return _currentLeg;
-  }
-
-  int getDelivery(){
-    return _currentRoute;
-  }
-
-  Polyline getPolyline(String ID){
-    return polylines.remove(ID);
-  }
-
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Turns json from saved file into DeliveryRoute object.
-   *
-   */
-  getRoutes() async {
-    JsonHandler handler = JsonHandler();
-    Map<String, dynamic> json = await handler.parseJson(jsonFile);
-    _deliveryRoutes = DeliveryRoute.fromJson(json);
-  }
-
 
   /*
    * Author: dammy_ololade (https://github.com/Dammyololade/flutter_polyline_points/blob/master/lib/src/network_util.dart)
@@ -221,6 +225,42 @@ class NavigatorService{
     return poly;
   }
 
+
+  /*
+  *     ---- Getters ----
+  */
+  DeliveryRoute getDeliveryRoute(){
+    return _deliveryRoutes;
+  }
+
+  int getStep(){
+    return _currentStep;
+  }
+
+  int getLeg(){
+    return _currentLeg;
+  }
+
+  int getDelivery(){
+    return _currentRoute;
+  }
+
+  Polyline getPolyline(String ID){
+    return polylines.remove(ID);
+  }
+
+  /*
+   * Author: Gian Geyser
+   * Parameters: none
+   * Returns: none
+   * Description: Turns json from saved file into DeliveryRoute object.
+   *
+   */
+  getRoutes() async {
+    JsonHandler handler = JsonHandler();
+    Map<String, dynamic> json = await handler.parseJson(jsonFile);
+    _deliveryRoutes = DeliveryRoute.fromJson(json);
+  }
 
   String getNextDirection(){
     return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep + 1);
@@ -279,7 +319,7 @@ class NavigatorService{
 
 
   /*
-  * -- Setters --
+  *   ---- Setters ----
   */
   setRouteFilename(String filename){
     jsonFile = filename;
@@ -314,9 +354,7 @@ class NavigatorService{
 
         // Adding the coordinates to the list
         if (result.isNotEmpty) {
-          int numPolyPoints = 0;
           result.forEach((PointLatLng point) {
-            numPolyPoints += 1;
             polylineCoordinates.add(LatLng(point.latitude, point.longitude));
           });
         }
@@ -354,8 +392,8 @@ class NavigatorService{
     splitPolylineCoordinatesAfter.add(LatLng(_position.latitude, _position.longitude));
     splitPolylineCoordinatesAfter.addAll(currentPolyline.points);
 
-    PolylineId polyBeforeID = PolylineId("${_currentRoute}-${_currentLeg}-${_currentStep}-before");
-    PolylineId polyAfterID = PolylineId("${_currentRoute}-${_currentLeg}-${_currentStep}-after");
+    PolylineId polyBeforeID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-before");
+    PolylineId polyAfterID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-after");
 
     splitPolylineBefore = Polyline(
         polylineId: polyBeforeID,
@@ -374,15 +412,14 @@ class NavigatorService{
     polylines[polyBeforeID.value] = splitPolylineBefore;
     polylines[polyAfterID.value] = splitPolylineAfter;
   }
-
 }
 
 /*
 TODO
-  - check if close enough to step
-  - check if close enough to leg
-  - check where the driver is between points
-  - write function to handle the navigation checks above
+  - write function to handle the navigation checks
   - if off route add black poly where they drive
-
+  - UI design and testing
+  - integrate API
+  - integrate abnormailties
+  - integrate notifications
  */
