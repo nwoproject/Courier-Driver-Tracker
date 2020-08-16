@@ -92,5 +92,25 @@ const routeLocationsCheck = async (route_id,res) =>
   }); 
 }
 
+const centerPointExistsCheck = async (driver_id,res) =>
+{
+  return await new Promise((resolve)=>{
+    DB.pool.query('SELECT * FROM route."center_point" WHERE "driver_id"=($1)',[driver_id], (err,checkResults)=>{
+        if(err)
+        {
+            DB.dbErrorHandler(res,err);
+        }
+        else
+        {
+            if(checkResults.rowCount > 0) //Driver allready has an existing centerpoint
+            {
+                res.status(409).end();
+            }
+        }
+        resolve(checkResults); 
+    });
+  });
+}
 
-module.exports = {driverCheck,routeLocationsCheck,managerCheck,driverExistsCheck};
+
+module.exports = {driverCheck,routeLocationsCheck,managerCheck,driverExistsCheck,centerPointExistsCheck};

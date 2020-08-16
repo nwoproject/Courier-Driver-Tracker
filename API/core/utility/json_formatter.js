@@ -59,4 +59,18 @@ const sortObject = (prop) =>
     }    
 }
 
-module.exports = {routeFormatter,objectConverter,driverCenterPointConverter,sortObject};
+const getDriverCentrePointResponse = (centerpoint,driver) =>
+{
+    return {
+        "driver_id":centerpoint.rows[0].driver_id,
+        "name":driver.rows[0].name,
+        "surname":driver.rows[0].surname,
+        "centerpoint": {
+            "latitude:":centerpoint.rows[0].latitude,
+            "longitude":centerpoint.rows[0].longitude,
+            "radius":centerpoint.rows[0].radius + "km"
+        }
+    };
+}
+
+module.exports = {routeFormatter,objectConverter,driverCenterPointConverter,sortObject,getDriverCentrePointResponse};
