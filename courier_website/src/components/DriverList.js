@@ -3,26 +3,31 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
 
 import DriverProfile from "./DriverProfile";
 
 //import Drivers from '../MockData/Drivers.json';
 
 import './style/style.css'
+import Button from 'react-bootstrap/Button';
 
 function DriverList(){
 
-    /*const [DriverSelected, ToggleSelected] = useState(false);
+    const [DriverSelected, ToggleSelected] = useState(false);
     const [DriverID, setID] = useState("");
 
-    function Clicked(event){
+    function handleChange(event){
         ToggleSelected(false);
-        setID("");
-        setID(event.target.id)
-        console.log("CLICKED");
-        console.log(DriverID);
+        if(event.target.name==="DriverID"){
+            setID(event.target.value);
+        }
+    }
+
+    function SubmitID(event){
+        event.preventDefault();
         ToggleSelected(true);
-    }*/
+    }
 
     /*return(
         <Card className="OuterCard">
@@ -40,8 +45,27 @@ function DriverList(){
             </Card.Body>
         </Card>
     );*/
-    return(<div>
-        <p>whoops</p>
-    </div>)
+    return(
+        <Card className="OuterCard">
+            <Card.Body>
+                <Row>
+                    <Col xs={3}>
+                        <Form onSubmit={SubmitID}>
+                            <Form.Label>Driver ID</Form.Label>
+                            <Form.Control
+                                name="DriverID"
+                                placeholder="Enter Driver ID"
+                                onChange={handleChange}
+                            />
+                            <br />
+                            <Button type="submit">Submit</Button>
+                        </Form> 
+                    </Col>
+                    {DriverSelected ? <DriverProfile DriverID={DriverID}/>: null}
+                </Row>
+            </Card.Body>
+        </Card>
+
+    );
 }
 export default DriverList;

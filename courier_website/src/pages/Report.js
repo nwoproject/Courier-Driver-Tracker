@@ -1,10 +1,12 @@
 import React from 'react';
 
+import ReportMainScreen from "../components/ReportMainScreen";
+
 function Report(){
 
     return(
         <div>
-            <p>This will work eventually.</p>
+            <ReportMainScreen />        
         </div>
     )
 }

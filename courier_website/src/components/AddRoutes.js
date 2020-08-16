@@ -71,7 +71,6 @@ function AddRoutes(){
                 RouteObject.longitude = Value.Location.lng;
                 ToSend.route = ([...ToSend.route, RouteObject]);
             });
-            console.log(ToSend);
             let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
             fetch("https://drivertracker-api.herokuapp.com/api/routes",{
                 method : "POST",
@@ -101,10 +100,6 @@ function AddRoutes(){
             });
         }
         
-    }
-
-    function TestFunc(){
-        setRM(true);
     }
 
     return(
