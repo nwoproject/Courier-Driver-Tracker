@@ -1,4 +1,4 @@
-const DB = require('../../services/db_config');
+const DB = require('../services/db_config');
 
 const driverCheck = async (driver_id,driver_token,res) =>
 {

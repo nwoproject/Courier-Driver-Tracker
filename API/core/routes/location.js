@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
-const format = require('./utility/json_formatter');
+const format = require('../utility/json_formatter');
 
 const objectConverter = (results) =>
 {

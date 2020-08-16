@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
 const async = require('async');
-const checks = require('./utility/database_checks');
-const format = require('./utility/json_formatter');
-const db_query = require('./utility/common_queries');
+const checks = require('../utility/database_checks');
+const format = require('../utility/json_formatter');
+const db_query = require('../utility/common_queries');
+const coords = require('../utility/co-ords_calculations');
 
 // POST api/routes
 router.post('/', async (req, res)=>{
@@ -23,7 +24,86 @@ router.post('/', async (req, res)=>{
                 await db_query.addRoute(req,res);
                 if(!res.writableEnded)
                 {
-                    res.status(500).end();
+                    res.status(201).end();
+                }
+            }
+        }
+    }
+});
+
+// POST api/routes/auto-assign
+router.post('/auto-assign', async (req, res)=>{
+    if(!req.body.id || !req.body.token || !req.body.route)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        await checks.managerCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded)
+        {
+            let centerPoints = await db_query.getCenterPoints(res);
+            if(!res.writableEnded)
+            {
+                if(centerPoints.rowCount == 0) //No driver center points, can't assign route
+                {
+                    res.status(501).end();
+                }
+                else
+                {
+                    centerPoints = format.driverCenterPointConverter(centerPoints);
+                    const routeCenter = coords.averageCoords(req.body.route);
+                    const todaysRoutes = await db_query.getTodaysRoutes(res);
+
+                    if(!res.writableEnded)
+                    {
+                        for(let k=0; k < centerPoints.length;k++)
+                        {
+                            centerPoints[k].distance = coords.distanceBetweenLocation(routeCenter.latitude,routeCenter.longitude,centerPoints[k].lat,centerPoints[k].lon);
+                        }
+                        centerPoints.sort(format.sortObject('distance')); // Ranks drivers closest
+
+                        const contains = (routes, id) =>
+                        {
+                            for(let k=0; k <routes.rowCount;k++ )
+                            {
+                                if(routes.rows[k].driver_id==id)
+                                {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                        
+                        let freeDriver = false;
+                        let freeDriverIndex = 0;
+
+                        for(let k=0;centerPoints.length;k++)
+                        {
+                            if(!contains(todaysRoutes,centerPoints[k].driver_id) && (centerPoints[k].distance <= centerPoints[k].radius))
+                            {
+                                freeDriver = true;
+                                freeDriverIndex = k;
+                            }
+                        }
+                        if(freeDriver)
+                        {
+                            await db_query.addRoute(req,res);
+                            if(!writableEnded) //Route successfully assigned to driver
+                            {
+                                let driverDetails = await db_query.getDriver(centerPoints[freeDriverIndex].driver_id);
+                                res.status(201).json({
+                                    "driver_id":centerPoints[freeDriverIndex].driver_id,
+                                    "name":driverDetails.rows[0].name,
+                                    "surname":driverDetails.rows[0].surname
+                                });
+                            }
+                        }
+                        else
+                        {
+                            res.status(204).end();
+                        }
+                    }
                 }
             }
         }
