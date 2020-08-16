@@ -73,11 +73,11 @@ class _HomePageViewState extends State<HomePageView> {
                 decoration: BoxDecoration(
                   color: Colors.black,
                 ),
-                accountName:Text(userData['name']),
-                accountEmail: new Text(userData['surname']),   // data should be pulled from database
+                accountName:Text(""),
+                accountEmail: new Text(""),   // data should be pulled from database
                 currentAccountPicture: new CircleAvatar(
                     backgroundColor: Colors.white,
-                    child: new Text(userData['name'].toString()[0])
+                    child: new Text("")
                 ),
               ),
               new ListTile(

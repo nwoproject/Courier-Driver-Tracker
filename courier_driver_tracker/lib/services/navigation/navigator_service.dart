@@ -41,11 +41,12 @@ class NavigatorService{
   };
 
   NavigatorService({this.jsonFile}){
-    getRoutes();
     _currentRoute = 0;
     _currentLeg = 0;
     _currentStep = 0;
     _currentPoint = 0;
+    getRoutes();
+    setInitialPolyPointsAndMarkers(_currentRoute);
   }
 
   /*
@@ -66,6 +67,13 @@ class NavigatorService{
      */
 
     _position = currentPosition;
+    _abnormalityService.setCurrentLocation(currentPosition);
+    if(currentPolyline == null){
+      setCurrentPolyline();
+    }
+    if(splitPolylineAfter == null || splitPolylineBefore == null){
+      setCurrentSplitPolylines();
+    }
     findCurrentPoint();
     LatLng current = currentPolyline.points[_currentPoint];
     LatLng next;
@@ -83,6 +91,7 @@ class NavigatorService{
     if(!_abnormalityService.offRoute(current, next)){
       moveToNextStep();
       moveToNextLeg();
+      // call abnormalities
 
       // set info vars
     }
@@ -127,8 +136,15 @@ class NavigatorService{
 
   bool passedStepPoint(){
     int nextStep = _currentStep + 1;
-    LatLng lastPoint = getPolyline("$_currentRoute-$_currentLeg-$_currentStep").points.last;
-    LatLng nextPoint = getPolyline("$_currentRoute-$_currentLeg-$nextStep").points.first;
+    LatLng lastPoint = currentPolyline.points.last;
+    Polyline poly = getPolyline("$_currentRoute-$_currentLeg-$nextStep");
+    LatLng nextPoint;
+    if(poly != null){
+      nextPoint = poly.points.first;
+    }
+    else{
+      return false;
+    }
     double d1 = sqrt(pow((_position.latitude - lastPoint.latitude),2) + pow((_position.longitude - lastPoint.longitude),2));
     double d2 = sqrt(pow((nextPoint.latitude - lastPoint.latitude),2) + pow(nextPoint.longitude - lastPoint.longitude,2));
 
@@ -141,7 +157,9 @@ class NavigatorService{
   }
 
   bool reachedStepPoint(){
-    if(_currentPoint == getPolyline("$_currentRoute-$_currentLeg-$_currentStep").points.length - 1){
+    Polyline poly = getPolyline("$_currentRoute-$_currentLeg-$_currentStep");
+    if(poly != null && _currentPoint == poly.points.length - 1){
+      polylines["$_currentRoute-$_currentLeg-$_currentStep"] = poly;
       return true;
     }
     else{
@@ -295,7 +313,7 @@ class NavigatorService{
    * Description: Turns json from saved file into DeliveryRoute object.
    *
    */
-  getRoutes() async {
+  getRoutes()  async {
     JsonHandler handler = JsonHandler();
     Map<String, dynamic> json = await handler.parseJson(jsonFile);
     _deliveryRoutes = DeliveryRoute.fromJson(json);
@@ -368,7 +386,10 @@ class NavigatorService{
     _position = position;
   }
 
-  setInitialPolyPointsAndMarkers(int route){
+  setInitialPolyPointsAndMarkers(int route) async {
+    if(_deliveryRoutes == null){
+      await getRoutes();
+    }
     for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
       int delivery = leg + 1;
       Marker marker = Marker(
@@ -414,12 +435,10 @@ class NavigatorService{
       }
     }
     // after all polylines are created set current polyline and split it for navigation.
-    setCurrentPolyline();
-    setCurrentSplitPolylines();
   }
 
   setCurrentPolyline(){
-    currentPolyline = polylines.remove(polylines["$_currentRoute-$_currentLeg-$_currentStep"].polylineId);
+    currentPolyline = polylines.remove("$_currentRoute-$_currentLeg-$_currentStep");
   }
 
   setCurrentSplitPolylines(){
@@ -428,6 +447,8 @@ class NavigatorService{
     }
 
     splitPolylineCoordinatesBefore = [];
+    splitPolylineCoordinatesAfter = [];
+    splitPolylineCoordinatesBefore.add(LatLng(_position.latitude, _position.longitude));
     splitPolylineCoordinatesAfter.add(LatLng(_position.latitude, _position.longitude));
     splitPolylineCoordinatesAfter.addAll(currentPolyline.points);
 
@@ -461,4 +482,5 @@ TODO
   - integrate API
   - integrate abnormailties
   - integrate notifications
+  + add icon to notifications
  */

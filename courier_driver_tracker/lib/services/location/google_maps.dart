@@ -46,15 +46,16 @@ class MapSampleState extends State<GMap> {
 
   // Navigation
   int _route;
-  NavigatorService _navigatorService = NavigatorService();
+  static String _routeFile = "route.json";
+  NavigatorService _navigatorService = NavigatorService(jsonFile: _routeFile);
 
 
   @override
   void initState() {
     super.initState();
-    getRoutes();
     getCurrentLocation();
     getCurrentRoute();
+    _createRoute();
   }
 
 
@@ -69,12 +70,9 @@ class MapSampleState extends State<GMap> {
     moveToCurrentLocation();
   }
 
-  getRoutes() async {
-    await _navigatorService.getRoutes();
-  }
-
   getCurrentRoute(){
-    _route = String.fromEnvironment('CURRENT_ROUTE', defaultValue: DotEnv().env['CURRENT_ROUTE']) as int;
+    String currentRoute = String.fromEnvironment('CURRENT_ROUTE', defaultValue: DotEnv().env['CURRENT_ROUTE']);
+    _route = int.parse(currentRoute);
   }
 
   /*
@@ -257,7 +255,7 @@ class MapSampleState extends State<GMap> {
     /*TODO
       - make new function to replace polylines.
      */
-    _navigatorService.setInitialPolyPointsAndMarkers(_route);
+    await _navigatorService.setInitialPolyPointsAndMarkers(_route);
     polylines = _navigatorService.polylines;
     markers = _navigatorService.markers;
   }
@@ -270,7 +268,7 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null){
-      _navigatorService.updateCurrentPosition(_currentPosition);
+      _navigatorService.navigate(_currentPosition);
       _routeLogging.writeToFile(_geolocatorService.convertPositionToString(_currentPosition) + "\n", "locationFile");
     }
 
@@ -299,7 +297,6 @@ class MapSampleState extends State<GMap> {
                               zoomControlsEnabled: false,
                               onMapCreated: (GoogleMapController controller) {
                                 mapController = controller;
-                                _createRoute();
                               },
                             ),
                           ),
@@ -412,7 +409,7 @@ class MapSampleState extends State<GMap> {
                           'Delivery'
                         ),
                         subtitle: Text(
-                          _currentDelivery,
+                          "$_currentDelivery",
                           style: TextStyle(
                             fontSize: 14.0,
                             color: Colors.black,

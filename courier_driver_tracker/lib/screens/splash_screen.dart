@@ -5,6 +5,7 @@ import "login.dart";
 import "home.dart";
 import 'package:courier_driver_tracker/services/location/permissions.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 class SplashScreen extends StatefulWidget{
@@ -21,10 +22,16 @@ class _SplashScreenState extends State<SplashScreen> {
     _changeActiveWidget();
   }
 
-  Future<bool> _checkFlutter() async {
+  Future<bool> _checkLoginStatus() async {
     await Future.delayed(Duration(milliseconds: 5000), (){});
-
-    return false;
+    String loggedIn = String.fromEnvironment('LOGGED_IN', defaultValue: DotEnv().env['LOGGED_IN']);
+    print(loggedIn);
+    if(loggedIn == "true"){
+      return true;
+    }
+    else{
+      return false;
+    }
   }
 
   void _navigateToLogin(){
@@ -49,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
     bool storagePerm = await RouteLogging.checkPermissions();
 
     if(service && perm && storagePerm){
-      _checkFlutter().then(
+      _checkLoginStatus().then(
               (status){
             if(!status){
               _navigateToLogin();
