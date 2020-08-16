@@ -110,6 +110,8 @@ class _FeedbackState extends State<Feedback> {
       resp = other;
     }
 
+    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
+
     Map data = {
       "code": 100,
       "token": token,
@@ -121,11 +123,11 @@ class _FeedbackState extends State<Feedback> {
 
     Map<String, String> requestHeaders = {
       'Accept': 'application/json',
-      'Authorization':'Bearer $token'
+      'Authorization':'Bearer $bearerToken'
     };
 
     var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/:driverID",
+        "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
         headers: requestHeaders,
         body: data);
 
