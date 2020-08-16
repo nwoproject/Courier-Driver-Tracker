@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:core';
 import 'package:courier_driver_tracker/services/navigation/location.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class AbnormalityService{
   /*
@@ -82,9 +83,9 @@ class AbnormalityService{
    * Description: Uses the current position and specified route to determine
    *              if the driver is still following the specified route.
    */
-  bool offRoute(Location start, Location end){
-    double m = (end.lng - start.lng)/(end.lat - start.lat);
-    double shouldBeAt = m*(_currentPosition.latitude - start.lat) + start.lng;
+  bool offRoute(LatLng start, LatLng end){
+    double m = (end.longitude - start.longitude)/(end.latitude - start.latitude);
+    double shouldBeAt = m*(_currentPosition.latitude - start.latitude) + start.longitude;
     double distanceFromPolyline = calculateDistanceBetween(_currentPosition, Position(longitude: shouldBeAt, latitude: _currentPosition.latitude));
 
     // checks if the distance of the courier is more than 20m away from route.

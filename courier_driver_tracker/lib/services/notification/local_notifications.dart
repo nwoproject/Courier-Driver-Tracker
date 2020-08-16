@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -28,10 +26,6 @@ class _LocalNotificationsState extends State<LocalNotifications> {
   AndroidInitializationSettings androidInitializationSettings;
   IOSInitializationSettings iosInitializationSettings;
   InitializationSettings initializationSettings;
-  Position _currentPosition;
-
-  //Abnormality service
-  AbnormalityService _abnormalityService = AbnormalityService();
 
   @override
   void initState() {
@@ -48,11 +42,11 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         );
   }
 
-  void _showNotifications(String header, String message) async {
-    await notification(header, message);
+  void showNotifications(String header, String message) async {
+    await _notification(header, message);
   }
 
-  Future<void> notification(String header, String message) async {
+  Future<void> _notification(String header, String message) async {
     AndroidNotificationDetails androidNotificationDetails =
     AndroidNotificationDetails(
         'Channel ID', 'Channel title', 'channel body',
@@ -76,20 +70,6 @@ class _LocalNotificationsState extends State<LocalNotifications> {
 
   @override
   Widget build(BuildContext context) {
-    _currentPosition = Provider.of<Position>(context);
-
-    // Calls abnormality service
-    if(_currentPosition != null){
-      _abnormalityService.setCurrentLocation(_currentPosition);
-      if(_abnormalityService.suddenStop()){
-        _showNotifications("Warning", "You stopped very quickly!");
-      }
-      if(_abnormalityService.stoppingTooLong()){
-          _showNotifications("Warning", "You haven't moved in a while!");
-      }
-
-    }
-
     return Container();
   }
 }

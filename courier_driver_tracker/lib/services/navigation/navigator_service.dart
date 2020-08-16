@@ -30,6 +30,16 @@ class NavigatorService{
   List<LatLng> splitPolylineCoordinatesAfter;
   Set<Marker> markers = {};
 
+  // Notifications
+  Map<String, String> _abnormalityHeaders =
+  {
+    "offroute" : "Going Off Route!"
+  };
+  Map<String, String> _abnormalityMessages =
+  {
+    "offroute" : "You are going off the prescribed route."
+  };
+
   NavigatorService({this.jsonFile}){
     getRoutes();
     _currentRoute = 0;
@@ -55,6 +65,31 @@ class NavigatorService{
     - update the info vars for map
      */
 
+    _position = currentPosition;
+    findCurrentPoint();
+    LatLng current = currentPolyline.points[_currentPoint];
+    LatLng next;
+    if(_currentPoint < currentPolyline.points.length -1){
+      next = currentPolyline.points[_currentPoint + 1];
+    }
+    else if(_currentPoint == currentPolyline.points.length - 1 && _currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1){
+      int nextLeg = _currentLeg + 1;
+      next = getPolyline("$_currentRoute-$nextLeg-0").points[0];
+    }
+    else{
+      int nextStep = _currentStep + 1;
+      next = getPolyline("$_currentRoute-$_currentLeg-$nextStep").points[0];
+    }
+    if(!_abnormalityService.offRoute(current, next)){
+      moveToNextStep();
+      moveToNextLeg();
+
+      // set info vars
+    }
+    else{
+      _notificationManager.createState().showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
+      // start marking the route he followed.
+    }
   }
 
   /*
@@ -105,8 +140,8 @@ class NavigatorService{
     }
   }
 
-  bool reachedDeliveryPoint(){
-    if(_currentPoint == getPolyline("$_currentRoute-$_currentLeg-$_currentStep").points.length -1){
+  bool reachedStepPoint(){
+    if(_currentPoint == getPolyline("$_currentRoute-$_currentLeg-$_currentStep").points.length - 1){
       return true;
     }
     else{
@@ -121,10 +156,13 @@ class NavigatorService{
       setCurrentPolyline();
       setCurrentSplitPolylines();
     }
+    else{
+      updateCurrentPolyline();
+    }
   }
 
   moveToNextLeg(){
-    if(reachedDeliveryPoint() && _doneWithDelivery){
+    if(reachedStepPoint() && _currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1 && _doneWithDelivery){
       _currentLeg += 1;
       _currentStep = 0;
       updatePreviousStepPolyline();
@@ -132,6 +170,7 @@ class NavigatorService{
       setCurrentSplitPolylines();
       _doneWithDelivery = false;
     }
+
   }
 
 
