@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:courier_driver_tracker/screens/abnormalityReporting.dart';
 
 void main() => runApp(MyApp());
 
@@ -68,10 +69,12 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         0, header, message, notificationDetails);
   }
 
-  onSelectNotification(String payLoad) {
-    if (payLoad != null) {
-      print(payLoad);
-    }
+   onSelectNotification(String payLoad) {
+     MaterialPageRoute(
+       builder: (_)=>UserFeedback(),);
+//    if (payLoad != null) {
+//      print(payLoad);
+
   }
 
   @override

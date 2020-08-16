@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 
 
 class UserFeedback extends StatelessWidget {
@@ -41,7 +40,6 @@ class _FeedbackState extends State<Feedback> {
   String other;
   final storage = new FlutterSecureStorage();
 
-  GeolocatorService _geolocatorService = GeolocatorService();
   Position _currentPosition;
 
   void initState() {
