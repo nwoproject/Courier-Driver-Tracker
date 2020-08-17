@@ -7,6 +7,7 @@ import './style/style.css';
 
 function LocationCard(props){
     const [BoolAdded, setBool] = useState(false);
+    
     function AddLocationToRoute(){
         let LocationArray = [];
         let ToSave = {};

@@ -20,58 +20,23 @@ function RouteCall(props){
             })
             .then(response=>response.json())
             .then(result=>{
-                    let Location = {};
-                    let geo = result.candidates[0].geometry.location;
-                    let ForAdd = result.candidates[0].formatted_address;
-                    let AddName = result.candidates[0].name;
-                    let ImgSrc = result.photo;
-                    setBool(false);
-                    Location.Name = AddName;
-                    Location.ForAdd = ForAdd;
-                    Location.IMG = ImgSrc;
-                    Location.geo = geo;
-                    setLocs(prevState=>{return ([...prevState, Location])});
-                    setBool(true);
-                /*setBool(false);
-                var ImgSrc = result.photo;
-                console.log(ImgSrc);
                 result.candidates.map(CurrentElement=>{
                     let Location = {};
-                    let geo = CurrentElement.geometry.location;
-                    let ForAdd = CurrentElement.formatted_address;
-                    let AddName = CurrentElement.name;
-                    
+                    let ImgSrc = "";                  
                     try{
-                        let ImgSrcII = CurrentElement.photos[0].photo_reference;
+                        ImgSrc = CurrentElement.photo;
                     }
                     catch(err){
                         ImgSrc = "../images/404.png";
                     }
                         setBool(false);
-                        ImgSrc=CurrentElement.photo;
-                        console.log(CurrentElement);
-                        Location.Name = AddName;
-                        Location.ForAdd = ForAdd;
-                        console.log(ImgSrc);
+                        Location.Name = CurrentElement.name;
+                        Location.ForAdd = CurrentElement.formatted_address;
                         Location.IMG = ImgSrc;
-                        Location.geo = geo;
+                        Location.geo = CurrentElement.geometry.location;
                         setLocs(prevState=>{return ([...prevState, Location])});
                         setBool(true);
-                    
-                    fetch("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+ImgSrc+"&key="+process.env.REACT_APP_GOOGLE_API,{
-                        method: "GET"
-                    })
-                    .then(response=>{
-                        setBool(false);
-                        ImgSrc=response.url;
-                        Location.Name = AddName;
-                        Location.ForAdd = ForAdd;
-                        Location.IMG = ImgSrc;
-                        Location.geo = geo;
-                        setLocs(prevState=>{return ([...prevState, Location])});
-                        setBool(true);
-                    });
-                }); */
+                }); 
                 })
             }
             catch(err){
