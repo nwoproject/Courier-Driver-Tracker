@@ -1,5 +1,12 @@
 const Pool = require('pg').Pool
 
+//Keeps nodejs from formatting timestamps without timezones
+var pg = require('pg');
+var types = pg.types;
+types.setTypeParser(1114, (stringValue) => {
+return stringValue;
+});
+
 //For connecting to the DB
 const DB_HOST = process.env.DB_HOST;
 const DB_NAME = process.env.DB_NAME;
@@ -28,4 +35,12 @@ const dbErrorHandler = (res,err) =>
     }
 }
 
-module.exports = {pool,dbErrorHandler};
+const dbErrorHandlerNoResponse = (err) =>
+{
+    if(!PRODUCTION)
+    {
+        console.log("DB ERROR: " + err.message);
+    }
+}
+
+module.exports = {pool,dbErrorHandler,dbErrorHandlerNoResponse};

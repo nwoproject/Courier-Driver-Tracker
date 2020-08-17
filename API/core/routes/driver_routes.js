@@ -2,98 +2,111 @@ const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
 const async = require('async');
-
-const routeFormatter = (locRes,routeRes,routeNum) =>
-{
-    var location = [];
-    for(var k = 0; k < locRes.rowCount;k++)
-    {
-        location.push({
-        "latitude":locRes.rows[k].latitude,
-        "longitude":locRes.rows[k].longitude});
-    }
-    var route = {
-                "route_id": routeRes.rows[routeNum].route_id,
-                "locations": location};
-    return route;
-}
+const checks = require('../utility/database_checks');
+const format = require('../utility/json_formatter');
+const db_query = require('../utility/common_queries');
+const coords = require('../utility/co-ords_calculations');
 
 // POST api/routes
-router.post('/', (req, res)=>{
-    var datetime = new Date();
-    var assinged_Date = datetime.toISOString().slice(0,10);
+router.post('/', async (req, res)=>{
     if(!req.body.id || !req.body.token || !req.body.driver_id || !req.body.route)
     {
         res.status(400).end();
     }
     else
     {
-        DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."manager" WHERE "token"=($1) AND "id"=($2))',[req.body.token,req.body.id],(err,managerCheck)=>{
-            if(err)
+        await checks.managerCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded)
+        {
+            await checks.driverExistsCheck(req.body.driver_id,res);
+            if(!res.writableEnded)
             {
-                DB.dbErrorHandler(res,err);
-            }
-            else
-            {
-                if(managerCheck.rows[0].exists)
+                await db_query.addRoute(req,req.body.driver_id,res);
+                if(!res.writableEnded)
                 {
-                    DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."driver" WHERE "id"=($1))',[req.body.driver_id],(driverCheckError,driverCheck)=>{
-                        if(driverCheckError)
-                        {
-                            DB.dbErrorHandler(res,driverCheckError);
-                        }
-                        else
-                        {
-                            if(driverCheck.rows[0].exists)
-                            {
-                                DB.pool.query('INSERT INTO route."route"("driver_id","completed","date_assigned")VALUES($1,$2,$3) RETURNING *',[req.body.driver_id,false,assinged_Date],(error,routeResult)=>{
-                                    if(error)
-                                    {
-                                        DB.dbErrorHandler(res,error);
-                                    }
-                                    else
-                                    {
-                                        
-                                       var series = [];
-                                       for(var k=0; k < req.body.route.length;k++)
-                                       {
-                                           series.push(k);
-                                       }
+                    res.status(201).end();
+                }
+            }
+        }
+    }
+});
 
-                                       async.eachSeries(series,(i,callback)=>{
-                                            DB.pool.query('INSERT INTO route."location"("route_id","latitude","longitude")VALUES($1,$2,$3)',[routeResult.rows[0].route_id,req.body.route[i].latitude,req.body.route[i].longitude],(locationError,locationResult)=>{
-                                                if(locationError)
-                                                {
-                                                    DB.dbErrorHandler(res,locationError);
-                                                }
-                                                callback(null);
-                                            });
-                                       },(insertErr)=>{
-                                            if(insertErr)
-                                            {
-                                                DB.dbErrorHandler(res,insertErr);
-                                            }
-                                            else
-                                            {
-                                                res.status(201).end();
-                                            }
-                                       });
-                                    }
-                                });
-                            }
-                            else
-                            {
-                                res.status(404).end();
-                            }
-                        }
-                    });
+// POST api/routes/auto-assign
+router.post('/auto-assign', async (req, res)=>{
+    if(!req.body.id || !req.body.token || !req.body.route)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        await checks.managerCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded)
+        {
+            let centerPoints = await db_query.getCenterPoints(res);
+            if(!res.writableEnded)
+            {
+                if(centerPoints.rowCount == 0) //No driver center points, can't assign route
+                {
+                    res.status(501).end();
                 }
                 else
                 {
-                    res.status(401).end();
+                    centerPoints = format.driverCenterPointConverter(centerPoints);
+                    const routeCenter = coords.averageCoords(req.body.route);
+                    const todaysRoutes = await db_query.getTodaysRoutes(res);
+
+                    if(!res.writableEnded)
+                    {
+                        for(let k=0; k < centerPoints.length;k++)
+                        {
+                            centerPoints[k].distance = coords.distanceBetweenLocation(routeCenter.latitude,routeCenter.longitude,centerPoints[k].lat,centerPoints[k].lon);
+                        }
+                        centerPoints.sort(format.sortObject('distance')); // Ranks drivers closest
+
+                        const contains = (routes, id) =>
+                        {
+                            for(let k=0; k <routes.rowCount;k++ )
+                            {
+                                if(routes.rows[k].driver_id==id)
+                                {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                        
+                        let freeDriver = false;
+                        let freeDriverIndex = 0;
+
+                        for(let k=0;centerPoints.length;k++)
+                        {
+                            if(!contains(todaysRoutes,centerPoints[k].driver_id) && (centerPoints[k].distance <= centerPoints[k].radius))
+                            {
+                                freeDriver = true;
+                                freeDriverIndex = k;
+                            }
+                        }
+                        if(freeDriver)
+                        {
+                            await db_query.addRoute(req,res);
+                            if(!writableEnded) //Route successfully assigned to driver
+                            {
+                                let driverDetails = await db_query.getDriver(centerPoints[freeDriverIndex].driver_id);
+                                res.status(201).json({
+                                    "driver_id":centerPoints[freeDriverIndex].driver_id,
+                                    "name":driverDetails.rows[0].name,
+                                    "surname":driverDetails.rows[0].surname
+                                });
+                            }
+                        }
+                        else
+                        {
+                            res.status(204).end();
+                        }
+                    }
                 }
             }
-        });
+        }
     }
 });
 
@@ -125,7 +138,7 @@ router.get('/:driverid', (req,res)=>{
                         {
                             DB.dbErrorHandler(res,locationError);
                         }
-                        routes.push(routeFormatter(locationResult,result,i));
+                        routes.push(format.routeFormatter(locationResult,result,i));
                         callback(null);
                     });
                },(queryError)=>{
@@ -141,6 +154,84 @@ router.get('/:driverid', (req,res)=>{
             }
         }
     });
+});
+
+// PUT api/routes/location/:locationid
+router.put('/location/:locationid',async(req,res)=>{
+    const location_id = req.params.locationid;
+    if(!req.body.timestamp || !req.body.id || !req.body.token)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        await checks.driverCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded)
+        {
+            DB.pool.query('UPDATE route."location" SET "timestamp_completed"=($1) WHERE "location_id"=($2)',[req.body.timestamp,location_id], (err,results)=>{
+                if(err)
+                {
+                    DB.dbErrorHandler(res,err);
+                }
+                else
+                {
+                    if(results.rowCount == 0) // No location with that location_id
+                    {
+                        res.status(404).end();
+                    }
+                    else
+                    {
+                        res.status(204).end();
+                    }
+                }
+            });
+        }
+    }
+});
+
+// PUT api/routes/completed/:routeid
+router.put('/completed/:routeid',async(req,res)=>{
+    const route_id = req.params.routeid;
+    if(!req.body.timestamp || !req.body.id || !req.body.token)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        await checks.driverCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded) // driver is valid
+        {
+            DB.pool.query('UPDATE route."route" SET "completed"=($1),"timestamp_completed"=($2) WHERE "route_id"=($3) AND "driver_id"=($4)',
+            [true,req.body.timestamp,route_id,req.body.id], async (err,results)=>{
+                if(err)
+                {
+                    DB.dbErrorHandler(res,err);
+                }
+                else
+                {
+                    if(results.rowCount == 0)// No route with that route_id OR driver was not assigned to that route
+                    {
+                        res.status(404).end();
+                    }
+                    else
+                    {
+                        const completed = await checks.routeLocationsCheck(route_id,res);
+                        if(!res.writableEnded)
+                        {
+                            if(completed)
+                            {
+                                res.status(204).end();
+                            }
+                            else // TODO Log that driver potentially missed a delivery
+                            {
+                                res.status(206).end();
+                            }   
+                        }
+                    }
+                }
+            });
+        }
+    }
 });
 
 module.exports = router;

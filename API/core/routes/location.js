@@ -1,20 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
-
-const objectConverter = (results) =>
-{
-    var drivers = [];
-    for(var k = 0; k < results.rowCount;k++)
-    {
-        drivers.push({"id":results.rows[k].id,
-        "name":results.rows[k].name,
-        "surname":results.rows[k].surname,
-        "latitude":results.rows[k].latitude,
-        "longitude":results.rows[k].longitude});
-    }
-    return drivers;
-}
+const format = require('../utility/json_formatter');
 
 // PUT /api/location/:driverid
 router.put('/:driverid', (req, res)=>{
@@ -59,7 +46,7 @@ router.get('/driver', (req, res)=>{
                 }
                 else
                 {
-                    res.status(200).json({"drivers": objectConverter(results)}).end();
+                    res.status(200).json({"drivers": format.objectConverter(results)}).end();
                 }
             }
         });
@@ -79,7 +66,7 @@ router.get('/driver', (req, res)=>{
                 }
                 else
                 {
-                    res.status(200).json({"drivers": objectConverter(results)}).end();
+                    res.status(200).json({"drivers": format.objectConverter(results)}).end();
                 }
             }
         });
