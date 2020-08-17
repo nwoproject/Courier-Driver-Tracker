@@ -21,7 +21,7 @@ router.post('/', async (req, res)=>{
             await checks.driverExistsCheck(req.body.driver_id,res);
             if(!res.writableEnded)
             {
-                await db_query.addRoute(req,res);
+                await db_query.addRoute(req,req.body.driver_id,res);
                 if(!res.writableEnded)
                 {
                     res.status(201).end();
