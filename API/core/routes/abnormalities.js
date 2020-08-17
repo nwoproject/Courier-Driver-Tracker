@@ -4,17 +4,17 @@ const DB = require('../services/db_config');
 
 const abnormalityDescription = (code) =>
 {
-    switch(code)
+    switch(code.toString())
     {
-        case 100: 
+        case '100': 
             return 'Standing still for too long.'
-        case 101:
+        case '101':
             return 'Driver came to a sudden stop.'
-        case 102:
+        case '102':
             return 'Driver exceeded the speed limit.'
-        case 103:
+        case '103':
             return 'Driver took a diffrent route than what was prescribed.'
-        case 104:
+        case '104':
             return 'Driver was driving with the company car when no deliveries were scheduled.'
         default :
             return 'error';

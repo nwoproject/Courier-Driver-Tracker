@@ -31,7 +31,7 @@ const objectConverter = (results) =>
 const driverCenterPointConverter= (results) =>
 {
     let centerPoints = [];
-    for(let k ; k < results.rowCount ; k++)
+    for(let k=0 ; k < results.rowCount ; k++)
     {
         centerPoints.push({
             "driver_id": results.rows[k].driver_id,
@@ -43,15 +43,14 @@ const driverCenterPointConverter= (results) =>
     return centerPoints;
 }
 
-//Integer sort only. Sorts from low to high. Strings will be sorted from high to low
 const sortObject = (prop) => 
 {    
     return (a, b) => {    
-        if(a[prop] < b[prop])
+        if(a[prop] > b[prop])
         {    
             return 1;    
         } 
-        else if(a[prop] > b[prop]) 
+        else if(a[prop] < b[prop]) 
         {    
             return -1;    
         }    
