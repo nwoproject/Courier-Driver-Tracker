@@ -23,10 +23,14 @@ function AddRoutes(){
     const [ServerError, setSE] = useState(false);
     const [InvalidTokens, setIT] = useState(false);
     const [RouteMade, setRM] = useState(false);
+    const [DailyCheck, setDC] = useState(false);
 
     function handleChange(event){
         if(event.target.name==="Query"){
             setQuery(event.target.value);
+        }
+        else if(event.target.name==="DaliyCheck"){
+            setDC(!DailyCheck);
         }
         else{
             setID(event.target.value);
@@ -130,13 +134,20 @@ function AddRoutes(){
                     <Form onSubmit={SubmitRoute}>
                         <Form.Group>
                             <Row>
-                                <Col xs={4}><Form.Control 
-                                    type="text" 
-                                    placeholder="Input Driver ID" 
-                                    name="Route"
-                                    required={true}
-                                    onChange={handleChange}></Form.Control></Col>
-                                <Col xs={4}><Button variant="primary" type="submit">Submit Route</Button></Col>
+                                <Col xs={4}>
+                                    <Form.Control 
+                                        type="text" 
+                                        placeholder="Input Driver ID" 
+                                        name="Route"
+                                        required={true}
+                                        onChange={handleChange}/>
+                                </Col>
+                                <Col xs={3}>
+                                    <Form.Check type="checkbox" label="Make Route Daily" name="DaliyCheck" onChange={handleChange}/>
+                                </Col>
+                                <Col xs={4}>
+                                    <Button variant="primary" type="submit">Submit Route</Button>
+                                </Col>
                             </Row>
                         </Form.Group>
                     </Form>

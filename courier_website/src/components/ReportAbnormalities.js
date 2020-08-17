@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
@@ -13,9 +12,7 @@ function ReportAbnormalities(props){
     const [AbnormalityArr, setAA] = useState([]);
     const [Loading, setL] = useState(true);
     const [ServerError, setSE] = useState(false);
-    const [Failed, setF] = useState(false);
     const [NumberAbbnormalities, setNA] = useState(0);
-    const [SeeAb, setSA] = useState(false);
 
     useEffect(()=>{
         let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
@@ -35,7 +32,7 @@ function ReportAbnormalities(props){
                     let length = 0;
                     let Counter = 0;
                     let AbObj = {};
-                    if(result.abnormalities.code_100.driver_abnormalities.length!=0){
+                    if(result.abnormalities.code_100.driver_abnormalities.length!==0){
                         length = length + result.abnormalities.code_100.driver_abnormalities.length;
                         result.abnormalities.code_100.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Standing still for too long.'}
@@ -44,7 +41,7 @@ function ReportAbnormalities(props){
                             setAA(prevState=>{return([...prevState, AbObj])});
                         })
                     }
-                    if(result.abnormalities.code_101.driver_abnormalities.length!=0){
+                    if(result.abnormalities.code_101.driver_abnormalities.length!==0){
                         length = length + result.abnormalities.code_101.driver_abnormalities.length;
                         result.abnormalities.code_101.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver came to a sudden stop.'}
@@ -53,7 +50,7 @@ function ReportAbnormalities(props){
                             setAA(prevState=>{return([...prevState, AbObj])});
                         })
                     }
-                    if(result.abnormalities.code_102.driver_abnormalities.length!=0){
+                    if(result.abnormalities.code_102.driver_abnormalities.length!==0){
                         length = length + result.abnormalities.code_102.driver_abnormalities.length;
                         result.abnormalities.code_102.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver exceeded the speed limit.'}
@@ -62,7 +59,7 @@ function ReportAbnormalities(props){
                             setAA(prevState=>{return([...prevState, AbObj])});
                         })
                     }
-                    if(result.abnormalities.code_103.driver_abnormalities.length!=0){
+                    if(result.abnormalities.code_103.driver_abnormalities.length!==0){
                         length = length + result.abnormalities.code_103.driver_abnormalities.length;
                         result.abnormalities.code_103.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver took a diffrent route than what prescribed.'}
@@ -71,7 +68,7 @@ function ReportAbnormalities(props){
                             setAA(prevState=>{return([...prevState, AbObj])});
                         })
                     }
-                    if(result.abnormalities.code_104.driver_abnormalities.length!=0){
+                    if(result.abnormalities.code_104.driver_abnormalities.length!==0){
                         length = length + result.abnormalities.code_104.driver_abnormalities.length;
                         result.abnormalities.code_104.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver was driving with the company car when no deliveries were scheduled.'}
@@ -89,14 +86,9 @@ function ReportAbnormalities(props){
             }
             else{
                 setL(false);
-                setF(true);
             }
         })
     },[]);
-
-    function SeeAbnor(){
-        setSA(!SeeAb);
-    }
 
     return (
         <div>
@@ -106,10 +98,9 @@ function ReportAbnormalities(props){
                 </Spinner>
             :
                 <Card>
-                    <Card.Header>Report</Card.Header>
+                    <Card.Header>Abnormality Report</Card.Header>
                     <Card.Body>
                         {ServerError ? <Alert variant="warning">An Error occured on the Server.</Alert>:null}
-                        {Failed ? <Alert variant="warning">Either the Driver could not be found, or he has no abnormalities to report</Alert>:null}
                         <p>The Driver has {NumberAbbnormalities} abnormalities so far.</p>
                             <Row>
                                 <Col xs={4}>

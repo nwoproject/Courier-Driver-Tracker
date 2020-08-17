@@ -39,10 +39,10 @@ function Header() {
                     <Nav.Link href="#Tracking" as={Link} to={Logged ? "/pages/AlwaysOnTracking" : "/pages/Login"}>
                         Always On Tracking
                     </Nav.Link>
-                    <Nav.Link href="#Tracking" as={Link} to={Logged ? "/pages/ManageDrivers" : "/pages/Login"}>
+                    <Nav.Link href="#ManageDrivers" as={Link} to={Logged ? "/pages/ManageDrivers" : "/pages/Login"}>
                         Manage Drivers
                     </Nav.Link>
-                    <Nav.Link href="#Tracking" as={Link} to={Logged ? "/pages/Report" : "/pages/Login"}>
+                    <Nav.Link href="#Report" as={Link} to={Logged ? "/pages/Report" : "/pages/Login"}>
                         Report
                     </Nav.Link>
                 </Nav>

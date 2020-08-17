@@ -6,9 +6,9 @@ function Abnormality(props){
         <Card>
             <Card.Header>Abnormality {props.ID}</Card.Header>
             <Card.Body>
-                <p>Description: {props.Desc}</p>
-                <p>Given Reason: {props.Reason}</p>
-                <p>Date: {props.Date}</p>
+                <p><b>Description:</b> {props.Desc}</p>
+                <p><b>Given Reason:</b> {props.Reason}</p>
+                <p><b>Date:</b> {props.Date}</p>
             </Card.Body>
         </Card>
     )
