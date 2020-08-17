@@ -61,7 +61,7 @@ router.post('/auto-assign', async (req, res)=>{
                         {
                             centerPoints[k].distance = coords.distanceBetweenLocation(routeCenter.latitude,routeCenter.longitude,centerPoints[k].lat,centerPoints[k].lon);
                         }
-                        centerPoints.sort(format.sortObject('distance')); // Ranks drivers closest
+                        centerPoints.sort(format.sortObject('distance')); // Ranks drivers according to distance from center point of route
 
                         const contains = (routes, id) =>
                         {
@@ -78,18 +78,19 @@ router.post('/auto-assign', async (req, res)=>{
                         let freeDriver = false;
                         let freeDriverIndex = 0;
 
-                        for(let k=0;centerPoints.length;k++)
+                        for(let k=0; k < centerPoints.length;k++)
                         {
                             if(!contains(todaysRoutes,centerPoints[k].driver_id) && (centerPoints[k].distance <= centerPoints[k].radius))
                             {
                                 freeDriver = true;
                                 freeDriverIndex = k;
+                                break;
                             }
                         }
                         if(freeDriver)
                         {
-                            await db_query.addRoute(req,res);
-                            if(!writableEnded) //Route successfully assigned to driver
+                            await db_query.addRoute(req,centerPoints[freeDriverIndex].driver_id,res);
+                            if(!res.writableEnded) //Route successfully assigned to driver
                             {
                                 let driverDetails = await db_query.getDriver(centerPoints[freeDriverIndex].driver_id);
                                 res.status(201).json({
@@ -98,11 +99,12 @@ router.post('/auto-assign', async (req, res)=>{
                                     "surname":driverDetails.rows[0].surname
                                 });
                             }
-                        }
+                        } 
                         else
                         {
                             res.status(204).end();
                         }
+                        
                     }
                 }
             }

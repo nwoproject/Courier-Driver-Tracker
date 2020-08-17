@@ -27,8 +27,8 @@ const averageCoords = (coords) =>
 
     for(let k=0; k < coords.length ; k++)
     {
-        lat+=coords[k].latitude; 
-        lon+=coords[k].longitude;
+        lat+=parseFloat(coords[k].latitude); 
+        lon+=parseFloat(coords[k].longitude);
     }
 
     lat = lat / coords.length;
