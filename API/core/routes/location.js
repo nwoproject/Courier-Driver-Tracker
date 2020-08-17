@@ -3,20 +3,6 @@ const router = express.Router();
 const DB = require('../services/db_config');
 const format = require('../utility/json_formatter');
 
-const objectConverter = (results) =>
-{
-    var drivers = [];
-    for(var k = 0; k < results.rowCount;k++)
-    {
-        drivers.push({"id":results.rows[k].id,
-        "name":results.rows[k].name,
-        "surname":results.rows[k].surname,
-        "latitude":results.rows[k].latitude,
-        "longitude":results.rows[k].longitude});
-    }
-    return drivers;
-}
-
 // PUT /api/location/:driverid
 router.put('/:driverid', (req, res)=>{
     if((!req.body.latitude || req.body.latitude.length==0)||(!req.body.longitude || req.body.longitude.length==0))

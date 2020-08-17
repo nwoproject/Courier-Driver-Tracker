@@ -144,7 +144,7 @@ router.get('/:driverid',(req,res)=>{
         {
             if(results.rowCount==0) //no abnormalities for that driver
             {
-                res.status.send(204).end();
+                res.status(204).end();
             }
             else
             {
