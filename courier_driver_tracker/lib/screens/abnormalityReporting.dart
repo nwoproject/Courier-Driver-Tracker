@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
+import 'package:courier_driver_tracker/screens/home.dart';
 
 
 class UserFeedback extends StatelessWidget {
@@ -40,7 +42,9 @@ class _FeedbackState extends State<Feedback> {
   String other;
   final storage = new FlutterSecureStorage();
 
-  Position _currentPosition;
+  GeolocatorService geolocatorService = new GeolocatorService();
+  Position position;
+
 
   void initState() {
     super.initState();
@@ -53,6 +57,14 @@ class _FeedbackState extends State<Feedback> {
     textController.dispose();
     super.dispose();
   }
+
+  void homePage() async{
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (BuildContext context) => HomePage()
+        ));
+  }
+
 
   void checkForEmptyText() {
     other = textController.text;
@@ -68,6 +80,7 @@ class _FeedbackState extends State<Feedback> {
       );
     }
       else{
+        textController.clear();
         report();
     }
   }
@@ -78,18 +91,20 @@ class _FeedbackState extends State<Feedback> {
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIos: 1,
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.blue,
           textColor: Colors.white
       );
     }
- 
+
 
   void report() async{
+    position = await geolocatorService.getPosition();
     var token = await storage.read(key: 'token');
     var driverID = await storage.read(key: 'id');
-    String lat = _currentPosition.latitude.toString();
-    String long = _currentPosition.longitude.toString();
-    String time = _currentPosition.timestamp.toString();
+    driverID = driverID.toString();
+    String lat = position.latitude.toString();
+    String long = position.longitude.toString();
+    String time = position.timestamp.toString();
 
     String resp = "";
 
@@ -112,8 +127,11 @@ class _FeedbackState extends State<Feedback> {
 
     String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
 
+    print (lat);
+    print (long);
+    print (time);
     Map data = {
-      "code": 100,
+      "code": "100",
       "token": token,
       "description": resp,
       "latitude": lat,
@@ -223,6 +241,7 @@ class _FeedbackState extends State<Feedback> {
         RaisedButton(
           onPressed: (){
             checkForEmptyText();
+            homePage();
             },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),

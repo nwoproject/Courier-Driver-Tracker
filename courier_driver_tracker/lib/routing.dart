@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
 import 'screens/splash_screen.dart';
+import 'screens/abnormalityReporting.dart';
 
 class Router {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -25,6 +26,9 @@ class Router {
           return MaterialPageRoute(builder: (_)=>LoginPage(),);
         }
         break;
+
+      case '/report':
+       return MaterialPageRoute(builder: (_) => UserFeedback(),);
 
       case '/delivery':
         return MaterialPageRoute(builder: (_)=>DeliveryScreen(),);

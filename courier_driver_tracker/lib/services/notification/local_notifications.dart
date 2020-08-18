@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:courier_driver_tracker/screens/abnormalityReporting.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -38,6 +38,7 @@ class _LocalNotificationsState extends State<LocalNotifications> {
   void initState() {
     super.initState();
     initializing();
+
   }
 
   void initializing() async {
@@ -47,6 +48,8 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         androidInitializationSettings, iosInitializationSettings);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings
         );
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
   }
 
   void _showNotifications(String header, String message) async {
@@ -69,11 +72,14 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         0, header, message, notificationDetails);
   }
 
-   onSelectNotification(String payLoad) {
-     MaterialPageRoute(
-       builder: (_)=>UserFeedback(),);
-//    if (payLoad != null) {
-//      print(payLoad);
+   Future onSelectNotification(String payLoad) async{
+
+    print("THIS IS THE PAYLOAD:::::::::::::::::::::::::::::::::::::::::::::" + payLoad);
+    if (payLoad != null) {
+      print(payLoad);
+    await  Navigator.of(context)
+        .pushNamed('/report');
+    }
 
   }
 
@@ -90,7 +96,6 @@ class _LocalNotificationsState extends State<LocalNotifications> {
       if(_abnormalityService.stoppingTooLong()){
           _showNotifications("Warning", "You haven't moved in a while!");
       }
-
     }
 
     return Container();
