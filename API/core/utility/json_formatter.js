@@ -6,7 +6,10 @@ const routeFormatter = (locRes,routeRes,routeNum) =>
         location.push({
         "location_id":locRes.rows[k].location_id,
         "latitude":locRes.rows[k].latitude,
-        "longitude":locRes.rows[k].longitude});
+        "longitude":locRes.rows[k].longitude,
+        "address":locRes.rows[k].address,
+        "name":locRes.rows[k].name,
+    });
     }
     let route = {
                 "route_id": routeRes.rows[routeNum].route_id,
@@ -65,7 +68,7 @@ const getDriverCentrePointResponse = (centerpoint,driver) =>
         "name":driver.rows[0].name,
         "surname":driver.rows[0].surname,
         "centerpoint": {
-            "latitude:":centerpoint.rows[0].latitude,
+            "latitude":centerpoint.rows[0].latitude,
             "longitude":centerpoint.rows[0].longitude,
             "radius":centerpoint.rows[0].radius + "km"
         }
