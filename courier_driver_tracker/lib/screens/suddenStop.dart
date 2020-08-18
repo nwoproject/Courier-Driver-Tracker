@@ -9,7 +9,7 @@ import 'package:courier_driver_tracker/services/location/geolocator_service.dart
 import 'package:courier_driver_tracker/screens/home.dart';
 
 
-class UserFeedback extends StatelessWidget {
+class UserFeedbackSudden extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
 
   @override
@@ -26,7 +26,7 @@ class UserFeedback extends StatelessWidget {
   }
 }
 
-enum Abnormality { fuelstop, lunch, traffic, other }
+enum Abnormality { accident, cutoff, other }
 
 class Feedback extends StatefulWidget {
   Feedback({Key key}) : super(key: key);
@@ -36,7 +36,7 @@ class Feedback extends StatefulWidget {
 }
 
 class _FeedbackState extends State<Feedback> {
-  Abnormality _character = Abnormality.fuelstop;
+  Abnormality _character = Abnormality.accident;
   TextEditingController _controller;
   TextEditingController textController;
   String other;
@@ -79,22 +79,22 @@ class _FeedbackState extends State<Feedback> {
           textColor: Colors.white
       );
     }
-      else{
-        textController.clear();
-        report();
+    else{
+      textController.clear();
+      report();
     }
   }
 
   void responseCheck(String r) {
     Fluttertoast.showToast(
-          msg: r,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
-          backgroundColor: Colors.blue,
-          textColor: Colors.white
-      );
-    }
+        msg: r,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.blue,
+        textColor: Colors.white
+    );
+  }
 
 
   void report() async{
@@ -108,17 +108,13 @@ class _FeedbackState extends State<Feedback> {
 
     String resp = "";
 
-    if (_character == Abnormality.fuelstop)
+    if (_character == Abnormality.accident)
     {
-      resp = "Filled the vehicle with fuel";
+      resp = "I was in an accident.";
     }
-    if (_character == Abnormality.lunch)
+    if (_character == Abnormality.cutoff)
     {
-      resp = "Stopped for lunch";
-    }
-    if (_character == Abnormality.traffic)
-    {
-      resp = "Filled the vehicle with fuel";
+      resp = "Another driver cut me off.";
     }
     if (_character == Abnormality.other)
     {
@@ -131,7 +127,7 @@ class _FeedbackState extends State<Feedback> {
     print (long);
     print (time);
     Map data = {
-      "code": "100",
+      "code": "101",
       "token": token,
       "description": resp,
       "latitude": lat,
@@ -177,9 +173,9 @@ class _FeedbackState extends State<Feedback> {
     return Column(
       children: <Widget>[
         RadioListTile(
-          title: const Text('Filling up vehicle'),
+          title: const Text('I was in an accident.'),
 
-          value: Abnormality.fuelstop,
+          value: Abnormality.accident,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -190,9 +186,9 @@ class _FeedbackState extends State<Feedback> {
           secondary: new Icon(Icons.add_circle),
         ),
         RadioListTile(
-          title: const Text('Stopped for lunch break'),
+          title: const Text('Another driver cut me off.'),
 
-          value: Abnormality.lunch,
+          value: Abnormality.cutoff,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -202,20 +198,6 @@ class _FeedbackState extends State<Feedback> {
           },
           secondary: new Icon(Icons.add_circle),
         ),
-
-        RadioListTile(
-          title: const Text('Severe traffic'),
-          value: Abnormality.traffic,
-          groupValue: _character,
-          onChanged: (Abnormality value) {
-            print(value);
-            setState(() {
-              _character = value;
-            });
-          },
-          secondary: new Icon(Icons.add_circle),
-        ),
-
         RadioListTile(
           title: const Text('Other (Specify)'),
           value: Abnormality.other,
@@ -242,7 +224,7 @@ class _FeedbackState extends State<Feedback> {
           onPressed: (){
             checkForEmptyText();
             homePage();
-            },
+          },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),
       ],
