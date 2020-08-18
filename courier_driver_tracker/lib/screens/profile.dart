@@ -133,14 +133,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             type: BottomNavigationBarType.fixed,
             items: [
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.home, size: 30),
+                icon: Icon(FontAwesomeIcons.home,
+                    size: 30, color: Colors.grey[100]),
                 title: SizedBox(
                   width: 0,
                   height: 0,
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.mapMarkerAlt, size: 30),
+                icon: Icon(FontAwesomeIcons.mapMarkerAlt,
+                    size: 30, color: Colors.grey[100]),
                 title: SizedBox(
                   width: 0,
                   height: 0,
@@ -155,7 +157,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.cog, size: 30),
+                icon: Icon(FontAwesomeIcons.cog,
+                    size: 30, color: Colors.grey[100]),
                 title: SizedBox(
                   width: 0,
                   height: 0,
