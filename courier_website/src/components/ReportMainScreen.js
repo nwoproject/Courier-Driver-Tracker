@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 
 import ReportSelection from './ReportSelection';
+import SendReport from './SendReport';
 
 import './style/style.css';
 
@@ -13,17 +14,23 @@ function ReportMainScreen(){
     
     const [DriverID, setDID] = useState("");
     const [MakeRequest, setMR] = useState(false);
+    const [SendReportB, setSR] = useState(false);
 
     function handleChange(event){
         setMR(false);
         if(event.target.name==="DriverID"){
             setDID(event.target.value);
         }
+        else if(event.target.name==="SendReport"){
+            setSR(!SendReportB);
+            setMR(false);
+        }
     }
 
     function SubmitID(event){
         event.preventDefault();
         setMR(true);
+        setSR(false);
     }
 
     return(
@@ -42,9 +49,13 @@ function ReportMainScreen(){
                         <Col xs={3}>
                             <Button type="submit">Search</Button>
                         </Col>
+                        <Col xs={4}>
+                            <Button name="SendReport" onClick={handleChange}>Send Full Report</Button>
+                        </Col>
                     </Row>
                 </Form><br />
                 {MakeRequest ? <ReportSelection DriverID={DriverID} />:null}
+                {SendReportB ? <SendReport DriverID={DriverID} />:null}
             </Card.Body>
         </Card>
     )

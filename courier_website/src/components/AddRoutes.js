@@ -116,7 +116,6 @@ function AddRoutes(){
                 })
             })
             .then((response)=>{
-                console.log(response);
                 if(response.status===201){
                     if(AutoCheck===true){
                         response.json()

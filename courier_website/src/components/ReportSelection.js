@@ -74,9 +74,7 @@ function ReportSelection(props){
                             <Col xs={4}>
                                 <Button name="Routes" onClick={handleButton}>See Routes</Button>
                             </Col>
-                            <Col xs={4}>
-                                <Button name="SendReport" onClick={handleButton}>Send Full Report</Button>
-                            </Col>
+                            
                         </Row>
                         {ToggleAbnor ? <div><br /><ReportAbnormalities DriverID={props.DriverID}/></div>:null}
                         {RoutesReport ? <div><br /><ReportRoutes DriverID={props.DriverID}/></div>:null}

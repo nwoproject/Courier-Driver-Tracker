@@ -93,3 +93,12 @@
     height: 1px; 
     background: rgb(61, 61, 61); 
 }
+
+.SmallerLine{
+    height: 1px; 
+    background: rgb(78, 78, 78); 
+}
+
+.ReportCard{
+    width : 80%;
+}
