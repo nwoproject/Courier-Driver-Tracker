@@ -48,7 +48,6 @@ function EditManager(){
             })
         })
         .then(response=>{
-            console.log(response);
             if(response.status===200){
                 setAuth(true);
             }

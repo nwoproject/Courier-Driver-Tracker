@@ -67,7 +67,6 @@ function DriverList(){
                 </Row>
             </Card.Body>
         </Card>
-
     );
 }
 export default DriverList;

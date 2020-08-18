@@ -4,6 +4,7 @@ import {render, screen} from '@testing-library/react';
 import ManagerAcc from './ManagerAcc';
 import CreateManager from './CreateManager';
 import CreateDriver from './CreateDriver';
+import AddRoutes from './AddRoutes';
 
 describe("ManagerAcc", ()=>{
     test("Render Manager Account",()=>{
@@ -32,3 +33,11 @@ describe("CreateDriver", ()=>{
         expect(screen.getByPlaceholderText(/Last Name/i)).toBeInTheDocument();
     })
 });
+
+describe("AddRoutes",()=>{
+    test("Render Add Routes",()=>{
+        render(<AddRoutes />);
+        expect(screen.getByPlaceholderText(/Input Driver ID/)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Search/)).toBeInTheDocument();
+    })
+})
