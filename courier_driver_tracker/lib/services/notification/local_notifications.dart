@@ -4,45 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LocalNotifications(),
-    );
-  }
-}
-
-class LocalNotifications extends StatefulWidget {
-  @override
-  _LocalNotificationsState createState() => _LocalNotificationsState();
-}
-
-class _LocalNotificationsState extends State<LocalNotifications> {
+class LocalNotifications {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
   AndroidInitializationSettings androidInitializationSettings;
   IOSInitializationSettings iosInitializationSettings;
   InitializationSettings initializationSettings;
-
-  @override
-  void initState() {
-    super.initState();
-    initializing();
-  }
+  bool initialised = false;
 
   void initializing() async {
-    androidInitializationSettings = AndroidInitializationSettings('app_icon.png');
+    androidInitializationSettings = AndroidInitializationSettings('ic_stat_name');
     iosInitializationSettings = IOSInitializationSettings();
     initializationSettings = InitializationSettings(
         androidInitializationSettings, iosInitializationSettings);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings
         );
+    initialised = true;
   }
 
   void showNotifications(String header, String message) async {
+    if(!initialised){
+      print("Dev: error occurred while trying to create notification. Notification Service not initialised.");
+      return;
+    }
     await _notification(header, message);
   }
 

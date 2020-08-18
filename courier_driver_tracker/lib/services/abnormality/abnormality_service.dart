@@ -49,7 +49,6 @@ class AbnormalityService{
   }
 
   /*
-   * Author: Gian Geyser & Jordan Nijs
    * Parameters: none
    * Returns: bool
    * Description: Uses the current position and last position to determine
@@ -77,7 +76,6 @@ class AbnormalityService{
 
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: bool
    * Description: Uses the current position and specified route to determine
@@ -99,7 +97,6 @@ class AbnormalityService{
 
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: bool
    * Description: Uses the current position and last position's speed to determine
@@ -107,6 +104,30 @@ class AbnormalityService{
    *              cycles.
    */
   bool suddenStop(){
+    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
+      stopped = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool isSpeeding(){
+    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
+      stopped = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool drivingTooSlow(){
+    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
+      stopped = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool drivingWithoutDelivery(){
     if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
       stopped = true;
       return true;

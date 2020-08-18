@@ -33,11 +33,19 @@ class NavigatorService{
   // Notifications
   Map<String, String> _abnormalityHeaders =
   {
-    "offroute" : "Going Off Route!"
+    "offroute" : "Going Off Route!",
+    "sudden_stop" : "Sudden Stop!",
+    "stopping_too_long" : "You Stopped Moving!",
+    "speeding" : "You Are Speeding!",
+    "driving_slow" : "You Are Driving Slow!"
   };
   Map<String, String> _abnormalityMessages =
   {
-    "offroute" : "You are going off the prescribed route."
+    "offroute" : "You are going off the prescribed route.",
+    "sudden_stop" : "You stopped very quickly. Are you OK?",
+    "stopping_too_long" : "You have stopped for too long.",
+    "speeding" : "You are driving above the speed limit.",
+    "driving_slow" : "You are driving slow for a while now."
   };
 
   NavigatorService({this.jsonFile}){
@@ -47,15 +55,15 @@ class NavigatorService{
     _currentPoint = 0;
     getRoutes();
     setInitialPolyPointsAndMarkers(_currentRoute);
+    _notificationManager.initializing();
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: Position
    * Returns: int
    * Description: Navigation function that implements all the required steps for navigation.
    */
-  navigate(Position currentPosition){
+  navigate(Position currentPosition) {
     /*
     - set current location
     - find the current point
@@ -91,13 +99,25 @@ class NavigatorService{
     if(!_abnormalityService.offRoute(current, next)){
       moveToNextStep();
       moveToNextLeg();
-      // call abnormalities
-
       // set info vars
+
     }
     else{
-      _notificationManager.createState().showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
+      _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
       // start marking the route he followed.
+    }
+    // call abnormalities
+    if(_abnormalityService.suddenStop()){
+      _notificationManager.showNotifications(_abnormalityHeaders["sudden_stop"], _abnormalityMessages["sudden_stop"]);
+    }
+    if(_abnormalityService.stoppingTooLong()){
+      _notificationManager.showNotifications(_abnormalityHeaders["stopping_too_long"], _abnormalityMessages["stopping_too_long"]);
+    }
+    if(_abnormalityService.isSpeeding()){
+      _notificationManager..showNotifications(_abnormalityHeaders["speeding"], _abnormalityMessages["speeding"]);
+    }
+    if(_abnormalityService.drivingTooSlow()){
+      _notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
     }
   }
 
@@ -116,7 +136,6 @@ class NavigatorService{
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Determines the point within the step where the driver is at.
@@ -192,7 +211,6 @@ class NavigatorService{
 
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Creates 2 new polylines with different colours to display that
@@ -233,7 +251,6 @@ class NavigatorService{
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: After driver has reached the next step update the previous
@@ -316,7 +333,6 @@ class NavigatorService{
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Turns json from saved file into DeliveryRoute object.
@@ -333,7 +349,6 @@ class NavigatorService{
   } // gets the next directions
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: String
    * Description: Gets street names for directions.
@@ -368,10 +383,11 @@ class NavigatorService{
     return _deliveryRoutes.getDistance(_currentRoute, _currentLeg, _currentStep);
   }
 
-  getDeliveryArrivalTime(){
+  int getDeliveryArrivalTime(){
     return _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
-  } // gets arrival time
-  getDeliveryDistance(){
+  }
+
+  int getDeliveryDistance(){
     return _deliveryRoutes.getDeliveryDistance(_currentRoute, _currentLeg);
   }
 
@@ -384,11 +400,6 @@ class NavigatorService{
   }
 
   LatLng getPointOnPolyline(){
-    /*
-    TODO
-    - work out x and y and then determine the shortest distance to poly from it
-     */
-
     LatLng start = currentPolyline.points[_currentPoint];
     LatLng end;
     if(_currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1){
@@ -531,5 +542,4 @@ TODO
   - integrate abnormailties
   - integrate notifications
   + add icon to notifications
-  - change split polyline differently by finding the closest value on the poly, not current.
  */
