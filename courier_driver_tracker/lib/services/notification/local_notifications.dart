@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -37,6 +38,7 @@ class _LocalNotificationsState extends State<LocalNotifications> {
   void initState() {
     super.initState();
     initializing();
+
   }
 
   void initializing() async {
@@ -46,6 +48,8 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         androidInitializationSettings, iosInitializationSettings);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings
         );
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
   }
 
   void _showNotifications(String header, String message) async {
@@ -68,10 +72,23 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         0, header, message, notificationDetails);
   }
 
-  onSelectNotification(String payLoad) {
+  String report = "";
+
+   Future onSelectNotification(String payLoad) async{
+
     if (payLoad != null) {
       print(payLoad);
     }
+
+    if (report == "long") {
+      await  Navigator.of(context)
+          .pushNamed('/reportLong');
+    }
+    if (report == "sudden") {
+      await  Navigator.of(context)
+          .pushNamed('/reportSudden');
+    }
+
   }
 
   @override
@@ -82,12 +99,13 @@ class _LocalNotificationsState extends State<LocalNotifications> {
     if(_currentPosition != null){
       _abnormalityService.setCurrentLocation(_currentPosition);
       if(_abnormalityService.suddenStop()){
+        report = "sudden";
         _showNotifications("Warning", "You stopped very quickly!");
       }
       if(_abnormalityService.stoppingTooLong()){
+          report = "long";
           _showNotifications("Warning", "You haven't moved in a while!");
       }
-
     }
 
     return Container();

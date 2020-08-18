@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
+import 'package:courier_driver_tracker/screens/home.dart';
 
-class UserFeedback extends StatelessWidget {
+
+class UserFeedbackSudden extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
 
   @override
@@ -20,7 +26,7 @@ class UserFeedback extends StatelessWidget {
   }
 }
 
-enum Abnormality { fuelstop, lunch, traffic, other }
+enum Abnormality { accident, cutoff, other }
 
 class Feedback extends StatefulWidget {
   Feedback({Key key}) : super(key: key);
@@ -30,10 +36,15 @@ class Feedback extends StatefulWidget {
 }
 
 class _FeedbackState extends State<Feedback> {
-  Abnormality _character = Abnormality.fuelstop;
+  Abnormality _character = Abnormality.accident;
   TextEditingController _controller;
   TextEditingController textController;
   String other;
+  final storage = new FlutterSecureStorage();
+
+  GeolocatorService geolocatorService = new GeolocatorService();
+  Position position;
+
 
   void initState() {
     super.initState();
@@ -47,6 +58,14 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
+  void homePage() async{
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (BuildContext context) => HomePage()
+        ));
+  }
+
+
   void checkForEmptyText() {
     other = textController.text;
 
@@ -57,8 +76,11 @@ class _FeedbackState extends State<Feedback> {
           gravity: ToastGravity.CENTER,
           timeInSecForIos: 1,
           backgroundColor: Colors.red,
-          textColor: Colors.white);
-    } else {
+          textColor: Colors.white
+      );
+    }
+    else{
+      textController.clear();
       report();
     }
   }
@@ -69,51 +91,64 @@ class _FeedbackState extends State<Feedback> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.CENTER,
         timeInSecForIos: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white);
+        backgroundColor: Colors.blue,
+        textColor: Colors.white
+    );
   }
 
-  void report() async {
+
+  void report() async{
+    position = await geolocatorService.getPosition();
+    var token = await storage.read(key: 'token');
+    var driverID = await storage.read(key: 'id');
+    driverID = driverID.toString();
+    String lat = position.latitude.toString();
+    String long = position.longitude.toString();
+    String time = position.timestamp.toString();
+
     String resp = "";
 
-    if (_character == Abnormality.fuelstop) {
-      resp = "Filled the vehicle with fuel";
+    if (_character == Abnormality.accident)
+    {
+      resp = "I was in an accident.";
     }
-    if (_character == Abnormality.lunch) {
-      resp = "Stopped for lunch";
+    if (_character == Abnormality.cutoff)
+    {
+      resp = "Another driver cut me off.";
     }
-    if (_character == Abnormality.traffic) {
-      resp = "Filled the vehicle with fuel";
-    }
-    if (_character == Abnormality.other) {
+    if (_character == Abnormality.other)
+    {
       resp = other;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
-        defaultValue: DotEnv().env['BEARER_TOKEN']);
+    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
 
+    print (lat);
+    print (long);
+    print (time);
     Map data = {
-      "code": 100,
-      "token": bearerToken,
+      "code": "101",
+      "token": token,
       "description": resp,
-      "latitude": "-25.7",
-      "longitude": "28.7",
-      "timestamp": "2020-08-11 09:00:00"
+      "latitude": lat,
+      "longitude": long,
+      "timestamp": time
     };
 
     Map<String, String> requestHeaders = {
       'Accept': 'application/json',
-      'Authorization': 'Bearer $bearerToken'
+      'Authorization':'Bearer $bearerToken'
     };
 
     var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/:driver?id",
+        "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
         headers: requestHeaders,
         body: data);
 
-    String respCode = "";
+    String respCode ="";
 
-    switch (response.statusCode) {
+    switch(response.statusCode)
+    {
       case 201:
         respCode = "Abnormality was successfully logged";
         responseCheck(respCode);
@@ -133,12 +168,14 @@ class _FeedbackState extends State<Feedback> {
     }
   }
 
+
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         RadioListTile(
-          title: const Text('Filling up vehicle'),
-          value: Abnormality.fuelstop,
+          title: const Text('I was in an accident.'),
+
+          value: Abnormality.accident,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -149,20 +186,9 @@ class _FeedbackState extends State<Feedback> {
           secondary: new Icon(Icons.add_circle),
         ),
         RadioListTile(
-          title: const Text('Stopped for lunch break'),
-          value: Abnormality.lunch,
-          groupValue: _character,
-          onChanged: (Abnormality value) {
-            print(value);
-            setState(() {
-              _character = value;
-            });
-          },
-          secondary: new Icon(Icons.add_circle),
-        ),
-        RadioListTile(
-          title: const Text('Severe traffic'),
-          value: Abnormality.traffic,
+          title: const Text('Another driver cut me off.'),
+
+          value: Abnormality.cutoff,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -184,15 +210,20 @@ class _FeedbackState extends State<Feedback> {
           },
           secondary: new Icon(Icons.add_circle),
         ),
+
         TextField(
           controller: textController,
           decoration: InputDecoration(
-              border: InputBorder.none, hintText: 'Specify reason'),
+              border: InputBorder.none,
+              hintText: 'Specify reason'
+          ),
         ),
+
         const SizedBox(height: 30),
         RaisedButton(
-          onPressed: () {
+          onPressed: (){
             checkForEmptyText();
+            homePage();
           },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),

@@ -23,7 +23,7 @@ class RouteLogging{
 
     final path = await localPath;
 
-    return File('$path/Download/test.txt');
+    return File('$path/Download/test.json');
   }
 
   static Future<String> readFileContents() async {

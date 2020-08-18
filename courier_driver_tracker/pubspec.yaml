@@ -15,8 +15,6 @@ dependencies:
     sdk: flutter
   fluttertoast: ^3.1.0
 
-
-
   # Location dependencies
   provider: ^4.1.2
   location: ^3.0.2
