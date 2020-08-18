@@ -61,7 +61,9 @@ function DriverList(){
                             <Button type="submit">Submit</Button>
                         </Form> 
                     </Col>
-                    {DriverSelected ? <DriverProfile DriverID={DriverID}/>: null}
+                    <Col xs={9}>
+                        {DriverSelected ? <DriverProfile DriverID={DriverID}/>: null}
+                    </Col>
                 </Row>
             </Card.Body>
         </Card>

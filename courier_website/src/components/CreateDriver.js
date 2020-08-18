@@ -75,8 +75,6 @@ function CreateDriver(){
                 TempLoc.ImgSrc = result.candidates[0].photo;
                 setLocation(TempLoc);
                 setSearched(true); 
-                console.log(TempLoc);
-                console.log(Location);
             });
         }
     }
