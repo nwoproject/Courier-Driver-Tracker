@@ -33,11 +33,3 @@ describe("CreateDriver", ()=>{
         expect(screen.getByPlaceholderText(/Last Name/i)).toBeInTheDocument();
     })
 });
-
-describe("AddRoutes",()=>{
-    test("Render Add Routes",()=>{
-        render(<AddRoutes />);
-        expect(screen.getByPlaceholderText(/Input Driver ID/)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Search/)).toBeInTheDocument();
-    })
-})

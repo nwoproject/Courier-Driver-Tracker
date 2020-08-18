@@ -7,6 +7,8 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 
 import RouteCall from './RouteCall';
 import RouteListItem from './RouteListItem';
@@ -23,16 +25,16 @@ function AddRoutes(){
     const [ServerError, setSE] = useState(false);
     const [InvalidTokens, setIT] = useState(false);
     const [RouteMade, setRM] = useState(false);
-    const [DailyCheck, setDC] = useState(false);
     const [AutoCheck, setAC] = useState(false);
     const [DriverName, setDN] = useState("");
+    const [OnceOff, setOO] = useState(true);
+    const [Daily, setD] = useState(false);
+    const [Weekly, setW] = useState(false);
+    const [Montly, setM] = useState(false);
 
     function handleChange(event){
         if(event.target.name==="Query"){
             setQuery(event.target.value);
-        }
-        else if(event.target.name==="DaliyCheck"){
-            setDC(!DailyCheck);
         }
         else if(event.target.name==="AutoRoute"){
             setAC(!AutoCheck);
@@ -64,6 +66,7 @@ function AddRoutes(){
 
     function SubmitRoute(event){
         event.preventDefault();
+        let occurance = "monthly";
         if(RouteID==="" && Alert===false){
             alert("You have to enter a Driver ID");
         }
@@ -73,17 +76,28 @@ function AddRoutes(){
             let URL = "https://drivertracker-api.herokuapp.com/api/routes";
             ToSend.token = localStorage.getItem("Token");
             ToSend.id = localStorage.getItem("ID");
-            if(AutoCheck===false){
+            if(OnceOff===true){
                 ToSend.driver_id = RouteID;
             }
+            else if(AutoCheck){
+                URL = "https://drivertracker-api.herokuapp.com/api/routes/auto-assig";
+            }
             else{
-                URL = "https://drivertracker-api.herokuapp.com/api/routes/auto-assign";
+                URL = "https://drivertracker-api.herokuapp.com/api/routes/repeating";
+                if(Daily===true){
+                    occurance = "daily";
+                }
+                else if(Weekly===true){
+                    occurance = "weekly";
+                }
             }
             ToSend.route = [];
             LocationArr.map(Value=>{
                 let RouteObject = {};
                 RouteObject.latitude = Value.Location.lat;
                 RouteObject.longitude = Value.Location.lng;
+                RouteObject.address = Value.Address;
+                RouteObject.name = Value.Name
                 ToSend.route = ([...ToSend.route, RouteObject]);
             });
             let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
@@ -94,19 +108,21 @@ function AddRoutes(){
                     'Content-Type' : 'application/json',     
                 },
                 body: JSON.stringify({
-                    token : ToSend.token,
-                    id : ToSend.id,
-                    driver_id : ToSend.driver_id,
-                    route : ToSend.route
+                    'token' : ToSend.token,
+                    'id' : ToSend.id,
+                    'driver_id' : ToSend.driver_id,
+                    'route' : ToSend.route,
+                    'occurrence' : occurance
                 })
             })
             .then((response)=>{
+                console.log(response);
                 if(response.status===201){
                     if(AutoCheck===true){
                         response.json()
-                    .then(result=>{
-                        setDN(result.name + " " + result.surname);
-                    });
+                        .then(result=>{
+                            setDN(result.name + " " + result.surname);
+                        });
                     }
                     setRM(true);
                     localStorage.removeItem("Locations");
@@ -125,6 +141,57 @@ function AddRoutes(){
     function ClearRoute(){
         localStorage.removeItem("Locations");
         window.location.reload(false);
+    }
+
+    function handleDropDown(event){
+        if(event.target.name==="Once"){
+            if(OnceOff!==true){
+                setOO(true);
+                setAC(false);
+                setD(false);
+                setW(false);
+                setM(false);
+            }
+        }
+        else if(event.target.name==="OnceAuto"){
+            if(AutoCheck!==true){
+                setOO(false);
+                setAC(true);
+                setD(false);
+                setW(false);
+                setM(false);
+            }
+        }
+        else if(event.target.name==="PeriodD"){
+            if(Daily!==true){
+                setOO(false);
+                setAC(false);
+                setD(true);
+                setW(false);
+                setM(false);
+            }
+        }
+        else if(event.target.name==="PeriodW"){
+            if(Weekly!==true){
+                setOO(false);
+                setAC(false);
+                setD(false);
+                setW(true);
+                setM(false);
+            }   
+        }
+        else if(event.target.name==="PeriodM"){
+            if(Montly!==true){
+                setOO(false);
+                setAC(false);
+                setD(false);
+                setW(false);
+                setM(true);
+            }    
+        }
+        else{
+            window.alert("I don't know how you got here.....");
+        }
     }
 
     return(
@@ -154,18 +221,32 @@ function AddRoutes(){
                     <Form onSubmit={SubmitRoute}>
                         <Form.Group>
                             <Row>
+                                <Col xs={2}>
+                                    <DropdownButton
+                                        key="right"
+                                        drop="right"
+                                        title="Route Style"
+                                    >
+                                        <Dropdown.Item name="Once" onClick={handleDropDown}>Once Off</Dropdown.Item>
+                                        <Dropdown.Item name="OnceAuto" onClick={handleDropDown}>Once Off Auto Selected</Dropdown.Item>
+                                        <Dropdown.Item name="PeriodD" onClick={handleDropDown}>Daily</Dropdown.Item>
+                                        <Dropdown.Item name="PeriodW" onClick={handleDropDown}>Weekly</Dropdown.Item>
+                                        <Dropdown.Item name="PeriodM" onClick={handleDropDown}>Montly</Dropdown.Item>
+                                    </DropdownButton>
+                                </Col>
+                                <Col xs={2}>
+                                    {OnceOff ? <p>Currently Selected is an Assigned Once Off Route</p>:null}
+                                    {AutoCheck ? <p>Currently Selected is an Auto Assigned Once Off Route</p>:null}
+                                    {Daily ? <p>Currently Selected is an Auto Assigned Daily Route</p>:null}
+                                    {Weekly ? <p>Currently Selected is an Auto Assigned Weekly Route</p>:null}
+                                    {Montly ? <p>Currently Selected is an Auto Assigned Montly Route</p>:null}
+                                </Col>
                                 <Col xs={4}>
-                                    <Form.Control 
+                                    {OnceOff ? <Form.Control 
                                         type="text" 
                                         placeholder="Input Driver ID" 
                                         name="Route"
-                                        onChange={handleChange}/>
-                                </Col>
-                                <Col xs={2}>
-                                    <Form.Check type="checkbox" label="Daily Route" name="DaliyCheck" onChange={handleChange}/>
-                                </Col>
-                                <Col xs={2}>
-                                    <Form.Check type="checkbox" label="Auto Assign Route" name="AutoRoute" onChange={handleChange}/>
+                                        onChange={handleChange}/>:null}
                                 </Col>
                                 <Col xs={2}>
                                     <Button variant="primary" type="submit">Submit Route</Button>
