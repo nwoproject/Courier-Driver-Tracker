@@ -16,7 +16,7 @@ public class FileManager {
 
     public void writeToFile(String data) {
         File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File file = new File(dir,"test.txt");
+        File file = new File(dir,"test.json");
 
         try {
             FileOutputStream outputStream = new FileOutputStream(file);
@@ -43,7 +43,7 @@ public class FileManager {
         String aBuffer = "";
 
         File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File file = new File(dir,"test.txt");
+        File file = new File(dir,"test.json");
 
         if(!file.exists()){
             return ("File does not exist.");
