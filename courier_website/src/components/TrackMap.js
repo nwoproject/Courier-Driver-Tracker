@@ -59,7 +59,7 @@ function TrackMap(props){
                     })
                 }
             });
-        }, 5000);
+        }, 10000);
     });
 
     return(

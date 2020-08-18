@@ -95,7 +95,7 @@ function EditManager(){
     }
 
     return(
-        <Card>
+        <Card className="InnerCard">
             <Card.Header>Edit Manager</Card.Header>
             <Card.Body>
                 <Form onSubmit={AuthenticateManager}>

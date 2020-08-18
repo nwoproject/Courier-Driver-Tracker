@@ -24,6 +24,8 @@ function AddRoutes(){
     const [InvalidTokens, setIT] = useState(false);
     const [RouteMade, setRM] = useState(false);
     const [DailyCheck, setDC] = useState(false);
+    const [AutoCheck, setAC] = useState(false);
+    const [DriverName, setDN] = useState("");
 
     function handleChange(event){
         if(event.target.name==="Query"){
@@ -31,6 +33,9 @@ function AddRoutes(){
         }
         else if(event.target.name==="DaliyCheck"){
             setDC(!DailyCheck);
+        }
+        else if(event.target.name==="AutoRoute"){
+            setAC(!AutoCheck);
         }
         else{
             setID(event.target.value);
@@ -59,15 +64,21 @@ function AddRoutes(){
 
     function SubmitRoute(event){
         event.preventDefault();
-        if(RouteID===""){
+        if(RouteID==="" && Alert===false){
             alert("You have to enter a Driver ID");
         }
         else{
             let LocationArr = JSON.parse(localStorage.getItem("Locations"));
             let ToSend = {};
+            let URL = "https://drivertracker-api.herokuapp.com/api/routes";
             ToSend.token = localStorage.getItem("Token");
             ToSend.id = localStorage.getItem("ID");
-            ToSend.driver_id = RouteID;
+            if(AutoCheck===false){
+                ToSend.driver_id = RouteID;
+            }
+            else{
+                URL = "https://drivertracker-api.herokuapp.com/api/routes/auto-assign";
+            }
             ToSend.route = [];
             LocationArr.map(Value=>{
                 let RouteObject = {};
@@ -76,7 +87,7 @@ function AddRoutes(){
                 ToSend.route = ([...ToSend.route, RouteObject]);
             });
             let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
-            fetch("https://drivertracker-api.herokuapp.com/api/routes",{
+            fetch(URL,{
                 method : "POST",
                 headers:{
                     'authorization': Token,
@@ -91,9 +102,14 @@ function AddRoutes(){
             })
             .then((response)=>{
                 if(response.status===201){
+                    if(AutoCheck===true){
+                        response.json()
+                    .then(result=>{
+                        setDN(result.name + " " + result.surname);
+                    });
+                    }
                     setRM(true);
                     localStorage.removeItem("Locations");
-                    
                 }
                 else if(response.status===401 || response.status===404){
                     setIT(true);
@@ -106,9 +122,13 @@ function AddRoutes(){
         
     }
 
+    function ClearRoute(){
+        localStorage.removeItem("Locations");
+        window.location.reload(false);
+    }
+
     return(
-        <Card className="OuterCard">
-            
+        <Card className="OuterCard">     
             <Card.Header>Search For Location</Card.Header>
             <Card.Body>
                 <Card.Title>Search for a Location to Add to the Drivers Route</Card.Title>
@@ -139,21 +159,26 @@ function AddRoutes(){
                                         type="text" 
                                         placeholder="Input Driver ID" 
                                         name="Route"
-                                        required={true}
                                         onChange={handleChange}/>
                                 </Col>
-                                <Col xs={3}>
-                                    <Form.Check type="checkbox" label="Make Route Daily" name="DaliyCheck" onChange={handleChange}/>
+                                <Col xs={2}>
+                                    <Form.Check type="checkbox" label="Daily Route" name="DaliyCheck" onChange={handleChange}/>
                                 </Col>
-                                <Col xs={4}>
+                                <Col xs={2}>
+                                    <Form.Check type="checkbox" label="Auto Assign Route" name="AutoRoute" onChange={handleChange}/>
+                                </Col>
+                                <Col xs={2}>
                                     <Button variant="primary" type="submit">Submit Route</Button>
+                                </Col>
+                                <Col xs={2}>
+                                    <Button variant="primary" onClick={ClearRoute}>Clear Route</Button>
                                 </Col>
                             </Row>
                         </Form.Group>
                     </Form>
                 </Container>:
                 null}
-                {RouteMade ? <ScreenOverlay title="Routes" message="The Route has been made"/>:null}
+                {RouteMade ? <ScreenOverlay title="Routes" message={AutoCheck ? "The route has been assigned to "+DriverName:"The Route has been made"}/>:null}
                 {ServerError ? <Alert variant="warning">An Error has occured on the Server, Please try again later</Alert>:null}
                 {InvalidTokens ? <Alert variant="danger">An Invalid token has been used. This could be Driver or Manager</Alert>:null}
         </Card>

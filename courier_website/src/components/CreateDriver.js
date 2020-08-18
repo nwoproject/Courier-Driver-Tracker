@@ -20,9 +20,11 @@ function CreateDriver(){
     const [Location, setLocation] = useState({Geo:"", AddName:"",ImgSrc:""});
     const [ServerError, setServerErr] = useState(false);
     const [InvalidEmail, setInEmail] = useState(false);
+    const [CenterPointError, setCPE] = useState(false);
     
     function handleChange(event){
         setRequest(false);
+        setCPE(false);
         setValid(true);
         setInEmail(false);
         if(event.target.name==="email"){
@@ -48,12 +50,7 @@ function CreateDriver(){
     }
 
     function changeCenter(){
-        if(useCenter){
-            toggleCenter(false);
-        }
-        else{
-            toggleCenter(true);
-        }
+        toggleCenter(!useCenter);
     }
 
     function Search(){
@@ -72,11 +69,10 @@ function CreateDriver(){
             })
             .then(response=>response.json())
             .then(result=>{
-                console.log(result);
                 let TempLoc = {Geo:"", AddName:"",ImgSrc:""};
                 TempLoc.AddName = result.candidates[0].name;
                 TempLoc.Geo = result.candidates[0].geometry.location;
-                TempLoc.ImgSrc = result.candidates[0].photos[0].photo_reference;
+                TempLoc.ImgSrc = result.candidates[0].photo;
                 setLocation(TempLoc);
                 setSearched(true); 
                 console.log(TempLoc);
@@ -92,38 +88,45 @@ function CreateDriver(){
         setCenter(tempGeo);
         document.getElementsByName("LatCo").value = tempGeo.Lat;
         document.getElementsByName("LonCo").value = tempGeo.Lng;
-        console.log(CenterPoint);
     }
 
     function handleSubmit(event){
         event.preventDefault();
         var EmailRegex = /\S+@\S+\.\S+/;
         if(EmailRegex.test(email)){
-            fetch("https://drivertracker-api.herokuapp.com/api/drivers",{
-            method : "POST",
-            headers:{
-                'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
-                'Content-Type' : 'application/json' 
-            },
-            body : JSON.stringify({
-                email : email,
-                name : name,
-                surname: surname
-            })
-            
-            })
-            .then(response=>{
-                if(response.status===201){
-                    setRequest(true);
-                }
-                else if(response.status===500){
-                    setServerErr(true);
-                }
-                else{
-                    setInEmail(true);
-                }
-                
-            })
+            if(useCenter===true&&CenterPoint.Lat!==""&&CenterPoint.Lng!==""){
+                fetch("https://drivertracker-api.herokuapp.com/api/drivers",{
+                method : "POST",
+                headers:{
+                    'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                    'Content-Type' : 'application/json' 
+                },
+                body : JSON.stringify({
+                    email : email,
+                    name : name,
+                    surname: surname
+                })
+                })
+                .then(response=>{
+                    if(response.status===201){
+                        if(useCenter===true){
+                            console.log("To Do");    
+                        }
+                        setRequest(true);
+                    }
+                    else if(response.status===500){
+                        setServerErr(true);
+                    }
+                    else{
+                        setInEmail(true);
+                    }
+                    
+                })
+            }
+            else{
+                setCPE(true);
+            }
+
         }
         else{
             setValid(false);
@@ -209,7 +212,7 @@ function CreateDriver(){
                                                 <Card>
                                                     <Card.Header>{Location.AddName}</Card.Header>
                                                     <Card.Body>
-                                                        <Card.Img variant="top" src={Location.ImgSrc}/><br/>
+                                                        <Card.Img variant="top" src={Location.ImgSrc}/><br/><br/>
                                                         <Button variant="secondary" onClick={AddLocationAsCenter}>Add As Center Point</Button>
                                                     </Card.Body> 
                                                 </Card>
@@ -234,6 +237,7 @@ function CreateDriver(){
                 {validEmail ? null:<Alert variant="warning">The Email Entered is not Valid</Alert>}
                 {ServerError ? <Alert variant="warning">There is an error with the Server, Please try again later</Alert>:null}
                 {InvalidEmail ? <Alert variant="danger">Email already in use</Alert>:null}
+                {CenterPointError ? <Alert variant="danger">Center Point expected, but None was entered</Alert>:null}
             </Card.Body>
         </Card>
     );

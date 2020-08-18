@@ -88,3 +88,8 @@
 .ListGroup{
     margin-left : 4px;
 }
+
+.BorderLine {
+    height: 1px; 
+    background: rgb(61, 61, 61); 
+}
