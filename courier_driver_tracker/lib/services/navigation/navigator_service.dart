@@ -34,6 +34,16 @@ class NavigatorService{
   List<LatLng> splitPolylineCoordinatesAfter;
   Set<Marker> markers = {};
 
+  // info variables
+  String directions;
+  String stepTimeRemaining;
+  DateTime stepTimeStamp;
+  int distance;
+  String ETA;
+  String distance_ETA;
+  String delivery;
+  String deliveryAddress;
+
   // Notifications
   Map<String, String> _abnormalityHeaders =
   {
@@ -138,7 +148,7 @@ class NavigatorService{
    * Returns: int
    * Description: Uses a current position to determine distance away from next point.
    */
-  int calculateDistanceBetween(Position currentPosition, Position lastPosition){
+  int calculateDistanceBetween(LatLng currentPosition, LatLng lastPosition){
     double p = 0.017453292519943295;
     double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
         cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
@@ -203,6 +213,28 @@ class NavigatorService{
       updatePreviousStepPolyline();
       setCurrentPolyline();
       setCurrentSplitPolylines();
+
+      //Setinfo variables
+      directions = getDirection();
+      int arrivalTime = (getArrivalTime()/60).round();
+      stepTimeRemaining = "$arrivalTime min";
+      distance = getDistance();
+      int hour = stepTimeStamp.hour;
+      int minutes = stepTimeStamp.minute;
+
+      if(arrivalTime > 60){
+        int temp = arrivalTime;
+        while(temp > 60){
+          temp -= 60;
+          hour += 1;
+        }
+        minutes += temp;
+      }
+
+      ETA = "$hour:$minutes";
+
+      distance_ETA = "$distance . $ETA";
+
       // uncomment when not using replacement functions from abnormality service
       //_abnormalityService.getSpeedLimit(currentPolyline.points);
     }
@@ -213,11 +245,13 @@ class NavigatorService{
 
   moveToNextLeg(){
     if(reachedStepPoint() && _currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1 && _doneWithDelivery){
+      stepTimeStamp = DateTime.now();
       _currentLeg += 1;
       _currentStep = 0;
       updatePreviousStepPolyline();
       setCurrentPolyline();
       setCurrentSplitPolylines();
+      setInitialInfoVariables();
       _doneWithDelivery = false;
     }
   }
@@ -246,13 +280,13 @@ class NavigatorService{
       polylineId: PolylineId(beforeId),
       color: Colors.green[200],
       points: splitPolylineCoordinatesBefore,
-      width: 12
+      width: 10
     );
     splitPolylineAfter = Polyline(
       polylineId: PolylineId(afterId),
       color: Colors.purple,
       points: splitPolylineCoordinatesAfter,
-      width: 12
+      width: 10
     );
 
     polylines.remove(beforeId);
@@ -276,7 +310,7 @@ class NavigatorService{
       polylineId: currentPolyline.polylineId,
       color: Colors.green[200],
       points: currentPolyline.points,
-      width: 12
+      width: 10
     );
   }
 
@@ -318,6 +352,21 @@ class NavigatorService{
     return poly;
   }
 
+  updateDistanceToTravel(){
+    int totalDistanceTravelled = 0;
+    for(int i = 0; i < _currentPoint - 1; i++){
+     totalDistanceTravelled += calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i + 1]);
+    }
+    totalDistanceTravelled += calculateDistanceBetween(LatLng(_position.latitude, _position.longitude), currentPolyline.points[_currentPoint]);
+
+    distance = getDistance() - totalDistanceTravelled;
+  }
+
+  updateDistanceETA(){
+    updateDistanceToTravel();
+    distance_ETA = "$distance . $ETA";
+  }
+
 
   /*
   *     ---- Getters ----
@@ -355,7 +404,7 @@ class NavigatorService{
   }
 
   String getNextDirection(){
-    return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep + 2);
+    return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep + 1);
   } // gets the next directions
 
   /*
@@ -440,7 +489,6 @@ class NavigatorService{
     return currentPoint;
   }
 
-
   /*
   *   ---- Setters ----
   */
@@ -493,7 +541,7 @@ class NavigatorService{
           polylineId: id,
           color: Colors.purple,
           points: polylineCoordinates,
-          width: 12
+          width: 10
         );
 
         // adds polyline to the polylines to be displayed.
@@ -528,13 +576,13 @@ class NavigatorService{
         polylineId: polyBeforeID,
         color: Colors.green[200],
         points: splitPolylineCoordinatesBefore,
-        width: 12
+        width: 10
     );
     splitPolylineAfter = Polyline(
         polylineId: polyAfterID,
         color: Colors.purple,
         points: splitPolylineCoordinatesAfter,
-        width: 12
+        width: 10
     );
 
     // add split polys to the polylines
@@ -548,6 +596,51 @@ class NavigatorService{
 
   setNotificationContext(BuildContext context){
     _notificationManager.setContext(context);
+  }
+
+  setInitialInfoVariables(){
+    stepTimeStamp = DateTime.now();
+    int del = _currentLeg + 1;
+    delivery = "Delivery $del";
+    directions = getDirection();
+    int arrivalTime = (getArrivalTime()/60).round();
+    stepTimeRemaining = "$arrivalTime min";
+    int distance = getDistance();
+    int hours = stepTimeStamp.hour;
+    int minutes = stepTimeStamp.minute;
+
+    if(arrivalTime > 60){
+      int temp = arrivalTime;
+      while(temp > 60){
+        temp -= 60;
+        hours += 1;
+      }
+      minutes += temp;
+
+      if(hours > 23){
+        int over = hours - 23;
+        hours = over - 1;
+      }
+    }
+
+    String hourString;
+    String minuteString;
+
+    if(hours < 10){
+      hourString = "0$hours";
+    }
+    else{
+      hourString = "$hours";
+    }
+
+    if(minutes < 10){
+      minuteString = "0$minutes";
+    }
+    else{
+      minuteString = "$minutes";
+    }
+
+    distance_ETA = "$distance . $hourString:$minuteString";
   }
 
 }

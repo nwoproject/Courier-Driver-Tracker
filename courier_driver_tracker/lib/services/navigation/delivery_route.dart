@@ -24,27 +24,27 @@ class DeliveryRoute{
     return routes.length;
   }
 
-  String getHTMLInstruction(int delivery, int leg, int step){
-    return routes[delivery].getHTMLInstruction(leg, step);
+  String getHTMLInstruction(int deliveryRoute, int leg, int step){
+    return routes[deliveryRoute].getHTMLInstruction(leg, step);
   }
 
-  String getManeuver(int delivery, int leg, int step){
-    return routes[delivery].getManeuver(leg, step);
+  String getManeuver(int deliveryRoute, int leg, int step){
+    return routes[deliveryRoute].getManeuver(leg, step);
   }
 
-  int getDuration(int delivery, int leg, int step){
-    return routes[delivery].getDuration(leg, step);
+  int getDuration(int deliveryRoute, int leg, int step){
+    return routes[deliveryRoute].getDuration(leg, step);
   }
 
-  int getDistance(int delivery, int leg, int step){
-    return routes[delivery].getDistance(leg, step);
+  int getDistance(int deliveryRoute, int leg, int step){
+    return routes[deliveryRoute].getDistance(leg, step);
   }
 
-  int getDeliveryDuration(int delivery, int leg){
-    return routes[delivery].getDeliveryDuration(leg);
+  int getDeliveryDuration(int deliveryRoute, int leg){
+    return routes[deliveryRoute].getDeliveryDuration(leg);
   }
 
-  int getDeliveryDistance(int delivery, int leg){
-    return routes[delivery].getDeliveryDistance(leg);
+  int getDeliveryDistance(int deliveryRoute, int leg){
+    return routes[deliveryRoute].getDeliveryDistance(leg);
   }
 }
