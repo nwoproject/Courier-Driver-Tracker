@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:core';
-import 'package:courier_driver_tracker/services/navigation/location.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class AbnormalityService{
   /*
@@ -13,11 +15,17 @@ class AbnormalityService{
 
   Position _currentPosition;      // Current position of the Device
   Position _lastPosition;         // Last position of significant movement
-  int _minMovingDistance = 20;    // Distance considered to be significant movement
-  int _maxStopCount = 100;         // Amount of cycles the driver may stop
+  int _minMovingDistance = 200;    // Distance considered to be significant movement
+  int _maxStopCount = 450;         // Amount of cycles the driver may stop
   int _stopCount = 0;             // Amount of cycles the driver have stopped
   int _maxSpeedDifference = 40;    // Speed difference between cycles considered to be dangerous
-  bool stopped = false;
+  var _speedLimits;
+  int _slowCount = 0;
+  int _maxSlowCount = 150;
+  int _speedingCount = 0;
+  int _maxSpeedingCount = 3;
+  bool _stopped = false;
+
 
   void setCurrentLocation(Position position){
     _currentPosition = position;
@@ -48,6 +56,47 @@ class AbnormalityService{
     return 12742 * asin(sqrt(a)) * 1000;
   }
 
+  getSpeedLimit(List<LatLng> points) async {
+    if(points == null){
+      print("Dev: setSpeedLimit received null");
+      return;
+    }
+
+    String polyPoints = "";
+    points.forEach((element) {
+      polyPoints += element.latitude.toString() + "," + element.longitude.toString();
+      if(element != points.last){
+        polyPoints += "|";
+      }
+    });
+
+    if(polyPoints == null || polyPoints.length == 0){
+      print("Dev: Error occurred while trying to retrieve speed limit.");
+      return;
+    }
+
+    String key = String.fromEnvironment('APP_MAP_API_KEY', defaultValue: DotEnv().env['APP_MAP_API_KEY']);
+    print(key);
+
+    var params = {
+      "path" : polyPoints,
+      "key" : key
+    };
+
+    Uri uri = Uri.https("roads.googleapis.com", "v1/speedLimits", params);
+    String url = uri.toString();
+    print('GOOGLE ROADS URL: ' + url);
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      _speedLimits = json.decode(response.body);
+      print(_speedLimits);
+    }
+    else{
+      print("Dev: Google Route API called failed.");
+      print(response.body);
+    }
+  }
+
   /*
    * Parameters: none
    * Returns: bool
@@ -60,7 +109,7 @@ class AbnormalityService{
       double distance = calculateDistanceBetween(_currentPosition, _lastPosition);
       if(_stopCount >= _maxStopCount && distance < _minMovingDistance) {
         _stopCount = 0;
-        stopped = true;
+        _stopped = true;
         return true;
       }
       else if(distance < _minMovingDistance){
@@ -69,7 +118,7 @@ class AbnormalityService{
       else{
         _lastPosition = _currentPosition;
         _stopCount = 0;
-        stopped = false;
+        _stopped = false;
       }
       return false;
   }
@@ -104,34 +153,52 @@ class AbnormalityService{
    *              cycles.
    */
   bool suddenStop(){
-    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
-      stopped = true;
+    if(!_stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
+      _stopped = true;
       return true;
     }
     return false;
   }
 
-  bool isSpeeding(){
-    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
-      stopped = true;
+  bool isSpeeding(int currentPoint){
+    if(_speedLimits == null){
+      print("Dev: No speed limits set for speeding Abnormality.");
+      return false;
+    }
+
+    if(_speedingCount >= _maxSpeedingCount){
       return true;
     }
-    return false;
+    else if(_currentPosition.speed as int > _speedLimits["speedLimits"][currentPoint]["speedLimit"] + 10){
+      _speedingCount += 1;
+      return false;
+    }
+    else{
+      _speedingCount = 0;
+      return false;
+    }
   }
 
-  bool drivingTooSlow(){
-    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
-      stopped = true;
+  bool drivingTooSlow(int currentPoint){
+    if(_speedLimits == null){
+      print("Dev: No speed limits set for drivingTooSlow Abnormality.");
+      return false;
+    }
+
+    if(_slowCount >= _maxSlowCount){
       return true;
     }
-    return false;
+    else if(_currentPosition.speed < _speedLimits["speedLimits"][currentPoint]["speedLimit"] * 0.5){
+      _slowCount += 1;
+      return false;
+    }
+    else{
+      _slowCount = 0;
+      return false;
+    }
   }
 
   bool drivingWithoutDelivery(){
-    if(!stopped && _lastPosition.speed - _currentPosition.speed > _maxSpeedDifference){
-      stopped = true;
-      return true;
-    }
     return false;
   }
 }

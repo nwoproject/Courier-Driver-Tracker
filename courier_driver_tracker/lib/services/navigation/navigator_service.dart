@@ -9,6 +9,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class NavigatorService{
+  /*
+   * Author: Gian Geyser
+   * Description: Navigation class.
+   */
 
   DeliveryRoute _deliveryRoutes;
   int _currentRoute;
@@ -78,6 +82,7 @@ class NavigatorService{
     _abnormalityService.setCurrentLocation(currentPosition);
     if(currentPolyline == null){
       setCurrentPolyline();
+      _abnormalityService.getSpeedLimit(currentPolyline.points);
     }
     if(splitPolylineAfter == null || splitPolylineBefore == null){
       setCurrentSplitPolylines();
@@ -113,10 +118,10 @@ class NavigatorService{
     if(_abnormalityService.stoppingTooLong()){
       _notificationManager.showNotifications(_abnormalityHeaders["stopping_too_long"], _abnormalityMessages["stopping_too_long"]);
     }
-    if(_abnormalityService.isSpeeding()){
+    if(_abnormalityService.isSpeeding(_currentPoint)){
       _notificationManager..showNotifications(_abnormalityHeaders["speeding"], _abnormalityMessages["speeding"]);
     }
-    if(_abnormalityService.drivingTooSlow()){
+    if(_abnormalityService.drivingTooSlow(_currentPoint)){
       _notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
     }
   }
@@ -192,6 +197,7 @@ class NavigatorService{
       updatePreviousStepPolyline();
       setCurrentPolyline();
       setCurrentSplitPolylines();
+      _abnormalityService.getSpeedLimit(currentPolyline.points);
     }
     else{
       updateCurrentPolyline();
@@ -233,13 +239,13 @@ class NavigatorService{
     String afterId = "$_currentRoute-$_currentLeg-$_currentStep-after";
     splitPolylineBefore = Polyline(
       polylineId: PolylineId(beforeId),
-      color: Colors.green,
+      color: Colors.green[300],
       points: splitPolylineCoordinatesBefore,
       width: 5
     );
     splitPolylineAfter = Polyline(
       polylineId: PolylineId(afterId),
-      color: Colors.blue,
+      color: Colors.purple,
       points: splitPolylineCoordinatesAfter,
       width: 5
     );

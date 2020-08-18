@@ -24,8 +24,7 @@ class LocalNotifications {
 
   void showNotifications(String header, String message) async {
     if(!initialised){
-      print("Dev: error occurred while trying to create notification. Notification Service not initialised.");
-      return;
+      initializing();
     }
     await _notification(header, message);
   }
