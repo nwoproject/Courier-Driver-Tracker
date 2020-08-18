@@ -49,7 +49,7 @@ class _HomePageViewState extends State<HomePageView> {
 
   @override
   void initState(){
-    readUserData();
+    //readUserData();
     super.initState();
     startServiceInPlatform();
   }
@@ -73,8 +73,8 @@ class _HomePageViewState extends State<HomePageView> {
                 decoration: BoxDecoration(
                   color: Colors.black,
                 ),
-                accountName:Text(""),
-                accountEmail: new Text(""),   // data should be pulled from database
+                accountName:Text(userData["name"]),
+                accountEmail: new Text(userData["surname"]),   // data should be pulled from database
                 currentAccountPicture: new CircleAvatar(
                     backgroundColor: Colors.white,
                     child: new Text("")

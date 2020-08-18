@@ -34,7 +34,7 @@ class _LocalNotificationsState extends State<LocalNotifications> {
   }
 
   void initializing() async {
-    androidInitializationSettings = AndroidInitializationSettings('app_icon');
+    androidInitializationSettings = AndroidInitializationSettings('app_icon.png');
     iosInitializationSettings = IOSInitializationSettings();
     initializationSettings = InitializationSettings(
         androidInitializationSettings, iosInitializationSettings);

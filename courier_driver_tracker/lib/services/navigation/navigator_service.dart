@@ -123,9 +123,9 @@ class NavigatorService{
    *              Used to split the polyline for UI purposes.
    */
   findCurrentPoint(){
-    for(int i = 0; i < splitPolylineCoordinatesAfter.length -1; i++){
-      double d1 = sqrt(pow((_position.latitude - splitPolylineCoordinatesAfter[i].latitude),2) + pow(_position.longitude - splitPolylineCoordinatesAfter[i].longitude,2));
-      double d2 = sqrt(pow((splitPolylineCoordinatesAfter[i+1].latitude - splitPolylineCoordinatesAfter[i].latitude),2) + pow(splitPolylineCoordinatesAfter[i+1].longitude - splitPolylineCoordinatesAfter[i].longitude,2));
+    for(int i = 0; i < currentPolyline.points.length -1; i++){
+      double d1 = sqrt(pow((_position.latitude - currentPolyline.points[i].latitude),2) + pow(_position.longitude - currentPolyline.points[i].longitude,2));
+      double d2 = sqrt(pow((currentPolyline.points[i+1].latitude - currentPolyline.points[i].latitude),2) + pow(currentPolyline.points[i+1].longitude - currentPolyline.points[i].longitude,2));
 
       if(d1 < d2){
         _currentPoint = i;
@@ -188,7 +188,6 @@ class NavigatorService{
       setCurrentSplitPolylines();
       _doneWithDelivery = false;
     }
-
   }
 
 
@@ -200,27 +199,37 @@ class NavigatorService{
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline(){
+    print("Update");
     // remove previous position from before and after polyline
     splitPolylineCoordinatesBefore.removeLast();
     splitPolylineCoordinatesAfter.removeAt(0);
 
-    while(splitPolylineCoordinatesBefore.length < _currentPoint){
+    while(splitPolylineCoordinatesBefore.length < _currentPoint + 1){
       splitPolylineCoordinatesBefore.add(splitPolylineCoordinatesAfter.removeAt(0));
+      print(splitPolylineCoordinatesBefore.length);
     }
-    splitPolylineCoordinatesAfter.insertAll(0,[LatLng(_position.latitude, _position.longitude)]);
-    splitPolylineCoordinatesBefore.add(LatLng(_position.latitude, _position.longitude));
+
+    splitPolylineCoordinatesBefore.add(getPointOnPolyline());
+    splitPolylineCoordinatesAfter.insert(0, getPointOnPolyline());
+    String beforeId = "$_currentRoute-$_currentLeg-$_currentStep-before";
+    String afterId = "$_currentRoute-$_currentLeg-$_currentStep-after";
     splitPolylineBefore = Polyline(
-      polylineId: splitPolylineBefore.polylineId,
-      color: Colors.purple[200],
+      polylineId: PolylineId(beforeId),
+      color: Colors.green,
       points: splitPolylineCoordinatesBefore,
       width: 5
     );
     splitPolylineAfter = Polyline(
-      polylineId: splitPolylineAfter.polylineId,
-      color: Colors.purple,
+      polylineId: PolylineId(afterId),
+      color: Colors.blue,
       points: splitPolylineCoordinatesAfter,
       width: 5
     );
+
+    polylines.remove(beforeId);
+    polylines.remove(afterId);
+    polylines[beforeId] = splitPolylineBefore;
+    polylines[afterId] = splitPolylineAfter;
   }
 
   /*
@@ -232,13 +241,13 @@ class NavigatorService{
    */
   updatePreviousStepPolyline(){
     // remove before and after split polys
-    polylines.remove(splitPolylineBefore.polylineId);
-    polylines.remove(splitPolylineAfter.polylineId);
-
+    polylines.remove(splitPolylineBefore.polylineId.value);
+    polylines.remove(splitPolylineAfter.polylineId.value);
+    print("Updating next step");
     // add the delivery route again with lighter colour
     polylines[currentPolyline.polylineId.value] = Polyline(
       polylineId: currentPolyline.polylineId,
-      color: Colors.purple[200],
+      color: Colors.green[300],
       points: currentPolyline.points,
       width: 5
     );
@@ -320,7 +329,7 @@ class NavigatorService{
   }
 
   String getNextDirection(){
-    return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep + 1);
+    return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep + 2);
   } // gets the next directions
 
   /*
@@ -372,6 +381,42 @@ class NavigatorService{
 
   int getTotalDeliveries(){
     return _deliveryRoutes.getTotalDeliveries();
+  }
+
+  LatLng getPointOnPolyline(){
+    /*
+    TODO
+    - work out x and y and then determine the shortest distance to poly from it
+     */
+
+    LatLng start = currentPolyline.points[_currentPoint];
+    LatLng end;
+    if(_currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1){
+      if(_currentLeg == _deliveryRoutes.routes[_currentRoute].legs.length - 1){
+        int next = _currentLeg + 1;
+        end = getPolyline("$_currentRoute-$next-0").points[0];
+      }
+      else{
+        int next = _currentStep + 1;
+        end = getPolyline("$_currentRoute-$_currentLeg-$next").points[0];
+      }
+    }
+    else{
+      end = currentPolyline.points[_currentPoint + 1];
+    }
+
+    // work out perpendicular intersect of line between polyline points and line that goes through current position.
+    double m = (end.longitude - start.longitude)/(end.latitude - start.latitude);
+    double b = start.longitude - (m * start.latitude);
+    double perpendicularM = -1 * (1/m);
+    double perpendicularB = _position.longitude - (perpendicularM * _position.latitude);
+
+    double shouldBeAtLat = (b - perpendicularB)/(perpendicularM - m);
+    double shouldBeAt = m*(shouldBeAtLat) + b;
+
+    LatLng currentPoint = LatLng(shouldBeAtLat, shouldBeAt);
+
+    return currentPoint;
   }
 
 
@@ -427,7 +472,7 @@ class NavigatorService{
           polylineId: id,
           color: Colors.purple,
           points: polylineCoordinates,
-          width: 5,
+          width: 8,
         );
 
         // adds polyline to the polylines to be displayed.
@@ -448,24 +493,27 @@ class NavigatorService{
 
     splitPolylineCoordinatesBefore = [];
     splitPolylineCoordinatesAfter = [];
-    splitPolylineCoordinatesBefore.add(LatLng(_position.latitude, _position.longitude));
-    splitPolylineCoordinatesAfter.add(LatLng(_position.latitude, _position.longitude));
+    LatLng pointOnPoly = getPointOnPolyline();
+    splitPolylineCoordinatesBefore.add(currentPolyline.points.first);
+    splitPolylineCoordinatesBefore.add(pointOnPoly);
+    splitPolylineCoordinatesAfter.add(pointOnPoly);
     splitPolylineCoordinatesAfter.addAll(currentPolyline.points);
+    splitPolylineCoordinatesAfter.removeAt(0);
 
     PolylineId polyBeforeID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-before");
     PolylineId polyAfterID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-after");
 
     splitPolylineBefore = Polyline(
         polylineId: polyBeforeID,
-        color: Colors.purple[200],
+        color: Colors.green,
         points: splitPolylineCoordinatesBefore,
-        width: 5
+        width: 8
     );
     splitPolylineAfter = Polyline(
         polylineId: polyAfterID,
         color: Colors.purple,
         points: splitPolylineCoordinatesAfter,
-        width: 5
+        width: 8
     );
 
     // add split polys to the polylines
@@ -483,4 +531,5 @@ TODO
   - integrate abnormailties
   - integrate notifications
   + add icon to notifications
+  - change split polyline differently by finding the closest value on the poly, not current.
  */

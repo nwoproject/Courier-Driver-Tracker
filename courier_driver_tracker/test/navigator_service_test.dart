@@ -150,5 +150,24 @@ Future<void> main() async {
     expect(created, true);
   });
 
+  test("Get Polyline test", () async {
+    if(navigatorService == null){
+      navigatorService = NavigatorService(jsonFile: filename);
+      await navigatorService.getRoutes();
+    }
+    bool created;
+    String ID = "0-0-0";
+    navigatorService.setInitialPolyPointsAndMarkers(0);
+    Polyline poly = navigatorService.getPolyline(ID);
+
+    if(poly is Polyline){
+      created  = true;
+    }
+    else{
+      created = false;
+    }
+    expect(created, true);
+  });
+
 
 }

@@ -404,18 +404,13 @@ class MapSampleState extends State<GMap> {
 
                   // Card with current Delivery details.
                     child: Card(
-                      child: ListTile(
-                        title: Text(
-                          'Delivery'
-                        ),
-                        subtitle: Text(
-                          "$_currentDelivery",
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
+                      child: VerticalDivider(
+                        width: 40.0,
+                        thickness: 2,
+                        color: Colors.purple,
+                        indent: 15.0,
+                        endIndent: 15.0,
+                      )
                     ),
                   ),
                 ]
