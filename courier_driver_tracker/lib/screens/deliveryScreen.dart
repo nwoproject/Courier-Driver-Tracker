@@ -167,8 +167,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             type: BottomNavigationBarType.fixed,
             items: [
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.home, size: 30),
-                backgroundColor: Colors.blue,
+                icon: Icon(FontAwesomeIcons.home, size: 30, color: Colors.blue),
                 title: SizedBox(
                   width: 0,
                   height: 0,

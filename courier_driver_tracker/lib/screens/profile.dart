@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -20,6 +21,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       fontSize: 25, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
   final RouteLogging routeLogging = RouteLogging();
 
+  final storage = new FlutterSecureStorage();
+  var userData = {'name': 'name', 'surname': 'surname'};
+
+  Future<Null> readUserData() async {
+    var name = await storage.read(key: 'name');
+    var surname = await storage.read(key: 'surname');
+    setState(() {
+      return userData = {
+        'name': name,
+        'surname': surname,
+      };
+    });
+  }
+
+  @override
+  void initState() {
+    readUserData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -36,7 +57,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                   radius: 125,
                   backgroundColor: Colors.blue.shade800,
-                  child: Text('AH', style: avatarText),
+                  child: Text(userData['name'][0] + userData['surname'][0],
+                      style: avatarText),
                 )),
               ),
             ),
@@ -48,7 +70,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(2.0),
                       child: ListTile(
                           title: Center(
-                              child: Text("Jordan Nijs",
+                              child: Text(
+                                  userData['name'] + " " + userData['surname'],
                                   style: headingLabelStyle))))
                 ],
               ),
@@ -124,8 +147,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.userAlt, size: 30),
-                backgroundColor: Colors.blue,
+                icon: Icon(FontAwesomeIcons.userAlt,
+                    size: 30, color: Colors.blue),
                 title: SizedBox(
                   width: 0,
                   height: 0,
