@@ -47,7 +47,11 @@ class MapSampleState extends State<GMap> {
   int _route;
   static String _routeFile = "route.json";
   NavigatorService _navigatorService = NavigatorService(jsonFile: _routeFile);
-
+  String directions;
+  String stepTimeRemaining;
+  int stepTimeStamp;
+  String ETA;
+  String delivery;
 
   @override
   void initState() {
@@ -81,8 +85,7 @@ class MapSampleState extends State<GMap> {
    */
   moveToCurrentLocation() {
     // Move camera to the specified latitude & longitude
-    mapController
-        .animateCamera(
+    mapController.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(
@@ -94,8 +97,7 @@ class MapSampleState extends State<GMap> {
           bearing: _currentPosition.heading,
         ),
       ),
-    )
-        .catchError((e) {
+    ).catchError((e) {
       print("Failed to move camera: " + e.toString());
     });
   }
@@ -276,9 +278,11 @@ class MapSampleState extends State<GMap> {
   Widget build(BuildContext context) {
     // Stream of Position objects of current location.
     _currentPosition = Provider.of<Position>(context);
+    _navigatorService.setNotificationContext(context);
 
     // Calls abnormality service
     if (_currentPosition != null) {
+      _navigatorService.navigate(_currentPosition);
       _routeLogging.writeToFile(
           _geolocatorService.convertPositionToString(_currentPosition) + "\n",
           "locationFile");
@@ -303,7 +307,6 @@ class MapSampleState extends State<GMap> {
       child: Column(
         // Google map container with buttons stacked on top
         children: <Widget>[
-          LocalNotifications(),
           Expanded(
             flex: 5,
             child: Stack(
@@ -320,7 +323,6 @@ class MapSampleState extends State<GMap> {
                     zoomControlsEnabled: false,
                     onMapCreated: (GoogleMapController controller) {
                       mapController = controller;
-                      addMarkers(deliveries);
                     },
                   ),
                 ),

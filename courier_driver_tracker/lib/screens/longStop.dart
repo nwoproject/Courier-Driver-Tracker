@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
@@ -58,7 +57,7 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-  void homePage() async{
+  void homePage() async {
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(
             builder: (BuildContext context) => HomePage()
@@ -79,25 +78,25 @@ class _FeedbackState extends State<Feedback> {
           textColor: Colors.white
       );
     }
-      else{
-        textController.clear();
-        report();
+    else {
+      textController.clear();
+      report();
     }
   }
 
   void responseCheck(String r) {
     Fluttertoast.showToast(
-          msg: r,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
-          backgroundColor: Colors.blue,
-          textColor: Colors.white
-      );
-    }
+        msg: r,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.blue,
+        textColor: Colors.white
+    );
+  }
 
 
-  void report() async{
+  void report() async {
     position = await geolocatorService.getPosition();
     var token = await storage.read(key: 'token');
     var driverID = await storage.read(key: 'id');
@@ -106,28 +105,28 @@ class _FeedbackState extends State<Feedback> {
     String long = position.longitude.toString();
     String time = position.timestamp.toString();
 
-  void report() async {
+
     String resp = "";
 
     if (_character == Abnormality.fuelstop) {
-      resp = "Filled the vehicle with fuel";
+    resp = "Filled the vehicle with fuel";
     }
     if (_character == Abnormality.lunch) {
-      resp = "Stopped for lunch";
+    resp = "Stopped for lunch";
     }
     if (_character == Abnormality.traffic) {
-      resp = "Filled the vehicle with fuel";
+    resp = "Filled the vehicle with fuel";
     }
     if (_character == Abnormality.other) {
-      resp = other;
+    resp = other;
     }
 
     String bearerToken = String.fromEnvironment('BEARER_TOKEN',
         defaultValue: DotEnv().env['BEARER_TOKEN']);
 
-    print (lat);
-    print (long);
-    print (time);
+    print(lat);
+    print(long);
+    print(time);
     Map data = {
       "code": "100",
       "token": token,
@@ -143,32 +142,33 @@ class _FeedbackState extends State<Feedback> {
     };
 
     var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
-        headers: requestHeaders,
-        body: data);
+    "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
+    headers: requestHeaders,
+    body: data);
 
     String respCode = "";
 
     switch (response.statusCode) {
-      case 201:
-        respCode = "Abnormality was successfully logged";
-        responseCheck(respCode);
-        break;
-      case 400:
-        respCode = "Bad request (missing parameters in request body)";
-        responseCheck(respCode);
-        break;
-      case 401:
-        respCode = "Invalid :driverid and token combination";
-        responseCheck(respCode);
-        break;
-      case 500:
-        respCode = "Server error";
-        responseCheck(respCode);
-        break;
+    case 201:
+    respCode = "Abnormality was successfully logged";
+    responseCheck(respCode);
+    break;
+    case 400:
+    respCode = "Bad request (missing parameters in request body)";
+    responseCheck(respCode);
+    break;
+    case 401:
+    respCode = "Invalid :driverid and token combination";
+    responseCheck(respCode);
+    break;
+    case 500:
+    respCode = "Server error";
+    responseCheck(respCode);
+    break;
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
@@ -230,10 +230,11 @@ class _FeedbackState extends State<Feedback> {
           onPressed: () {
             checkForEmptyText();
             homePage();
-            },
+          },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),
       ],
     );
   }
+
 }

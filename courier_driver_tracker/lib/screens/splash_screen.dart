@@ -59,12 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
           }
       );
     }
-    else{
-      showMyDialog(context);
-      setState(() => {
-        _activeWidget = Permissions()
-      });
-    } else {
+    else {
       showMyDialog(context);
       setState(() => {_activeWidget = Permissions()});
     }

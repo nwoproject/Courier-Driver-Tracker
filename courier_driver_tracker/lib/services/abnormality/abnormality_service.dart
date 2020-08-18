@@ -169,7 +169,7 @@ class AbnormalityService{
     if(_speedingCount >= _maxSpeedingCount){
       return true;
     }
-    else if(_currentPosition.speed as int > _speedLimits["speedLimits"][currentPoint]["speedLimit"] + 10){
+    else if(_currentPosition.speed  > _speedLimits["speedLimits"][currentPoint]["speedLimit"] + 10.0){
       _speedingCount += 1;
       return false;
     }
@@ -194,6 +194,40 @@ class AbnormalityService{
     }
     else{
       _slowCount = 0;
+      return false;
+    }
+  }
+
+  /*
+   Temporary replacement functions for the two above, due to lack of Asset
+   Tracking License. If deploying system and app, Google sales should be
+   contacted to acquire the license and the replacement function in the navigator
+   services Navigate function should be replaced with the actual functions.
+   */
+  bool drivingTooSlowTemp(){
+    if(_slowCount >= _maxSlowCount){
+      return true;
+    }
+    else if(_currentPosition.speed < 110 * 0.5){
+      _slowCount += 1;
+      return false;
+    }
+    else{
+      _slowCount = 0;
+      return false;
+    }
+  }
+
+  bool isSpeedingTemp(){
+    if(_speedingCount >= _maxSpeedingCount){
+      return true;
+    }
+    else if(_currentPosition.speed > 110.0){
+      _speedingCount += 1;
+      return false;
+    }
+    else{
+      _speedingCount = 0;
       return false;
     }
   }

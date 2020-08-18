@@ -52,14 +52,14 @@ class NavigatorService{
     "driving_slow" : "You are driving slow for a while now."
   };
 
-  NavigatorService({this.jsonFile}){
+  NavigatorService({this.jsonFile, BuildContext context}){
     _currentRoute = 0;
     _currentLeg = 0;
     _currentStep = 0;
     _currentPoint = 0;
     getRoutes();
     setInitialPolyPointsAndMarkers(_currentRoute);
-    _notificationManager.initializing();
+    initialiseNotifications(context);
   }
 
   /*
@@ -82,7 +82,8 @@ class NavigatorService{
     _abnormalityService.setCurrentLocation(currentPosition);
     if(currentPolyline == null){
       setCurrentPolyline();
-      _abnormalityService.getSpeedLimit(currentPolyline.points);
+      // uncomment when not using replacement functions from abnormality service
+      //_abnormalityService.getSpeedLimit(currentPolyline.points);
     }
     if(splitPolylineAfter == null || splitPolylineBefore == null){
       setCurrentSplitPolylines();
@@ -118,10 +119,15 @@ class NavigatorService{
     if(_abnormalityService.stoppingTooLong()){
       _notificationManager.showNotifications(_abnormalityHeaders["stopping_too_long"], _abnormalityMessages["stopping_too_long"]);
     }
-    if(_abnormalityService.isSpeeding(_currentPoint)){
+    /*
+    Temp functions being called to be replaced before actual deployment.
+     For more information about this see the AbnormalityService class as well
+     as the
+     */
+    if(_abnormalityService.isSpeedingTemp()){
       _notificationManager..showNotifications(_abnormalityHeaders["speeding"], _abnormalityMessages["speeding"]);
     }
-    if(_abnormalityService.drivingTooSlow(_currentPoint)){
+    if(_abnormalityService.drivingTooSlowTemp()){
       _notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
     }
   }
@@ -197,7 +203,8 @@ class NavigatorService{
       updatePreviousStepPolyline();
       setCurrentPolyline();
       setCurrentSplitPolylines();
-      _abnormalityService.getSpeedLimit(currentPolyline.points);
+      // uncomment when not using replacement functions from abnormality service
+      //_abnormalityService.getSpeedLimit(currentPolyline.points);
     }
     else{
       updateCurrentPolyline();
@@ -223,14 +230,12 @@ class NavigatorService{
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline(){
-    print("Update");
     // remove previous position from before and after polyline
     splitPolylineCoordinatesBefore.removeLast();
     splitPolylineCoordinatesAfter.removeAt(0);
 
     while(splitPolylineCoordinatesBefore.length < _currentPoint + 1){
       splitPolylineCoordinatesBefore.add(splitPolylineCoordinatesAfter.removeAt(0));
-      print(splitPolylineCoordinatesBefore.length);
     }
 
     splitPolylineCoordinatesBefore.add(getPointOnPolyline());
@@ -239,15 +244,15 @@ class NavigatorService{
     String afterId = "$_currentRoute-$_currentLeg-$_currentStep-after";
     splitPolylineBefore = Polyline(
       polylineId: PolylineId(beforeId),
-      color: Colors.green[300],
+      color: Colors.green[200],
       points: splitPolylineCoordinatesBefore,
-      width: 5
+      width: 12
     );
     splitPolylineAfter = Polyline(
       polylineId: PolylineId(afterId),
       color: Colors.purple,
       points: splitPolylineCoordinatesAfter,
-      width: 5
+      width: 12
     );
 
     polylines.remove(beforeId);
@@ -266,13 +271,12 @@ class NavigatorService{
     // remove before and after split polys
     polylines.remove(splitPolylineBefore.polylineId.value);
     polylines.remove(splitPolylineAfter.polylineId.value);
-    print("Updating next step");
     // add the delivery route again with lighter colour
     polylines[currentPolyline.polylineId.value] = Polyline(
       polylineId: currentPolyline.polylineId,
-      color: Colors.green[300],
+      color: Colors.green[200],
       points: currentPolyline.points,
-      width: 5
+      width: 12
     );
   }
 
@@ -489,7 +493,7 @@ class NavigatorService{
           polylineId: id,
           color: Colors.purple,
           points: polylineCoordinates,
-          width: 8,
+          width: 12
         );
 
         // adds polyline to the polylines to be displayed.
@@ -522,21 +526,30 @@ class NavigatorService{
 
     splitPolylineBefore = Polyline(
         polylineId: polyBeforeID,
-        color: Colors.green,
+        color: Colors.green[200],
         points: splitPolylineCoordinatesBefore,
-        width: 8
+        width: 12
     );
     splitPolylineAfter = Polyline(
         polylineId: polyAfterID,
         color: Colors.purple,
         points: splitPolylineCoordinatesAfter,
-        width: 8
+        width: 12
     );
 
     // add split polys to the polylines
     polylines[polyBeforeID.value] = splitPolylineBefore;
     polylines[polyAfterID.value] = splitPolylineAfter;
   }
+
+  initialiseNotifications(BuildContext context){
+    _notificationManager.initializing(context);
+  }
+
+  setNotificationContext(BuildContext context){
+    _notificationManager.setContext(context);
+  }
+
 }
 
 /*

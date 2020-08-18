@@ -11,22 +11,24 @@ class LocalNotifications {
   IOSInitializationSettings iosInitializationSettings;
   InitializationSettings initializationSettings;
   bool initialised = false;
+  String report = "long";
+  BuildContext _notificationContext;
 
-  void initializing() async {
+  void initializing(BuildContext context) async {
+    setContext(context);
     androidInitializationSettings = AndroidInitializationSettings('ic_stat_name');
     iosInitializationSettings = IOSInitializationSettings();
     initializationSettings = InitializationSettings(
         androidInitializationSettings, iosInitializationSettings);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings
-        );
-    initialised = true;
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: onSelectNotification);
+    initialised = true;
   }
 
   void showNotifications(String header, String message) async {
     if(!initialised){
-      initializing();
+      print("Dev: Notification initialisation failed.");
+      return;
     }
     await _notification(header, message);
   }
@@ -47,27 +49,25 @@ class LocalNotifications {
         0, header, message, notificationDetails);
   }
 
-  String report = "";
+  setContext(BuildContext context){
+    _notificationContext = context;
+  }
+
+
 
    Future onSelectNotification(String payLoad) async{
-
     if (payLoad != null) {
       print(payLoad);
     }
 
     if (report == "long") {
-      await  Navigator.of(context)
+      await  Navigator.of(_notificationContext)
           .pushNamed('/reportLong');
     }
     if (report == "sudden") {
-      await  Navigator.of(context)
+      await  Navigator.of(_notificationContext)
           .pushNamed('/reportSudden');
     }
-
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
 }
