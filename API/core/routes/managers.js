@@ -95,4 +95,38 @@ router.post('/authenticate', (req, res) =>{
     });
 });
 
+// PUT /api/managers/:managerid/password
+router.put('/:managerid/password', (req,res)=>{
+    const managerID = req.params.managerid;
+    console.log(managerID);
+    console.log(req.body.token);
+
+    bcrypt.hash(req.body.password, 10, (hasherr, hash)=>{
+        if(hasherr)
+        {
+            DB.dbErrorHandler(res,hasherr);
+        }
+        else
+        {
+            DB.pool.query('UPDATE public."manager" SET "password"=($1) WHERE "id"=($2) AND "token"=($3)',[hash,managerID,req.body.token],(updateError,updateResults)=>{
+                if(updateResults.rowCount==1)
+                {
+                    res.status(204).end();
+                }
+                else //id and token does not match
+                {
+                    if(updateError)
+                    {
+                        DB.dbErrorHandler(res,updateError);
+                    }
+                    else
+                    {
+                        res.status(401).end();
+                    }
+                }
+            });
+        }
+    });
+});
+
 module.exports = router;

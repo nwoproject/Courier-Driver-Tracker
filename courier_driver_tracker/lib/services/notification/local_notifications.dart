@@ -20,6 +20,8 @@ class LocalNotifications {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings
         );
     initialised = true;
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
   }
 
   void showNotifications(String header, String message) async {
@@ -45,10 +47,23 @@ class LocalNotifications {
         0, header, message, notificationDetails);
   }
 
-  onSelectNotification(String payLoad) {
+  String report = "";
+
+   Future onSelectNotification(String payLoad) async{
+
     if (payLoad != null) {
       print(payLoad);
     }
+
+    if (report == "long") {
+      await  Navigator.of(context)
+          .pushNamed('/reportLong');
+    }
+    if (report == "sudden") {
+      await  Navigator.of(context)
+          .pushNamed('/reportSudden');
+    }
+
   }
 
   @override

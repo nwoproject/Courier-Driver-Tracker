@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const mailer = require('../services/mailer');
 const DB = require('../services/db_config');
 const bcrypt = require('bcrypt');
+const { driverForgotPassword } = require('../services/mailer');
 
 // POST /api/drivers
 router.post('/', (req, res) =>{ 
@@ -141,6 +142,105 @@ router.put('/:driverid/password', (req, res) =>{
                         });
                     }
                 });
+            }
+        }
+    });
+});
+
+// DELETE api/drivers/:driverid
+router.delete('/:driverid',(req,res)=>{
+    const driverID = req.params.driverid;
+    if(!req.body.token)
+    {
+        res.status(400).end();
+    }
+    else // check if valid manager or valid driver made the request
+    {
+        if(req.body.manager === true) // delete request from manager
+        {
+            DB.pool.query('SELECT EXISTS(SELECT 1 FROM public."manager" WHERE "token"=($1) AND "id"=($2))',[req.body.token,req.body.id],(err,existsres)=>{
+                if(err)
+                {
+                    DB.dbErrorHandler(res,err);
+                }
+                else
+                {
+                    if(existsres.rows[0].exists)
+                    {
+                        DB.pool.query('DELETE FROM public."driver" WHERE "id"=($1) RETURNING *',[driverID],(deletErr,deleteRes)=>{
+                            if(deletErr)
+                            {
+                                DB.dbErrorHandler(res,deletErr);
+                            }
+                            else 
+                            {
+                                if(deleteRes.rowCount==1) // record deleted
+                                {
+                                    res.status(200).end();
+                                }
+                                else // invalid driver id
+                                {
+                                    res.status(404).end();
+                                }
+                            }   
+                        });
+                    }
+                    else
+                    {
+                        res.status(401).end();
+                    }
+                }
+            });
+        }
+        else // delete request from driver
+        {
+            if(req.body.manager===false)
+            {
+                DB.pool.query('DELETE FROM public."driver" WHERE "id"=($1) AND "token"=($2) RETURNING *',[driverID,req.body.token],(deletErr,deleteRes)=>{
+                    if(deletErr)
+                    {
+                        DB.dbErrorHandler(res,deletErr);
+                    }
+                    else 
+                    {
+                        if(deleteRes.rowCount==1) // record deleted
+                        {
+                            res.status(200).end();
+                        }
+                        else // invalid token or driver id
+                        {
+                            res.status(401).end();
+                        }
+                    } 
+                });
+            }
+            else
+            {
+                res.status(400).end();
+            }
+        }
+    }
+});
+
+// PUT api/drivers/forgotpassword
+router.put('/forgotpassword',(req,res)=>{
+    const driverPassword = crypto.randomBytes(4).toString('hex');
+    DB.pool.query('UPDATE public."driver" SET "password"=($1) WHERE "email"=($2)',[driverPassword,req.body.email],(updateError,updateResults)=>{
+        if(updateError)
+        {
+            DB.dbErrorHandler(res,updateError);
+        }
+        else
+        {
+            if(updateResults.rowCount==1)
+            {
+                const driverEmail = mailer.driverForgotPassword(req.body.email,driverPassword);
+                mailer.mailer(driverEmail);
+                res.status(204).end();
+            }
+            else
+            {
+                res.status(404).end();
             }
         }
     });

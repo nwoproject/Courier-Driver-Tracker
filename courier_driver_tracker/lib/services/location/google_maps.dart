@@ -17,7 +17,6 @@ class GMap extends StatefulWidget {
 }
 
 class MapSampleState extends State<GMap> {
-
   // Google map setup
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
@@ -37,10 +36,10 @@ class MapSampleState extends State<GMap> {
     new Position(latitude: -25.7608, longitude: 28.2310),
     new Position(latitude: -25.7713, longitude: 28.2334)
   ];
-  String _currentDelivery = 'Loading';
+  //String _currentDelivery = 'Loading';
   Deliveries polyDeliveries;
   List<Delivery> deliveryList;
-  
+
   // Storage
   RouteLogging _routeLogging = RouteLogging();
 
@@ -57,7 +56,6 @@ class MapSampleState extends State<GMap> {
     getCurrentRoute();
     _createRoute();
   }
-
 
   /*
    * Author: Gian Geyser
@@ -81,9 +79,10 @@ class MapSampleState extends State<GMap> {
    * Returns: none
    * Description: Moves Google map camera to current location.
    */
-  moveToCurrentLocation(){
+  moveToCurrentLocation() {
     // Move camera to the specified latitude & longitude
-    mapController.animateCamera(
+    mapController
+        .animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(
@@ -95,11 +94,11 @@ class MapSampleState extends State<GMap> {
           bearing: _currentPosition.heading,
         ),
       ),
-    ).catchError((e){
+    )
+        .catchError((e) {
       print("Failed to move camera: " + e.toString());
     });
   }
-
 
   /*
    * Author: Gian Geyser
@@ -107,7 +106,7 @@ class MapSampleState extends State<GMap> {
    * Returns: none
    * Description: Moves Google map camera to show entire route.
    */
-  showEntireRoute(){
+  showEntireRoute() {
     // Define two position variables
     Position _northeastCoordinates;
     Position _southwestCoordinates;
@@ -120,17 +119,17 @@ class MapSampleState extends State<GMap> {
     double maxLat = deliveries[0].latitude;
     double maxLong = deliveries[0].longitude;
 
-    for(int del = 0; del < deliveries.length; del++){
+    for (int del = 0; del < deliveries.length; del++) {
       if (minLat > deliveries[del].latitude) {
         minLat = deliveries[del].latitude;
       }
-      if(minLong > deliveries[del].longitude){
+      if (minLong > deliveries[del].longitude) {
         minLong = deliveries[del].longitude;
       }
       if (maxLat < deliveries[del].latitude) {
         maxLat = deliveries[del].latitude;
       }
-      if(maxLong < deliveries[del].longitude){
+      if (maxLong < deliveries[del].longitude) {
         maxLong = deliveries[del].longitude;
       }
     }
@@ -151,16 +150,14 @@ class MapSampleState extends State<GMap> {
 
     // Center of route
     final LatLng routeCenter = LatLng(
-        (routeBounds.northeast.latitude + routeBounds.southwest.latitude)/2,
-        (routeBounds.northeast.longitude + routeBounds.southwest.longitude)/2
-    );
+        (routeBounds.northeast.latitude + routeBounds.southwest.latitude) / 2,
+        (routeBounds.northeast.longitude + routeBounds.southwest.longitude) /
+            2);
 
     // Accommodate the two locations within the
     // camera view of the map
     zoomToFit(mapController, routeBounds, routeCenter);
-
   }
-
 
   /*
    * Author: Gian Geyser
@@ -168,28 +165,28 @@ class MapSampleState extends State<GMap> {
    * Returns: none
    * Description: Zooms in or out on Google map camera to show route within screen bounds.
    */
-  Future<void> zoomToFit(GoogleMapController controller, LatLngBounds bounds, LatLng centerBounds) async {
+  Future<void> zoomToFit(GoogleMapController controller, LatLngBounds bounds,
+      LatLng centerBounds) async {
     bool keepZooming = true;
     final double zoomLevel = await controller.getZoomLevel();
     controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
       target: centerBounds,
       zoom: zoomLevel,
     )));
-    while(keepZooming) {
+    while (keepZooming) {
       final LatLngBounds screenBounds = await controller.getVisibleRegion();
-      if(!zoom(bounds, screenBounds)){
+      if (!zoom(bounds, screenBounds)) {
         keepZooming = false;
         break;
       }
 
-      if(zoomIn(bounds, screenBounds)){
+      if (zoomIn(bounds, screenBounds)) {
         final double zoomLevel = await controller.getZoomLevel() + 0.1;
         controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
           target: centerBounds,
           zoom: zoomLevel,
         )));
-      }
-      else {
+      } else {
         final double zoomLevel = await controller.getZoomLevel() - 0.1;
         controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
           target: centerBounds,
@@ -199,37 +196,53 @@ class MapSampleState extends State<GMap> {
     }
   }
 
-
   /*
    * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to current location
    */
-  bool zoom(LatLngBounds markerBounds, LatLngBounds screenBounds){
-    final bool northEastLatitudeCheck = screenBounds.northeast.latitude >= markerBounds.northeast.latitude + 0.005
-                                      && screenBounds.northeast.latitude <= markerBounds.northeast.latitude + 0.04;
-    final bool northEastLongitudeCheck = screenBounds.northeast.longitude >= markerBounds.northeast.longitude + 0.005
-                                      && screenBounds.northeast.longitude <= markerBounds.northeast.longitude + 0.04;
+  bool zoom(LatLngBounds markerBounds, LatLngBounds screenBounds) {
+    final bool northEastLatitudeCheck = screenBounds.northeast.latitude >=
+            markerBounds.northeast.latitude + 0.005 &&
+        screenBounds.northeast.latitude <=
+            markerBounds.northeast.latitude + 0.04;
+    final bool northEastLongitudeCheck = screenBounds.northeast.longitude >=
+            markerBounds.northeast.longitude + 0.005 &&
+        screenBounds.northeast.longitude <=
+            markerBounds.northeast.longitude + 0.04;
 
-    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <= markerBounds.southwest.latitude - 0.015
-                                      && screenBounds.southwest.latitude >= markerBounds.southwest.latitude - 0.04;
-    final bool southWestLongitudeCheck = screenBounds.southwest.longitude <= markerBounds.southwest.longitude - 0.005
-                                      && screenBounds.southwest.longitude >= markerBounds.southwest.longitude - 0.04;
+    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <=
+            markerBounds.southwest.latitude - 0.015 &&
+        screenBounds.southwest.latitude >=
+            markerBounds.southwest.latitude - 0.04;
+    final bool southWestLongitudeCheck = screenBounds.southwest.longitude <=
+            markerBounds.southwest.longitude - 0.005 &&
+        screenBounds.southwest.longitude >=
+            markerBounds.southwest.longitude - 0.04;
 
-    return !(northEastLatitudeCheck && northEastLongitudeCheck && southWestLatitudeCheck && southWestLongitudeCheck);
+    return !(northEastLatitudeCheck &&
+        northEastLongitudeCheck &&
+        southWestLatitudeCheck &&
+        southWestLongitudeCheck);
   }
 
   bool zoomIn(LatLngBounds markerBounds, LatLngBounds screenBounds) {
-    final bool northEastLatitudeCheck = screenBounds.northeast.latitude >= markerBounds.northeast.latitude + 0.01;
-    final bool northEastLongitudeCheck = screenBounds.northeast.longitude >= markerBounds.northeast.longitude + 0.01;
+    final bool northEastLatitudeCheck = screenBounds.northeast.latitude >=
+        markerBounds.northeast.latitude + 0.01;
+    final bool northEastLongitudeCheck = screenBounds.northeast.longitude >=
+        markerBounds.northeast.longitude + 0.01;
 
-    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <= markerBounds.southwest.latitude - 0.02;
-    final bool southWestLongitudeCheck = screenBounds.southwest.longitude <= markerBounds.southwest.longitude - 0.01;
+    final bool southWestLatitudeCheck = screenBounds.southwest.latitude <=
+        markerBounds.southwest.latitude - 0.02;
+    final bool southWestLongitudeCheck = screenBounds.southwest.longitude <=
+        markerBounds.southwest.longitude - 0.01;
 
-    return northEastLatitudeCheck && northEastLongitudeCheck && southWestLatitudeCheck && southWestLongitudeCheck;
+    return northEastLatitudeCheck &&
+        northEastLongitudeCheck &&
+        southWestLatitudeCheck &&
+        southWestLongitudeCheck;
   }
-
 
   /*
    * Author: Gian Geyser
@@ -238,12 +251,11 @@ class MapSampleState extends State<GMap> {
    * Description: Gets the address of the delivery using coordinates.
    */
   getNextDelivery(Position position) async {
-    String address = await _geolocatorService.getAddress(position);
+    //String address = await _geolocatorService.getAddress(position);
     setState(() {
-      _currentDelivery = address;
+      //_currentDelivery = address;
     });
   }
-
 
   /*
    * Author: Gian Geyser
@@ -260,162 +272,150 @@ class MapSampleState extends State<GMap> {
     markers = _navigatorService.markers;
   }
 
-
   @override
   Widget build(BuildContext context) {
     // Stream of Position objects of current location.
     _currentPosition = Provider.of<Position>(context);
 
     // Calls abnormality service
-    if(_currentPosition != null){
-      _navigatorService.navigate(_currentPosition);
-      _routeLogging.writeToFile(_geolocatorService.convertPositionToString(_currentPosition) + "\n", "locationFile");
+    if (_currentPosition != null) {
+      _routeLogging.writeToFile(
+          _geolocatorService.convertPositionToString(_currentPosition) + "\n",
+          "locationFile");
+    }
+
+    BoxDecoration myBoxDecoration() {
+      return BoxDecoration(
+          borderRadius: BorderRadius.all(
+              Radius.circular(30) //         <--- border radius here
+              ),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.grey,
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3))
+          ]);
     }
 
     // Google Map View
     return Container(
-      color: Colors.black,
       child: Column(
-                // Google map container with buttons stacked on top
-                children: <Widget>[
-                  Expanded(
-                    flex: 5,
-                    child: Stack(
-                      children: <Widget>[
-                        Container(
-                          color: Colors.black,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-                            child: GoogleMap(
-                              initialCameraPosition: _initialLocation,
-                              markers: markers != null ? Set<Marker>.from(markers) : null,
-                              polylines: Set<Polyline>.of(polylines.values),
-                              myLocationEnabled: true,
-                              myLocationButtonEnabled: false,
-                              mapType: MapType.normal,
-                              zoomGesturesEnabled: true,
-                              zoomControlsEnabled: false,
-                              onMapCreated: (GoogleMapController controller) {
-                                mapController = controller;
-                              },
+        // Google map container with buttons stacked on top
+        children: <Widget>[
+          LocalNotifications(),
+          Expanded(
+            flex: 5,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  child: GoogleMap(
+                    initialCameraPosition: _initialLocation,
+                    markers: markers != null ? Set<Marker>.from(markers) : null,
+                    polylines: Set<Polyline>.of(polylines.values),
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    mapType: MapType.normal,
+                    zoomGesturesEnabled: true,
+                    zoomControlsEnabled: false,
+                    onMapCreated: (GoogleMapController controller) {
+                      mapController = controller;
+                      addMarkers(deliveries);
+                    },
+                  ),
+                ),
+                // Design for current location button
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                      padding: const EdgeInsets.only(
+                          top: 20.0, left: 10.0, right: 10.0),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        color: Colors.green,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            const ListTile(
+                              leading: Icon(Icons.arrow_upward),
+                              title: Text('Justice Mahomed St',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: "OpenSans-Regular",
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.w600)),
+                              subtitle: Text("towards University Rd",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: "OpenSans-Regular",
+                                      fontSize: 15.0)),
+                            )
+                          ],
+                        ),
+                      )),
+                ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 110.0, right: 10.0),
+                    child: Container(
+                      decoration: myBoxDecoration(),
+                      child: ClipOval(
+                        child: Material(
+                          color: Colors.white, // button color
+                          child: InkWell(
+                            splashColor: Colors.white, // inkwell color
+                            child: SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: Icon(Icons.my_location),
                             ),
+                            onTap: () {
+                              _currentPosition != null
+                                  ? moveToCurrentLocation()
+                                  : getCurrentLocation();
+                            },
                           ),
                         ),
-                        // Design for current location button
-
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 20.0, right: 10.0),
-                            child: ClipOval(
-                              child: Material(
-                                color: Colors.amber[600], // button color
-                                child: InkWell(
-                                  splashColor: Colors.white, // inkwell color
-                                  child: SizedBox(
-                                    width: 56,
-                                    height: 56,
-                                    child: Icon(Icons.my_location),
-                                  ),
-                                  onTap: () {
-                                    _currentPosition != null ? moveToCurrentLocation() : getCurrentLocation();
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 20.0, right: 100.0),
-                            child: ClipOval(
-                              child: Material(
-                                color: Colors.amber[600], // button color
-                                child: InkWell(
-                                  splashColor: Colors.white, // inkwell color
-                                  child: SizedBox(
-                                    width: 56,
-                                    height: 56,
-                                    child: Icon(Icons.explore),
-                                  ),
-                                  onTap: () {
-                                    _currentPosition != null && deliveries.isNotEmpty ? showEntireRoute() : getCurrentLocation();
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Show zoom buttons
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              ClipOval(
-                                child: Material(
-                                  color: Colors.white, // button color
-                                  child: InkWell(
-                                    splashColor: Colors.black, // inkwell color
-                                    child: SizedBox(
-                                      width: 50,
-                                      height: 50,
-                                      child: Icon(Icons.add),
-                                    ),
-                                    onTap: () {
-                                      mapController.animateCamera(
-                                        CameraUpdate.zoomIn(),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 20),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 40.0),
-                                child: ClipOval(
-                                  child: Material(
-                                    color: Colors.white, // button color
-                                    child: InkWell(
-                                      splashColor: Colors.black, // inkwell color
-                                      child: SizedBox(
-                                        width: 50,
-                                        height: 50,
-                                        child: Icon(Icons.remove),
-                                      ),
-                                      onTap: () {
-                                        mapController.animateCamera(
-                                          CameraUpdate.zoomOut(),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                  Expanded(
-                    flex: 1,
-
-                  // Card with current Delivery details.
-                    child: Card(
-                      child: VerticalDivider(
-                        width: 40.0,
-                        thickness: 2,
-                        color: Colors.purple,
-                        indent: 15.0,
-                        endIndent: 15.0,
-                      )
+                ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 180.0, right: 10.0),
+                    child: Container(
+                      decoration: myBoxDecoration(),
+                      child: ClipOval(
+                        child: Material(
+                          color: Colors.white, // button color
+                          child: InkWell(
+                            splashColor: Colors.white, // inkwell color
+                            child: SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: Icon(Icons.explore),
+                            ),
+                            onTap: () {
+                              _currentPosition != null
+                                  ? moveToCurrentLocation()
+                                  : getCurrentLocation();
+                            },
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ]
+                ),
+                // Show zoom buttons
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-
 }
