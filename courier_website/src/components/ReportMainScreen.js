@@ -35,7 +35,7 @@ function ReportMainScreen(){
                         <Col xs={4}>
                             <Form.Control 
                             name="DriverID"
-                            placeholder="Enter Driver ID to track"
+                            placeholder="Enter Driver ID"
                             onChange={handleChange}   
                             />
                         </Col>

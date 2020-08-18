@@ -2,8 +2,12 @@ import React, {useState, useEffect} from 'react';
 import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
 import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 import ReportAbnormalities from "./ReportAbnormalities";
+import ReportRoutes from './ReportRoutes';
+import SendReport from './SendReport';
 
 function ReportSelection(props){
     
@@ -11,10 +15,24 @@ function ReportSelection(props){
     const [DriverName, setDN] = useState("");
     const [DriverSurname, setDS] = useState("");
     const [ToggleAbnor, setTA] = useState(false);
+    const [RoutesReport, setRR] = useState(false);
+    const [SendReportB, setSR] = useState(false);
 
     function handleButton(event){
         if(event.target.name==="Abnor"){
             setTA(!ToggleAbnor);
+            setRR(false);
+            setSR(false);
+        }
+        else if(event.target.name==="Routes"){
+            setTA(false);
+            setRR(!RoutesReport);
+            setSR(false);
+        }
+        else if(event.target.name==="SendReport"){
+            setTA(false);
+            setRR(false);
+            setSR(!SendReportB);
         }
     }
 
@@ -49,9 +67,20 @@ function ReportSelection(props){
                 <Card>
                     <Card.Header>{DriverName + " " + DriverSurname}</Card.Header>
                     <Card.Body>
-                        <Button name="Abnor" onClick={handleButton}>See Abnormalities</Button><br />
-                        <br />
-                        {ToggleAbnor ? <ReportAbnormalities DriverID={props.DriverID}/>:null}
+                        <Row>
+                            <Col xs={4}>
+                                <Button name="Abnor" onClick={handleButton}>See Abnormalities</Button>
+                            </Col>
+                            <Col xs={4}>
+                                <Button name="Routes" onClick={handleButton}>See Routes</Button>
+                            </Col>
+                            <Col xs={4}>
+                                <Button name="SendReport" onClick={handleButton}>Send Full Report</Button>
+                            </Col>
+                        </Row>
+                        {ToggleAbnor ? <div><br /><ReportAbnormalities DriverID={props.DriverID}/></div>:null}
+                        {RoutesReport ? <div><br /><ReportRoutes DriverID={props.DriverID}/></div>:null}
+                        {SendReportB ? <div><br /><SendReport DriverID={props.DriverID}/></div>:null}
                     </Card.Body>
                 </Card>
             }

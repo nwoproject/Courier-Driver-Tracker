@@ -103,8 +103,8 @@ function ReportAbnormalities(props){
                         {ServerError ? <Alert variant="warning">An Error occured on the Server.</Alert>:null}
                         <p>The Driver has {NumberAbbnormalities} abnormalities so far.</p>
                             <Row>
-                                <Col xs={4}>
-                                    {AbnormalityArr.map((item, index)=>
+                                {AbnormalityArr.map((item, index)=>
+                                    <Col xs={4} key={IDBIndex}>
                                         <Abnormality
                                             ID={index+1}
                                             key={index}
@@ -112,8 +112,8 @@ function ReportAbnormalities(props){
                                             Reason={item.Reason}
                                             Date={item.timestamp}
                                         />
-                                    )}
-                                </Col>
+                                    </Col>
+                                )}
                             </Row>
                     </Card.Body>
                 </Card>

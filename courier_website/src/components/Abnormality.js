@@ -1,9 +1,11 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
 
+import './style/style.css'
+
 function Abnormality(props){
     return(
-        <Card>
+        <Card className="InnerCard">
             <Card.Header>Abnormality {props.ID}</Card.Header>
             <Card.Body>
                 <p><b>Description:</b> {props.Desc}</p>
