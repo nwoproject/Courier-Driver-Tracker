@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'deliveries.dart';
 
@@ -47,11 +48,12 @@ class MapSampleState extends State<GMap> {
   int _route;
   static String _routeFile = "route.json";
   NavigatorService _navigatorService = NavigatorService(jsonFile: _routeFile);
-  String directions;
-  String stepTimeRemaining;
-  int stepTimeStamp;
-  String ETA;
-  String delivery;
+  String _directions = "LOADING...";
+  String _stepTimeRemaining = "LOADING...";
+  int _stepTimeStamp;
+  String _distance_ETA = "";
+  String _delivery = "LOADING...";
+  String _deliveryAddress = "";
 
   @override
   void initState() {
@@ -59,6 +61,34 @@ class MapSampleState extends State<GMap> {
     getCurrentLocation();
     getCurrentRoute();
     _createRoute();
+  }
+
+  BorderRadiusGeometry radius = BorderRadius.only(
+    topLeft: Radius.circular(24.0),
+    topRight: Radius.circular(24.0),
+  );
+
+  final headingLabelStyle = TextStyle(
+    fontSize: 20,
+    fontFamily: 'OpenSans-Regular',
+  );
+
+  Widget _deliveryCards(String text, String date) {
+    return Card(
+      elevation: 10,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        child: ListTile(
+          title: Text(
+            text,
+            style: headingLabelStyle,
+          ),
+          subtitle: Text(
+            date,
+          ),
+        ),
+      ),
+    );
   }
 
   /*
@@ -303,121 +333,211 @@ class MapSampleState extends State<GMap> {
     }
 
     // Google Map View
-    return Container(
-      child: Column(
-        // Google map container with buttons stacked on top
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  child: GoogleMap(
-                    initialCameraPosition: _initialLocation,
-                    markers: markers != null ? Set<Marker>.from(markers) : null,
-                    polylines: Set<Polyline>.of(polylines.values),
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    mapType: MapType.normal,
-                    zoomGesturesEnabled: true,
-                    zoomControlsEnabled: false,
-                    onMapCreated: (GoogleMapController controller) {
-                      mapController = controller;
-                    },
-                  ),
-                ),
-                // Design for current location button
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                      padding: const EdgeInsets.only(
-                          top: 20.0, left: 10.0, right: 10.0),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        color: Colors.green,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            const ListTile(
-                              leading: Icon(Icons.arrow_upward),
-                              title: Text('Justice Mahomed St',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: "OpenSans-Regular",
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.w600)),
-                              subtitle: Text("towards University Rd",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: "OpenSans-Regular",
-                                      fontSize: 15.0)),
-                            )
-                          ],
-                        ),
-                      )),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 110.0, right: 10.0),
-                    child: Container(
-                      decoration: myBoxDecoration(),
-                      child: ClipOval(
-                        child: Material(
-                          color: Colors.white, // button color
-                          child: InkWell(
-                            splashColor: Colors.white, // inkwell color
-                            child: SizedBox(
-                              width: 56,
-                              height: 56,
-                              child: Icon(Icons.my_location),
-                            ),
-                            onTap: () {
-                              _currentPosition != null
-                                  ? moveToCurrentLocation()
-                                  : getCurrentLocation();
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 180.0, right: 10.0),
-                    child: Container(
-                      decoration: myBoxDecoration(),
-                      child: ClipOval(
-                        child: Material(
-                          color: Colors.white, // button color
-                          child: InkWell(
-                            splashColor: Colors.white, // inkwell color
-                            child: SizedBox(
-                              width: 56,
-                              height: 56,
-                              child: Icon(Icons.explore),
-                            ),
-                            onTap: () {
-                              _currentPosition != null
-                                  ? moveToCurrentLocation()
-                                  : getCurrentLocation();
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Show zoom buttons
-              ],
-            ),
+    return SlidingUpPanel(
+      color: Color.fromARGB(255, 58, 52, 64),
+      panel: Center(
+        child: Container(
+          padding: EdgeInsets.all(10),
+          child: ListView(
+            padding: const EdgeInsets.all(5),
+            children: <Widget>[
+              _deliveryCards("Menlyn Park Shopping Centre",
+                  "01-25-2020 12:00"), //mock data
+              _deliveryCards(
+                  "Aroma Gourmet Coffee Roastery", "01-25-2020 13:00"),
+              _deliveryCards("University of Pretoria", "01-25-2020 13:45"),
+              _deliveryCards(
+                  "Pretoria High School for boys", "01-25-2020 14:00"),
+            ],
           ),
-        ],
+        ),
       ),
+      collapsed: Container(
+        decoration:
+        BoxDecoration(color: Colors.white, borderRadius: radius),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        top: 10.0, left: 10.0, right: 10),
+                    child: Center(
+                      child: Text(_stepTimeRemaining,
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        top: 10.0, left: 10.0, right: 10),
+                    child: Center(
+                      child: Text(_distance_ETA,
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: 20.0)),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 5, right: 5),
+                child: VerticalDivider(
+                  width: 10.0,
+                  color: Colors.grey,
+                  thickness: 1,
+                  indent: 10,
+                  endIndent: 10,
+                ),
+              ),
+              Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
+                    child: Center(
+                      child: Text(_delivery,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: 25.0,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
+                    child: Center(
+                      child: Text(_deliveryAddress,
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: 20.0)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: Expanded(child: Container(
+        child: Column(
+          // Google map container with buttons stacked on top
+          children: <Widget>[
+            Expanded(
+              flex: 5,
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    child: GoogleMap(
+                      initialCameraPosition: _initialLocation,
+                      markers: markers != null ? Set<Marker>.from(markers) : null,
+                      polylines: Set<Polyline>.of(polylines.values),
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: false,
+                      mapType: MapType.normal,
+                      zoomGesturesEnabled: true,
+                      zoomControlsEnabled: false,
+                      onMapCreated: (GoogleMapController controller) {
+                        mapController = controller;
+                      },
+                    ),
+                  ),
+                  // Design for current location button
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                        padding: const EdgeInsets.only(
+                            top: 20.0, left: 10.0, right: 10.0),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          color: Colors.green,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              ListTile(
+                                leading: Icon(Icons.arrow_upward),
+                                title: Text( _directions,
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: "OpenSans-Regular",
+                                        fontSize: 20.0,
+                                        fontWeight: FontWeight.w600)),
+                              )
+                            ],
+                          ),
+                        )),
+                  ),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 110.0, right: 10.0),
+                      child: Container(
+                        decoration: myBoxDecoration(),
+                        child: ClipOval(
+                          child: Material(
+                            color: Colors.white, // button color
+                            child: InkWell(
+                              splashColor: Colors.white, // inkwell color
+                              child: SizedBox(
+                                width: 56,
+                                height: 56,
+                                child: Icon(Icons.my_location),
+                              ),
+                              onTap: () {
+                                _currentPosition != null
+                                    ? moveToCurrentLocation()
+                                    : getCurrentLocation();
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 180.0, right: 10.0),
+                      child: Container(
+                        decoration: myBoxDecoration(),
+                        child: ClipOval(
+                          child: Material(
+                            color: Colors.white, // button color
+                            child: InkWell(
+                              splashColor: Colors.white, // inkwell color
+                              child: SizedBox(
+                                width: 56,
+                                height: 56,
+                                child: Icon(Icons.explore),
+                              ),
+                              onTap: () {
+                                _currentPosition != null
+                                    ? showEntireRoute()
+                                    : getCurrentLocation();
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Show zoom buttons
+                ],
+              ),
+            ),
+          ],
+        ),
+      )
+      ),
+      borderRadius: radius,
     );
   }
 }
