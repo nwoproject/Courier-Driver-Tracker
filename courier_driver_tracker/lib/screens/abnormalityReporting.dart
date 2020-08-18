@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:async';
 
 class UserFeedback extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
@@ -58,48 +57,40 @@ class _FeedbackState extends State<Feedback> {
           gravity: ToastGravity.CENTER,
           timeInSecForIos: 1,
           backgroundColor: Colors.red,
-          textColor: Colors.white
-      );
-    }
-      else{
-        report();
+          textColor: Colors.white);
+    } else {
+      report();
     }
   }
 
   void responseCheck(String r) {
     Fluttertoast.showToast(
-          msg: r,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white
-      );
-    }
- 
+        msg: r,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
 
-  void report() async{
-
+  void report() async {
     String resp = "";
 
-    if (_character == Abnormality.fuelstop)
-    {
+    if (_character == Abnormality.fuelstop) {
       resp = "Filled the vehicle with fuel";
     }
-    if (_character == Abnormality.lunch)
-    {
+    if (_character == Abnormality.lunch) {
       resp = "Stopped for lunch";
     }
-    if (_character == Abnormality.traffic)
-    {
+    if (_character == Abnormality.traffic) {
       resp = "Filled the vehicle with fuel";
     }
-    if (_character == Abnormality.other)
-    {
+    if (_character == Abnormality.other) {
       resp = other;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
+    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
+        defaultValue: DotEnv().env['BEARER_TOKEN']);
 
     Map data = {
       "code": 100,
@@ -112,7 +103,7 @@ class _FeedbackState extends State<Feedback> {
 
     Map<String, String> requestHeaders = {
       'Accept': 'application/json',
-      'Authorization':'Bearer $bearerToken'
+      'Authorization': 'Bearer $bearerToken'
     };
 
     var response = await http.post(
@@ -120,10 +111,9 @@ class _FeedbackState extends State<Feedback> {
         headers: requestHeaders,
         body: data);
 
-    String respCode ="";
+    String respCode = "";
 
-    switch(response.statusCode)
-    {
+    switch (response.statusCode) {
       case 201:
         respCode = "Abnormality was successfully logged";
         responseCheck(respCode);
@@ -143,13 +133,11 @@ class _FeedbackState extends State<Feedback> {
     }
   }
 
-
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         RadioListTile(
           title: const Text('Filling up vehicle'),
-
           value: Abnormality.fuelstop,
           groupValue: _character,
           onChanged: (Abnormality value) {
@@ -162,7 +150,6 @@ class _FeedbackState extends State<Feedback> {
         ),
         RadioListTile(
           title: const Text('Stopped for lunch break'),
-
           value: Abnormality.lunch,
           groupValue: _character,
           onChanged: (Abnormality value) {
@@ -173,7 +160,6 @@ class _FeedbackState extends State<Feedback> {
           },
           secondary: new Icon(Icons.add_circle),
         ),
-
         RadioListTile(
           title: const Text('Severe traffic'),
           value: Abnormality.traffic,
@@ -186,7 +172,6 @@ class _FeedbackState extends State<Feedback> {
           },
           secondary: new Icon(Icons.add_circle),
         ),
-
         RadioListTile(
           title: const Text('Other (Specify)'),
           value: Abnormality.other,
@@ -199,20 +184,16 @@ class _FeedbackState extends State<Feedback> {
           },
           secondary: new Icon(Icons.add_circle),
         ),
-
         TextField(
           controller: textController,
           decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Specify reason'
-          ),
+              border: InputBorder.none, hintText: 'Specify reason'),
         ),
-
         const SizedBox(height: 30),
         RaisedButton(
-          onPressed: (){
+          onPressed: () {
             checkForEmptyText();
-            },
+          },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),
       ],
