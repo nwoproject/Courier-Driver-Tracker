@@ -130,4 +130,18 @@ const getDriver = async (driver_id)=>
     });
 }
 
-module.exports = {addRoute,getCenterPoints,getTodaysRoutes,getDriver,addRepeatingRoute};
+const addAbnormality = async (abnormality)=>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('INSERT INTO public."abnormality"("driver_id","abnormality_code","description","driver_description","datetime","latitude","longitude")VALUES($1,$2,$3,$4,$5,$6,$7)',
+        [abnormality.driver_id,abnormality.code,abnormality.description,abnormality.driver_description,abnormality.timestamp,abnormality.latitude,abnormality.longitude],(insertErr,insertRes)=>{
+            if(insertErr)
+            {
+                DB.dbErrorHandlerNoResponse(insertErr);
+            }
+            resolve();
+        });
+    });
+}
+
+module.exports = {addRoute,getCenterPoints,getTodaysRoutes,getDriver,addRepeatingRoute,addAbnormality};

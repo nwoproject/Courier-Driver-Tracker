@@ -3,6 +3,8 @@ const express = require('express');
 const router = require('./routes/index');
 const app = express();
 const cors = require('cors');
+const cron = require('node-cron');
+const tasks = require('./utility/daily_tasks');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -37,5 +39,25 @@ app.use((err, req, res, next) => {
         error: err
     }});
 }); 
+
+//At 23:59 on every day-of-week from Monday through Friday.
+// Performs DB maintenence, moves todays routes and locations over to logs and check if all routes for the day has been completed.
+cron.schedule('59 23 * * 1-5', async () => 
+{
+  tasks.logTodaysRoutes();
+},{
+  scheduled: true,
+  timezone: "Africa/Johannesburg"
+});
+
+//At 02:00 on every day-of-week from Monday through Friday.”
+// Assigns daily routes to drivers.
+cron.schedule('00 02 * * 1-5', () => 
+{
+  //TODO
+},{
+  scheduled: true,
+  timezone: "Africa/Johannesburg"
+});
 
 module.exports = app;

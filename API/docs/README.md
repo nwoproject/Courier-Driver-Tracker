@@ -1050,6 +1050,14 @@ This request expects no body.
         "code_104": {
             "code_description": "Driver was driving with the company car when no deliveries were scheduled.",
             "driver_abnormalities": []
+        },
+        "code_105": {
+            "code_description": "Driver never embarked on the route that was assigned to him.",
+            "driver_abnormalities": []
+        },
+        "code_106": {
+            "code_description": "Driver skipped a delivery on his route.",
+            "driver_abnormalities": []
         }
     }
 }

@@ -150,7 +150,7 @@ router.get('/:driverid', (req,res)=>{
                     }
                     else
                     {
-                        res.status(200).json({"driver_id":driver_id,"active_routes: ": routes}).end();
+                        res.status(200).json({"driver_id":driver_id,"active_routes": routes}).end();
                     }
                });
             }
@@ -217,15 +217,16 @@ router.put('/completed/:routeid',async(req,res)=>{
                     }
                     else
                     {
-                        const completed = await checks.routeLocationsCheck(route_id,res);
+                        const completed = await checks.routeLocationsCheck(req.body.id,route_id,res);
                         if(!res.writableEnded)
                         {
                             if(completed)
                             {
                                 res.status(204).end();
                             }
-                            else // TODO Log that driver potentially missed a delivery
+                            else // Driver potentially missed a delivery
                             {
+
                                 res.status(206).end();
                             }   
                         }

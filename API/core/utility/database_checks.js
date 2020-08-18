@@ -1,4 +1,6 @@
 const DB = require('../services/db_config');
+const format = require('./json_formatter');
+const db_query = require('./common_queries');
 
 const driverCheck = async (driver_id,driver_token,res) =>
 {
@@ -67,7 +69,7 @@ that location (delivery addresses will be refered to as locations from here on).
 said location then it means that the driver has potentially skipped a delivery on his route. His route can thus not be "completed". In this case
 The api will still mark the route as completed, but it will be logged that the driver potentially skipped a delivery.
 */
-const routeLocationsCheck = async (route_id,res) =>
+const routeLocationsCheck = async (driver_id,route_id,res) =>
 {
   return await new Promise((resolve)=>{
     DB.pool.query('SELECT * FROM route."location" WHERE "route_id"=($1)',[route_id], (err,results)=>{
@@ -84,6 +86,8 @@ const routeLocationsCheck = async (route_id,res) =>
             if(results.rows[k].timestamp_completed==null)
             {
               completed = false;
+              const abnormality = format.missedDelivery(driver_id,results.rows[k].latitude,results.rows[k].longitude);
+              db_query.addAbnormality(abnormality);
             }
           }
           resolve(completed);
@@ -119,5 +123,29 @@ const centerPointExistsCheck = async (driver_id,sendResults,res) =>
   });
 }
 
+const CheckDeliveries = async () =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT * FROM route."route";',[], async (err,results)=>{
+            if(err)
+            {
+                DB.dbErrorHandlerNoResponse(err);
+            }
+            else
+            {
+                for(let k = 0; k < results.rowCount;k++)
+                {
+                  if(!results.rows[k].completed)
+                  {
+                    const abnormality = format.missedRoute(results.rows[k].driver_id);
+                    await db_query.addAbnormality(abnormality);
+                  }
+                }
+            }
+            resolve();
+        });
+    }); 
+}
 
-module.exports = {driverCheck,routeLocationsCheck,managerCheck,driverExistsCheck,centerPointExistsCheck};
+
+module.exports = {driverCheck,routeLocationsCheck,managerCheck,driverExistsCheck,centerPointExistsCheck,CheckDeliveries};
