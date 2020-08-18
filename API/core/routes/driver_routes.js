@@ -236,4 +236,34 @@ router.put('/completed/:routeid',async(req,res)=>{
     }
 });
 
+// POST api/routes/repeating
+router.post('/repeating',async(req,res)=>{
+    if(!req.body.id || !req.body.token || !req.body.route || !req.body.occurrence)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        if(req.body.occurrence == 'daily' || req.body.occurrence=='weekly' || req.body.occurrence=='monthly')
+        {
+            await checks.managerCheck(req.body.id,req.body.token,res);
+            if(!res.writableEnded)
+            {
+                if(!res.writableEnded)
+                {
+                    await db_query.addRepeatingRoute(req,res);
+                    if(!res.writableEnded)
+                    {
+                        res.status(201).end();
+                    }
+                }
+            }
+        }
+        else
+        {
+            res.status(400).end();
+        }
+    }
+});
+
 module.exports = router;

@@ -22,7 +22,51 @@ const addRoute = async (req,driver_id,res)=>
                }
 
                async.eachSeries(series,(i,callback)=>{
-                    DB.pool.query('INSERT INTO route."location"("route_id","latitude","longitude")VALUES($1,$2,$3)',[routeResult.rows[0].route_id,req.body.route[i].latitude,req.body.route[i].longitude],(locationError,locationResult)=>{
+                    DB.pool.query('INSERT INTO route."location"("route_id","latitude","longitude","address","name")VALUES($1,$2,$3,$4,$5)',
+                    [routeResult.rows[0].route_id,req.body.route[i].latitude,req.body.route[i].longitude,req.body.route[i].address,req.body.route[i].name],(locationError,locationResult)=>{
+                        if(locationError)
+                        {
+                            DB.dbErrorHandlerNoResponse(locationError);
+                        }
+                        callback(null);
+                    });
+               },(insertErr)=>{
+                    if(insertErr)
+                    {
+                        DB.dbErrorHandler(res,insertErr);
+                        resolve(insertErr);
+                    }
+                    else
+                    {
+                        resolve();
+                    }
+               });
+            }
+        });
+    }); 
+}
+
+const addRepeatingRoute = async (req,res)=>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('INSERT INTO route."repeating_route"("occurrence")VALUES($1) RETURNING *',[req.body.occurrence],(error,routeResult)=>{
+            if(error)
+            {
+                DB.dbErrorHandler(res,error);
+                resolve(error);
+            }
+            else
+            {
+                
+               var series = [];
+               for(var k=0; k < req.body.route.length;k++)
+               {
+                   series.push(k);
+               }
+
+               async.eachSeries(series,(i,callback)=>{
+                    DB.pool.query('INSERT INTO route."repeating_location"("route_id","latitude","longitude","address","name")VALUES($1,$2,$3,$4,$5)'
+                    ,[routeResult.rows[0].repeating_route_id,req.body.route[i].latitude,req.body.route[i].longitude,req.body.route[i].address,req.body.route[i].name],(locationError,locationResult)=>{
                         if(locationError)
                         {
                             DB.dbErrorHandlerNoResponse(locationError);
@@ -86,4 +130,4 @@ const getDriver = async (driver_id)=>
     });
 }
 
-module.exports = {addRoute,getCenterPoints,getTodaysRoutes,getDriver};
+module.exports = {addRoute,getCenterPoints,getTodaysRoutes,getDriver,addRepeatingRoute};

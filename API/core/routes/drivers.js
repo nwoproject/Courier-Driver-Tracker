@@ -50,7 +50,7 @@ router.post('/', (req, res) =>{
                 };
                 tokenGenerator();
                 bcrypt.hash(driverPassword, 10, (hasherr, hash)=>{
-                    DB.pool.query('INSERT INTO public."driver"("email","password","name","surname","token","epoch")VALUES($1,$2,$3,$4,$5,$6)',[req.body.email,hash,req.body.name,req.body.surname,token,Math.floor(new Date() / 1000)],(error,insertResult)=>{
+                    DB.pool.query('INSERT INTO public."driver"("email","password","name","surname","token","epoch")VALUES($1,$2,$3,$4,$5,$6) RETURNING *',[req.body.email,hash,req.body.name,req.body.surname,token,Math.floor(new Date() / 1000)],(error,insertResult)=>{
                         if(error)
                         {
                             dbErrorHandler(res,error);
@@ -59,7 +59,7 @@ router.post('/', (req, res) =>{
                         {
                             var driverEmail = mailer.driverMessage(req.body.email,driverPassword);
                             mailer.mailer(driverEmail);
-                            res.status(201).end();
+                            res.status(201).json({"id": insertResult.rows[0].id});
                         }
                     });
                 });

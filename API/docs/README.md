@@ -29,9 +29,10 @@ The following header field should be present in each request: `Authorization: Be
 5.  [Route Endpoints](#route-endpoints)  
         5.1     [Create Route](#create-route)  
         5.2     [Create Route (auto-assign)](#create-route-auto-assign)  
-        5.3     [Get Driver Route (uncalculated)](#get-driver-route-uncalculated)  
-        5.4     [Timestamp Delivery Location](#timestamp-delivery-location)  
-        5.5     [Complete Route](#complete-route)  
+        5.3     [Create Repeating Route](#create-repeating-route)
+        5.4     [Get Driver Route (uncalculated)](#get-driver-route-uncalculated)  
+        5.5     [Timestamp Delivery Location](#timestamp-delivery-location)  
+        5.6     [Complete Route](#complete-route)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
         6.2     [Calculate route](#calculate-route)  
@@ -75,7 +76,9 @@ The following header field should be present in each request: `Authorization: Be
 
 | Method | Path | Usage |
 |---------|-----------------------------------------|------------------|
-| `POST` | `/api/routes` | Creates a new delivery route | 
+| `POST` | `/api/routes` | Creates a new delivery route and assigns it to specified driver| 
+| `POST` | `/api/routes/auto-assign` | Creates a new delivery route and automatically assgins it to a driver |
+| `POST` | `/api/routes/repeating` | Creates a new repeating delivery route that happens daily,weekly or monthly |
 | `GET` | `/api/routes/:driverid` | Returns a driver's active delivery routes |
 | `PUT` | `api/routes/location/:locationid` | Stores a timestamp of when a driver reached a delivery on his route |
 | `PUT` | `api/routes/completed/:routeid` | Stores a timestamp of when a route was completed by a driver |
@@ -115,7 +118,13 @@ Creates a new driver, this endpoint will only be used by managers. A driver cann
 ```
 ##### Response Body
 
-This request returns no body.
+Returns the `id` of the driver that was added.
+
+```json
+{
+    "id": 1,
+}
+```
 
 ##### Response status codes
 
@@ -624,13 +633,17 @@ Creates a new non-daily delivery route from the passed in parameters and assigne
     "driver_id" : 1,
     "route" : [
         {
-            "latitude" : "-25.7542559", 
-            "longitude": "28.2321043"
+            "latitude" : "-25.74740981", 
+            "longitude": "28.23001385",
+            "address": "Lynnwood Rd, Hatfield, Pretoria, 0002, South Africa",
+            "name": "University of Pretoria"
         },
         {
-            "latitude" : "-25.7674421",
-            "longitude": "28.1991501"
-        }
+            "latitude" : "-25.75815531",
+            "longitude": "28.2270956",
+            "address": "George Storrar Dr &, Leyds St, Groenkloof, Pretoria, 0027",
+            "name": "University of Pretoria - Groenkloof Campus"
+        },
     ]
 }
 ```
@@ -664,13 +677,17 @@ Creates a new non-daily delivery route from the passed in parameters and tries t
     "id": 1,
     "route" : [
         {
-            "latitude" : "-25.7542559", 
-            "longitude": "28.2321043"
+            "latitude" : "-25.74740981", 
+            "longitude": "28.23001385",
+            "address": "Lynnwood Rd, Hatfield, Pretoria, 0002, South Africa",
+            "name": "University of Pretoria"
         },
         {
-            "latitude" : "-25.7674421",
-            "longitude": "28.1991501"
-        }
+            "latitude" : "-25.75815531",
+            "longitude": "28.2270956",
+            "address": "George Storrar Dr &, Leyds St, Groenkloof, Pretoria, 0027",
+            "name": "University of Pretoria - Groenkloof Campus"
+        },
     ]
 }
 ```
@@ -683,6 +700,7 @@ Creates a new non-daily delivery route from the passed in parameters and tries t
     "surname": "Doe"
 }
 ```
+##### Response status codes
 
 | Status Code | Description |
 |-------------|-------------|
@@ -692,6 +710,51 @@ Creates a new non-daily delivery route from the passed in parameters and tries t
 | `401` | Unauthorized (incorrect manager id and token combination). |
 | `500` | Server error |
 | `501` | No driver center points, route could not be created |
+
+## Create Repeating Route
+
+Creates a new delivery route that repeats daily, weekly or monthly. Repeating routes are automatically assigned to drivers everyday at the start of the day. When assigning routes preference will be given to drivers with centerpoints, thereafter routes will be randomly assigned between the available drivers with no centerpoint.
+>**NOTE:** The `occurrence` parameter in the request body should only contain the value `daily`,`weekly` or `monthly` any other value will end the request and return a status code of `400`.
+
+##### Http Request
+
+`POST /api/routes/repeating`
+
+##### Request Body
+
+```json
+{
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+    "occurrence": "daily",
+    "route" : [
+        {
+            "latitude" : "-25.74740981", 
+            "longitude": "28.23001385",
+            "address": "Lynnwood Rd, Hatfield, Pretoria, 0002, South Africa",
+            "name": "University of Pretoria"
+        },
+        {
+            "latitude" : "-25.75815531",
+            "longitude": "28.2270956",
+            "address": "George Storrar Dr &, Leyds St, Groenkloof, Pretoria, 0027",
+            "name": "University of Pretoria - Groenkloof Campus"
+        },
+    ]
+}
+```
+##### Response Body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `201` | Route successfully created |
+| `400` | Bad request (invalid format or missing parameters) | 
+| `401` | Unauthorized (incorrect manager id and token combination). |
+| `500` | Server error |
 
 ## Get Driver Route (uncalculated)
 
@@ -717,12 +780,16 @@ This request has no body.
                 {
                     "location_id": 1,
                     "latitude": "-25.7542559",
-                    "longitude": "28.2321043"
+                    "longitude": "28.2321043",
+                    "address": "Lynnwood Rd, Hatfield, Pretoria, 0002, South Africa",
+                    "name": "University of Pretoria"
                 },
                 {
                     "location_id": 2,
                     "latitude": "-25.7674421",
-                    "longitude": "28.1991501"
+                    "longitude": "28.1991501",
+                    "address": "George Storrar Dr &, Leyds St, Groenkloof, Pretoria, 0027",
+                    "name": "University of Pretoria - Groenkloof Campus"
                 }
             ]
         }
