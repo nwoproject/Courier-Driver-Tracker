@@ -4,16 +4,8 @@ import {render, screen} from '@testing-library/react';
 import AlwaysOnTracking from './AlwaysOnTracking';
 import Login from './Login';
 import Routes from './Routes';
-import Home from './Home';
 import ManagerDrivers from './ManageDrivers';
 import Report from './Report';
-
-describe("Home", ()=>{
-    test("Render MainHome text in Home", ()=>{
-        render(<Home />);
-        expect(screen.getByText(/Welcome to the Courier Driver Tracker Website/)).toBeInTheDocument();
-    })
-});
 
 describe("Login", ()=>{
     test("Render Login Form", ()=>{

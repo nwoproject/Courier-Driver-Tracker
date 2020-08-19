@@ -6,10 +6,11 @@ import App from './App';
 describe("App", () =>{
     test("Render Header Component", ()=>{
         render(<App />);
-        expect(screen.getByText("Home")).toBeInTheDocument();
         expect(screen.getByText("Account")).toBeInTheDocument();
         expect(screen.getByText("Routes")).toBeInTheDocument();
         expect(screen.getByText("Always On Tracking")).toBeInTheDocument();
+        expect(screen.getByText("Manage Drivers")).toBeInTheDocument();
+        expect(screen.getByText("Report")).toBeInTheDocument();
     });
     test("Render Footer Component", ()=>{
         render(<App />);
