@@ -44,6 +44,7 @@ class NavigatorService{
   String distance_ETA;
   String delivery;
   String deliveryAddress;
+  String directionIconPath;
 
   // Notifications
   Map<String, String> _abnormalityHeaders =
@@ -62,6 +63,7 @@ class NavigatorService{
     "speeding" : "You are driving above the speed limit.",
     "driving_too_slow" : "You are driving slow for a while now."
   };
+
 
   NavigatorService({this.jsonFile, BuildContext context}){
     _currentRoute = 0;
@@ -103,6 +105,9 @@ class NavigatorService{
         distance_ETA == null || stepTimeStamp == null ||
         stepTimeRemaining == null || delivery == null || deliveryAddress == null){
       setInitialInfoVariables();
+    }
+    if(directionIconPath == null){
+      getDirectionIcon();
     }
     findCurrentPoint();
     LatLng current = currentPolyline.points[_currentPoint];
@@ -286,7 +291,7 @@ class NavigatorService{
       stepTimeRemaining = "$arrivalTime min";
       distance = getDistance();
       distance_ETA = "$distance . $ETA";
-
+      getDirectionIcon();
       // uncomment when not using replacement functions from abnormality service
       //_abnormalityService.getSpeedLimit(currentPolyline.points);
     }
@@ -507,22 +512,31 @@ class NavigatorService{
   }
 
   getDirectionIcon(){
+    String path = "assets/images/";
     if(_deliveryRoutes == null){
-      return "LOADING...";
+      path += "navigation_marker";
     }
     String direction = _deliveryRoutes.getManeuver(_currentRoute, _currentLeg, _currentStep);
     switch(direction){
       case "turn-right":
+        path += "right_turn_arrow";
         break;
       case "roundabout-right":
+        path += "right_turn_arrow";
         break;
       case "turn-left":
+        path += "left_turn_arrow";
         break;
       case "roundabout-left":
+        path += "left_turn_arrow";
         break;
       default:
-
+        path += "straight_arrow";
     }
+
+    //chose color
+    path += "_white.png";
+    directionIconPath = path;
 
   } // gets icon to display directions such as right arrow for turn right
 
@@ -732,6 +746,7 @@ class NavigatorService{
     int distance = getDistance();
     distance_ETA = "$distance . $ETA";
     updateDeliveryAddress();
+    getDirectionIcon();
   }
 
 }

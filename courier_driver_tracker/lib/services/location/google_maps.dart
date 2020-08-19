@@ -55,6 +55,7 @@ class MapSampleState extends State<GMap> {
   String _distance_ETA = "";
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
+  String _directionIconPath = "assets/images/navigation_marker_white.png";
 
   @override
   void initState() {
@@ -307,6 +308,9 @@ class MapSampleState extends State<GMap> {
     if(_navigatorService.deliveryAddress != null){
       _deliveryAddress = _navigatorService.deliveryAddress;
     }
+    if(_navigatorService.directionIconPath != null){
+      _directionIconPath = _navigatorService.directionIconPath;
+    }
   }
 
   /*
@@ -500,7 +504,8 @@ class MapSampleState extends State<GMap> {
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               ListTile(
-                                leading: Icon(Icons.arrow_upward),
+                                leading: Image(image: AssetImage(_directionIconPath),
+                                height: 40,),
                                 title: new HtmlWidget(html),
                               )
                             ],
