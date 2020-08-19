@@ -51,8 +51,7 @@ class MapSampleState extends State<GMap> {
   NavigatorService _navigatorService = NavigatorService(jsonFile: _routeFile);
   String _directions = "LOADING...";
   String _stepTimeRemaining = "LOADING...";
-  // ignore: non_constant_identifier_names
-  String _distance_ETA = "";
+  String _distanceETA = "";
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
   String _directionIconPath = "assets/images/navigation_marker_white.png";
@@ -299,8 +298,8 @@ class MapSampleState extends State<GMap> {
     if(_navigatorService.stepTimeRemaining != null){
       _stepTimeRemaining = _navigatorService.stepTimeRemaining;
     }
-    if(_navigatorService.distance_ETA != null){
-      _distance_ETA = _navigatorService.distance_ETA;
+    if(_navigatorService.distanceETA != null){
+      _distanceETA = _navigatorService.distanceETA;
     }
     if(_navigatorService.delivery != null){
       _delivery = _navigatorService.delivery;
@@ -341,7 +340,7 @@ class MapSampleState extends State<GMap> {
       _routeLogging.writeToFile(
           _geolocatorService.convertPositionToString(_currentPosition) + "\n",
           "locationFile");
-
+      setInformationVariables();
       if(_directions.length == 0 || _directions == "LOADING..."){
         setInformationVariables();
       }
@@ -351,7 +350,7 @@ class MapSampleState extends State<GMap> {
       if(_stepTimeRemaining.length == 0 || _directions == "LOADING..."){
         setInformationVariables();
       }
-      if(_distance_ETA.length == 0){
+      if(_distanceETA.length == 0){
         setInformationVariables();
       }
       if(_deliveryAddress.length == 0){
@@ -418,7 +417,7 @@ class MapSampleState extends State<GMap> {
                     padding: const EdgeInsets.only(
                         top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(_distance_ETA,
+                      child: Text(_distanceETA,
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "OpenSans-Regular",

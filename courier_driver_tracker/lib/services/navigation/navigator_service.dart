@@ -41,7 +41,7 @@ class NavigatorService{
   DateTime stepTimeStamp;
   int distance;
   String ETA;
-  String distance_ETA;
+  String distanceETA;
   String delivery;
   String deliveryAddress;
   String directionIconPath;
@@ -102,7 +102,7 @@ class NavigatorService{
       setCurrentSplitPolylines();
     }
     if(directions == null || ETA == null || distance == null ||
-        distance_ETA == null || stepTimeStamp == null ||
+        distanceETA == null || stepTimeStamp == null ||
         stepTimeRemaining == null || delivery == null || deliveryAddress == null){
       setInitialInfoVariables();
     }
@@ -133,7 +133,7 @@ class NavigatorService{
       if(!_abnormalityService.getStillOffRoute()){
         _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
       }
-      // start marking the route he followed.
+      //start marking the route he followed.
     }
 
     //update info
@@ -290,7 +290,7 @@ class NavigatorService{
       int arrivalTime = (getDeliveryArrivalTime()/60).round();
       stepTimeRemaining = "$arrivalTime min";
       distance = getDistance();
-      distance_ETA = "$distance . $ETA";
+      distanceETA = "$distance . $ETA";
       getDirectionIcon();
       // uncomment when not using replacement functions from abnormality service
       //_abnormalityService.getSpeedLimit(currentPolyline.points);
@@ -425,7 +425,7 @@ class NavigatorService{
     }
     updateDistanceToTravel();
     if(distance < 1000){
-      distance_ETA = "$distance m . $ETA";
+      distanceETA = "$distance m . $ETA";
     }
 
     int km = 0;
@@ -436,7 +436,7 @@ class NavigatorService{
     }
     if(km > 0){
       m = (m/100).round();
-      distance_ETA = "$km,$m Km . $ETA";
+      distanceETA = "$km,$m Km . $ETA";
     }
   }
 
@@ -744,7 +744,7 @@ class NavigatorService{
     int arrivalTime = (getArrivalTime()/60).round();
     stepTimeRemaining = "$arrivalTime min";
     int distance = getDistance();
-    distance_ETA = "$distance . $ETA";
+    distanceETA = "$distance . $ETA";
     updateDeliveryAddress();
     getDirectionIcon();
   }
