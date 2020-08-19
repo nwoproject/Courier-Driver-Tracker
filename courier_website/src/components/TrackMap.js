@@ -28,7 +28,7 @@ function TrackMap(props){
     useEffect(()=>{
         const interval = setInterval(()=>{
             setL(true);
-            let Call = "https://drivertracker-api.herokuapp.com/api/location/driver?id="+props.ID;
+            let Call = process.env.REACT_APP_API_SERVER+"/api/location/driver?id="+props.ID;
             let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
             fetch(Call,{
                 method : 'GET',

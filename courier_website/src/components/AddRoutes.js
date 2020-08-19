@@ -73,17 +73,17 @@ function AddRoutes(){
         else{
             let LocationArr = JSON.parse(localStorage.getItem("Locations"));
             let ToSend = {};
-            let URL = "https://drivertracker-api.herokuapp.com/api/routes";
+            let URL = process.env.REACT_APP_API_SERVER+"/api/routes";
             ToSend.token = localStorage.getItem("Token");
             ToSend.id = localStorage.getItem("ID");
             if(OnceOff===true){
                 ToSend.driver_id = RouteID;
             }
             else if(AutoCheck){
-                URL = "https://drivertracker-api.herokuapp.com/api/routes/auto-assig";
+                URL = process.env.REACT_APP_API_SERVER+"/api/routes/auto-assig";
             }
             else{
-                URL = "https://drivertracker-api.herokuapp.com/api/routes/repeating";
+                URL = process.env.REACT_APP_API_SERVER+"/api/routes/repeating";
                 if(Daily===true){
                     occurance = "daily";
                 }

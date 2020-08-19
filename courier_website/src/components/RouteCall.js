@@ -12,7 +12,7 @@ function RouteCall(props){
     const [BoolDone, setBool] = useState(false);
     const [LocsFound, setLF] = useState(false);
     useEffect(()=>{
-        var URLtoSend = "https://drivertracker-api.herokuapp.com/api/google-maps/web?searchQeury="+props.Query
+        var URLtoSend = process.env.REACT_APP_API_SERVER+"/api/google-maps/web?searchQeury="+props.Query
         try{
             fetch(encodeURI(URLtoSend),{
             method: 'GET',

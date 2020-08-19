@@ -35,7 +35,7 @@ function CenterPoint(props){
 
     useEffect(()=>{
         let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
-        fetch("https://drivertracker-api.herokuapp.com/api/drivers/centerpoint/"+props.DriverID,{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/drivers/centerpoint/"+props.DriverID,{
             method : "POST",
             headers:{
                 'authorization': Token,
@@ -98,7 +98,7 @@ function CenterPoint(props){
             window.alert("No Search Query Entered");
         }
         else{
-            var URL = "https://drivertracker-api.herokuapp.com/api/google-maps/web?searchQeury="+SearchQuery;
+            var URL = process.env.REACT_APP_API_SERVER+"/api/google-maps/web?searchQeury="+SearchQuery;
             fetch(encodeURI(URL),{
                 method: 'GET',
                 headers:{
@@ -134,10 +134,10 @@ function CenterPoint(props){
         if(LatCord!==""&&LngCord!==""&&Radius!==""){
             let URL = "";
             if(HasCenterPoint===true){
-                URL = "https://drivertracker-api.herokuapp.com/api/drivers/centerpoint/coords";
+                URL = process.env.REACT_APP_API_SERVER+"/api/drivers/centerpoint/coords";
             }
             else{
-                URL = "https://drivertracker-api.herokuapp.com/api/drivers/centerpoint";
+                URL = process.env.REACT_APP_API_SERVER+"/api/drivers/centerpoint";
             }
             fetch(URL,{
                 method : HasCenterPoint ? "PUT":"POST",
@@ -158,7 +158,7 @@ function CenterPoint(props){
                 console.log(result);
                 if(result.status===204||result.status===201){
                     if(HasCenterPoint===true){
-                        fetch("https://drivertracker-api.herokuapp.com/api/drivers/centerpoint/radius",{
+                        fetch(process.env.REACT_APP_API_SERVER+"/api/drivers/centerpoint/radius",{
                             method : "PUT",
                             headers:{
                                 'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,

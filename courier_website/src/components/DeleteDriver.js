@@ -30,7 +30,7 @@ function DeleteDriver(props){
             setPP(true);
         }
         else{
-            fetch("https://drivertracker-api.herokuapp.com/api/managers/authenticate",{
+            fetch(process.env.REACT_APP_API_SERVER+"/api/managers/authenticate",{
                 method : "POST",
                 headers:{
                     'authorization' : 'Bearer '+process.env.REACT_APP_BEARER_TOKEN,
@@ -43,7 +43,7 @@ function DeleteDriver(props){
             })
             .then(response=>{
                 if(response.status===200){
-                    fetch("https://drivertracker-api.herokuapp.com/api/drivers/"+props.DriverID,{
+                    fetch(process.env.REACT_APP_API_SERVER+"/api/drivers/"+props.DriverID,{
                         method : "DELETE",
                         headers:{
                             'authorization' : 'Bearer '+process.env.REACT_APP_BEARER_TOKEN,

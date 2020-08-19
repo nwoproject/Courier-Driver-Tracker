@@ -16,7 +16,7 @@ function ReportAbnormalities(props){
 
     useEffect(()=>{
         let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
-        fetch("https://drivertracker-api.herokuapp.com/api/abnormalities/"+props.DriverID,{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/abnormalities/"+props.DriverID,{
             method : "GET",
             headers:{
                 'authorization': Token,
@@ -73,6 +73,24 @@ function ReportAbnormalities(props){
                         result.abnormalities.code_104.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver was driving with the company car when no deliveries were scheduled.'}
                             AbObj = AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver was driving with the company car when no deliveries were scheduled.'};
+                            Counter++;
+                            setAA(prevState=>{return([...prevState, AbObj])});
+                        })
+                    }
+                    if(result.abnormalities.code_105.driver_abnormalities.length!==0){
+                        length = length + result.abnormalities.code_105.driver_abnormalities.length;
+                        result.abnormalities.code_105.driver_abnormalities.map((CurrEle, index)=>{
+                            AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver never embarked on the route that was assigned to him.'}
+                            AbObj = AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver never embarked on the route that was assigned to him.'};
+                            Counter++;
+                            setAA(prevState=>{return([...prevState, AbObj])});
+                        })
+                    }
+                    if(result.abnormalities.code_106.driver_abnormalities.length!==0){
+                        length = length + result.abnormalities.code_106.driver_abnormalities.length;
+                        result.abnormalities.code_106.driver_abnormalities.map((CurrEle, index)=>{
+                            AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver skipped a delivery on his route.'}
+                            AbObj = AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver skipped a delivery on his route.'};
                             Counter++;
                             setAA(prevState=>{return([...prevState, AbObj])});
                         })

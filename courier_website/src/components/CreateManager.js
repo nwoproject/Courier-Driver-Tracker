@@ -49,7 +49,7 @@ function CreateManager(){
         if(password1===password2){
             testPass(true);
             if(ValidPassRegex.test(password1)){
-                fetch("https://drivertracker-api.herokuapp.com/api/managers",{
+                fetch(process.env.REACT_APP_API_SERVER+"/api/managers",{
                     method : "POST",
                     headers:{
                         'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,

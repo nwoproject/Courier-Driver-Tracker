@@ -13,7 +13,7 @@ function ReportRoutes(props){
     const [WeWon, setWW] = useState(false);
 
     useEffect(()=>{
-        fetch("https://drivertracker-api.herokuapp.com/api/routes/"+props.DriverID,{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/routes/"+props.DriverID,{
             method : "GET",
             headers:{
                 'authorization': "Bearer "+ process.env.REACT_APP_BEARER_TOKEN,

@@ -57,7 +57,7 @@ function DriverList(){
             setNN(true);
         }
         else{
-            let URL = "https://drivertracker-api.herokuapp.com/api/location/driver?name="+DriverName+"&surname="+DriverSName;
+            let URL = process.env.REACT_APP_API_SERVER+"/api/location/driver?name="+DriverName+"&surname="+DriverSName;
             fetch(encodeURI(URL),{
                 method : "GET",
                 headers:{

@@ -20,7 +20,7 @@ function DriverProfile(props){
 
     useEffect(()=>{
         let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
-        fetch("https://drivertracker-api.herokuapp.com/api/location/driver?id="+props.DriverID,{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/location/driver?id="+props.DriverID,{
             method : "GET",
             headers:{
                 'authorization': Token,

@@ -64,7 +64,7 @@ function CreateDriver(){
             window.alert("No Search Query Entered");
         }
         else{
-            var URL = "https://drivertracker-api.herokuapp.com/api/google-maps/web?searchQeury="+SearchQuery;
+            var URL = process.env.REACT_APP_API_SERVER+"/api/google-maps/web?searchQeury="+SearchQuery;
             fetch(encodeURI(URL),{
                 method: 'GET',
                 headers:{
@@ -91,7 +91,7 @@ function CreateDriver(){
 
 
     function CreateDriver(){
-        fetch("https://drivertracker-api.herokuapp.com/api/drivers",{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/drivers",{
             method : "POST",
             headers:{
                 'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
@@ -108,7 +108,7 @@ function CreateDriver(){
                 if(useCenter===true){
                     response.json()
                     .then(result=>{
-                        fetch("https://drivertracker-api.herokuapp.com/api/drivers/centerpoint",{
+                        fetch(process.env.REACT_APP_API_SERVER+"/api/drivers/centerpoint",{
                             method : "POST",
                             headers:{
                                 'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
