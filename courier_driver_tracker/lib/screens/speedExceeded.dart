@@ -59,10 +59,7 @@ class _FeedbackState extends State<Feedback> {
   }
 
   void homePage() async{
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (BuildContext context) => HomePage()
-        ));
+    Navigator.of(context).pop();
   }
 
 
@@ -86,6 +83,9 @@ class _FeedbackState extends State<Feedback> {
   }
 
   void responseCheck(String r) {
+//    if (r != null){
+//      homePage();
+//    }
     Fluttertoast.showToast(
         msg: r,
         toastLength: Toast.LENGTH_SHORT,
@@ -222,7 +222,6 @@ class _FeedbackState extends State<Feedback> {
         RaisedButton(
           onPressed: (){
             checkForEmptyText();
-            homePage();
           },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),
