@@ -39,18 +39,18 @@ function ReportMainScreen(){
             <Card.Body>
                 <Form onSubmit={SubmitID}>
                     <Row>
-                        <Col xs={4}>
+                        <Col xs={5}>
                             <Form.Control 
                             name="DriverID"
                             placeholder="Enter Driver ID"
                             onChange={handleChange}   
                             />
                         </Col>
-                        <Col xs={3}>
+                        <Col xs={4}>
                             <Button type="submit">Search</Button>
                         </Col>
-                        <Col xs={4}>
-                            <Button name="SendReport" onClick={handleChange}>Send Full Report</Button>
+                        <Col xs={3}>
+                            <Button name="SendReport" onClick={handleChange}>See Full Report</Button>
                         </Col>
                     </Row>
                 </Form><br />
