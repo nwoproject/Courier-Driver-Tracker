@@ -122,4 +122,34 @@ const missedDelivery = (driver_id,latitude,longitude) =>
     }
 }
 
-module.exports = {routeFormatter,objectConverter,driverCenterPointConverter,sortObject,getDriverCentrePointResponse,abnormalityDescription,missedDelivery,missedRoute};
+const locationsToRouteArray = (results) =>
+{
+    let route = [];
+    for(let k=0; k < results.rowCount;k++)
+    {
+        route.push({
+            "latitude": results.rows[k].latitude,
+            "longitude":results.rows[k].longitude,
+            "address":results.rows[k].address,
+            "name":results.rows[k].name
+        });
+    }
+    return route;
+}
+
+const getAlldriversTojsonArray = (results) =>
+{
+    let drivers = [];
+    for(let k=0; k < results.rowCount;k++)
+    {
+        drivers.push({
+            "driver_id": results.rows[k].id,
+            "name": results.rows[k].name,
+            "surname": results.rows[k].surname
+        });
+    }
+    return drivers;
+}
+
+module.exports = {routeFormatter,objectConverter,driverCenterPointConverter,sortObject,getAlldriversTojsonArray
+    ,getDriverCentrePointResponse,abnormalityDescription,missedDelivery,missedRoute,locationsToRouteArray};

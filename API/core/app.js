@@ -54,7 +54,7 @@ cron.schedule('59 23 * * 1-5', async () =>
 // Assigns daily routes to drivers.
 cron.schedule('00 02 * * 1-5', () => 
 {
-  //TODO
+  tasks.assignReaptingRoutes('daily');
 },{
   scheduled: true,
   timezone: "Africa/Johannesburg"

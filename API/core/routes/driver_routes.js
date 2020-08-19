@@ -21,7 +21,7 @@ router.post('/', async (req, res)=>{
             await checks.driverExistsCheck(req.body.driver_id,res);
             if(!res.writableEnded)
             {
-                await db_query.addRoute(req,req.body.driver_id,res);
+                await db_query.addRoute(req.body.route,req.body.driver_id,res,true);
                 if(!res.writableEnded)
                 {
                     res.status(201).end();
@@ -89,7 +89,7 @@ router.post('/auto-assign', async (req, res)=>{
                         }
                         if(freeDriver)
                         {
-                            await db_query.addRoute(req,centerPoints[freeDriverIndex].driver_id,res);
+                            await db_query.addRoute(req.body.route,centerPoints[freeDriverIndex].driver_id,res,true);
                             if(!res.writableEnded) //Route successfully assigned to driver
                             {
                                 let driverDetails = await db_query.getDriver(centerPoints[freeDriverIndex].driver_id);
