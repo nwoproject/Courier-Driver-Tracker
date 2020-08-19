@@ -56,10 +56,9 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-  void homePage() async {
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
-  }
+//  void homePage() async {
+//    Navigator.of(context).pushNamed("/home");
+//  }
 
   void checkForEmptyText() {
     other = textController.text;
@@ -79,6 +78,9 @@ class _FeedbackState extends State<Feedback> {
   }
 
   void responseCheck(String r) {
+//    if (r != null){
+//      homePage();
+//    }
     Fluttertoast.showToast(
         msg: r,
         toastLength: Toast.LENGTH_SHORT,
@@ -97,7 +99,6 @@ class _FeedbackState extends State<Feedback> {
     String long = position.longitude.toString();
     String time = position.timestamp.toString();
 
-    void report() async {
       String resp = "";
 
       if (_character == Abnormality.fuelstop) {
@@ -176,8 +177,9 @@ class _FeedbackState extends State<Feedback> {
             },
             secondary: new Icon(Icons.add_circle),
           ),
+
           RadioListTile(
-            title: const Text('Stopped for lunch break'),
+            title: const Text('Stopped for lunch'),
             value: Abnormality.lunch,
             groupValue: _character,
             onChanged: (Abnormality value) {
@@ -188,6 +190,7 @@ class _FeedbackState extends State<Feedback> {
             },
             secondary: new Icon(Icons.add_circle),
           ),
+
           RadioListTile(
             title: const Text('Severe traffic'),
             value: Abnormality.traffic,
@@ -221,7 +224,6 @@ class _FeedbackState extends State<Feedback> {
           RaisedButton(
             onPressed: () {
               checkForEmptyText();
-              homePage();
             },
             child: const Text('Submit', style: TextStyle(fontSize: 20)),
           ),
@@ -230,9 +232,3 @@ class _FeedbackState extends State<Feedback> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-}
