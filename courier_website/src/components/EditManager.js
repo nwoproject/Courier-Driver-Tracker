@@ -36,7 +36,7 @@ function EditManager(){
 
     function AuthenticateManager(event){
         event.preventDefault();
-        fetch("https://drivertracker-api.herokuapp.com/api/managers/authenticate",{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/managers/authenticate",{
             method : "POST",
             headers:{
                 'authorization' : 'Bearer '+process.env.REACT_APP_BEARER_TOKEN,
@@ -48,7 +48,6 @@ function EditManager(){
             })
         })
         .then(response=>{
-            console.log(response);
             if(response.status===200){
                 setAuth(true);
             }
@@ -63,7 +62,7 @@ function EditManager(){
         var ValidPassRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
         if(NewPass===NewPass2){
             if(ValidPassRegex.test(NewPass)){
-                fetch("https://drivertracker-api.herokuapp.com/api/managers/"+localStorage.getItem("ID")+"/password",{
+                fetch(process.env.REACT_APP_API_SERVER+"/api/managers/"+localStorage.getItem("ID")+"/password",{
                     method : 'PUT',
                     headers:{
                         'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
@@ -95,7 +94,7 @@ function EditManager(){
     }
 
     return(
-        <Card>
+        <Card className="InnerCard">
             <Card.Header>Edit Manager</Card.Header>
             <Card.Body>
                 <Form onSubmit={AuthenticateManager}>

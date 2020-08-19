@@ -13,6 +13,7 @@ function LocationCard(props){
         let ToSave = {};
         ToSave.Location = props.Geometry;
         ToSave.Name = props.LocName;
+        ToSave.Address = props.FormatAdd;
         console.log(ToSave);
         if(localStorage.getItem("Locations")===null){
             LocationArray[0] = ToSave;

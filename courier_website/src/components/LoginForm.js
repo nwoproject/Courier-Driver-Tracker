@@ -15,7 +15,7 @@ function LoginForm(){
     function RealSubmit(event){
         event.preventDefault();
         let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
-        fetch("https://drivertracker-api.herokuapp.com/api/managers/authenticate",{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/managers/authenticate",{
             method : 'POST',
             headers:{
                 'authorization': Token,

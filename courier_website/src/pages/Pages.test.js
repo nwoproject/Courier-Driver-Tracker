@@ -4,14 +4,8 @@ import {render, screen} from '@testing-library/react';
 import AlwaysOnTracking from './AlwaysOnTracking';
 import Login from './Login';
 import Routes from './Routes';
-import Home from './Home';
-
-describe("Home", ()=>{
-    test("Render MainHome text in Home", ()=>{
-        render(<Home />);
-        expect(screen.getByText(/Welcome to the Courier Driver Tracker Website/)).toBeInTheDocument();
-    })
-});
+import ManagerDrivers from './ManageDrivers';
+import Report from './Report';
 
 describe("Login", ()=>{
     test("Render Login Form", ()=>{
@@ -38,5 +32,23 @@ describe("AlwaysOnTracking",()=>{
         expect(screen.getByText(/Always On Tracking/)).toBeInTheDocument();
         expect(screen.getByPlaceholderText(/Enter Driver ID to track/)).toBeInTheDocument();
         expect(screen.getByRole("button")).toBeInTheDocument();
-    })
-})
+    });
+});
+
+describe("ManageDrivers",()=>{
+    test("Render Manage Drivers",()=>{
+        render(<ManagerDrivers />);
+        expect(screen.getByText(/Driver ID/)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter Driver ID/)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Driver Name/)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Driver Surname/)).toBeInTheDocument();
+    });
+});
+
+describe("Report",()=>{
+    test("Render Report",()=>{
+        render(<Report />);
+        expect(screen.getByText(/Reporting/)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter Driver ID/)).toBeInTheDocument();
+    });
+});

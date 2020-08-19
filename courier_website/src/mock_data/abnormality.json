@@ -1,0 +1,127 @@
+{
+    "abnormalities" : 
+        {
+            "types":[
+                {
+                    "code" : 100,
+                    "description" : "Standing Still for too long",
+                    "Cases":[
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.74",
+                            "longitude": "28.74",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 5,
+                            "latitude" : "-25.75",
+                            "longitude": "28.766",
+                            "timestamp" :"2020-08-12 09:00:00"
+                        },
+                        {
+                            "driver_id" : 3,
+                            "latitude" : "-25.75",
+                            "longitude": "28.72",
+                            "timestamp" :"2020-08-13 09:00:00"
+                        },
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.73",
+                            "longitude": "28.75",
+                            "timestamp" :"2020-08-14 09:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 101,
+                    "description" : "Driver came to a Sudden Stop",
+                    "Cases":[
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.74",
+                            "longitude": "28.74",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 102,
+                    "description" : "Driver exceeded the speed limit",
+                    "Cases":[
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.740001",
+                            "longitude": "28.7400001",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 1,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        },
+                        {
+                            "driver_id" : 7,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        },
+                        {
+                            "driver_id" : 3,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 103,
+                    "description" : "Driver took a diffrent route than what prescribed.",
+                    "Cases":[
+                        {
+                            "driver_id" : 8,
+                            "latitude" : "-25.74",
+                            "longitude": "28.74",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 104,
+                    "description" : "Driver was driving with the company car when no deliveries were scheduled.",
+                    "Cases":[
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.74",
+                            "longitude": "28.74",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 8,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        },
+                        {
+                            "driver_id" : 6,
+                            "latitude" : "-25.76",
+                            "longitude": "28.74002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        }
+                    ]
+                }
+            ]
+        }  
+}
