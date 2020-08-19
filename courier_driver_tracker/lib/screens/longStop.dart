@@ -56,10 +56,9 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-  void homePage() async {
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
-  }
+//  void homePage() async {
+//    Navigator.of(context).pushNamed("/home");
+//  }
 
   void checkForEmptyText() {
     other = textController.text;
@@ -79,9 +78,9 @@ class _FeedbackState extends State<Feedback> {
   }
 
   void responseCheck(String r) {
-    if (r != null){
-      homePage();
-    }
+//    if (r != null){
+//      homePage();
+//    }
     Fluttertoast.showToast(
         msg: r,
         toastLength: Toast.LENGTH_SHORT,
