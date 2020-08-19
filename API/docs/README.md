@@ -29,7 +29,7 @@ The following header field should be present in each request: `Authorization: Be
 5.  [Route Endpoints](#route-endpoints)  
         5.1     [Create Route](#create-route)  
         5.2     [Create Route (auto-assign)](#create-route-auto-assign)  
-        5.3     [Create Repeating Route](#create-repeating-route)
+        5.3     [Create Repeating Route](#create-repeating-route)  
         5.4     [Get Driver Route (uncalculated)](#get-driver-route-uncalculated)  
         5.5     [Timestamp Delivery Location](#timestamp-delivery-location)  
         5.6     [Complete Route](#complete-route)  
