@@ -86,6 +86,9 @@ class _FeedbackState extends State<Feedback> {
   }
 
   void responseCheck(String r) {
+    if (r != null){
+      homePage();
+    }
     Fluttertoast.showToast(
           msg: r,
           toastLength: Toast.LENGTH_SHORT,
@@ -241,7 +244,6 @@ class _FeedbackState extends State<Feedback> {
         RaisedButton(
           onPressed: (){
             checkForEmptyText();
-            homePage();
             },
           child: const Text('Submit', style: TextStyle(fontSize: 20)),
         ),
