@@ -37,9 +37,13 @@ dependencies:
   # Unit test dependancies
   mockito: ^4.1.1
 
-  #fonts
+  #fonts/Icon
   shimmer: ^1.0.1
   cupertino_icons: ^0.1.3
+  font_awesome_flutter: ^8.1.1
+
+  #sliding up widgets
+  sliding_up_panel: ^1.0.2
 
 dev_dependencies:
   flutter_test:

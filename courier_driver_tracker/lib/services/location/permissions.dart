@@ -13,7 +13,7 @@ import 'package:courier_driver_tracker/services/location/route_logging.dart';
    * Parameters: none
    * Returns: bool
    * Description: Checks if location service is enabled.
-   */
+*/
 Future<bool> isLocationServiceEnabled() async {
   return await Geolocator().isLocationServiceEnabled();
 }
@@ -24,7 +24,7 @@ Future<bool> isLocationServiceEnabled() async {
    * Parameters: none
    * Returns: async
    * Description: Checks if always location permission is enabled.
-   */
+*/
 Future<bool> isLocationPermissionGranted() async {
   final GeolocationStatus geoPermission = await Geolocator()
       .checkGeolocationPermissionStatus(
@@ -43,7 +43,7 @@ Future<bool> isLocationPermissionGranted() async {
    * Parameters: none
    * Returns: bool
    * Description: Requests to enable the location service.
-   */
+*/
 Future<bool> requestLocationService() async {
   final Location location = Location();
   bool _serviceEnabled;

@@ -8,7 +8,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:courier_driver_tracker/screens/home.dart';
 
-
 class UserFeedbackLong extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
 
@@ -45,7 +44,6 @@ class _FeedbackState extends State<Feedback> {
   GeolocatorService geolocatorService = new GeolocatorService();
   Position position;
 
-
   void initState() {
     super.initState();
     _controller = TextEditingController();
@@ -58,13 +56,10 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-  void homePage() async{
+  void homePage() async {
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (BuildContext context) => HomePage()
-        ));
+        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
   }
-
 
   void checkForEmptyText() {
     other = textController.text;
@@ -76,12 +71,10 @@ class _FeedbackState extends State<Feedback> {
           gravity: ToastGravity.CENTER,
           timeInSecForIos: 1,
           backgroundColor: Colors.red,
-          textColor: Colors.white
-      );
-    }
-      else{
-        textController.clear();
-        report();
+          textColor: Colors.white);
+    } else {
+      textController.clear();
+      report();
     }
   }
 
@@ -90,17 +83,15 @@ class _FeedbackState extends State<Feedback> {
       homePage();
     }
     Fluttertoast.showToast(
-          msg: r,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
-          backgroundColor: Colors.blue,
-          textColor: Colors.white
-      );
-    }
+        msg: r,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.blue,
+        textColor: Colors.white);
+  }
 
-
-  void report() async{
+  void report() async {
     position = await geolocatorService.getPosition();
     var token = await storage.read(key: 'token');
     var driverID = await storage.read(key: 'id');
@@ -109,134 +100,84 @@ class _FeedbackState extends State<Feedback> {
     String long = position.longitude.toString();
     String time = position.timestamp.toString();
 
-    String resp = "";
+    void report() async {
+      String resp = "";
 
-    if (_character == Abnormality.fuelstop)
-    {
-      resp = "Filled the vehicle with fuel";
+      if (_character == Abnormality.fuelstop) {
+        resp = "Filled the vehicle with fuel";
+      }
+      if (_character == Abnormality.lunch) {
+        resp = "Stopped for lunch";
+      }
+      if (_character == Abnormality.traffic) {
+        resp = "Filled the vehicle with fuel";
+      }
+      if (_character == Abnormality.other) {
+        resp = other;
+      }
+
+      String bearerToken = String.fromEnvironment('BEARER_TOKEN',
+          defaultValue: DotEnv().env['BEARER_TOKEN']);
+
+      print(lat);
+      print(long);
+      print(time);
+      Map data = {
+        "code": "100",
+        "token": token,
+        "description": resp,
+        "latitude": lat,
+        "longitude": long,
+        "timestamp": time
+      };
+
+      Map<String, String> requestHeaders = {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $bearerToken'
+      };
+
+      var response = await http.post(
+          "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
+          headers: requestHeaders,
+          body: data);
+
+      String respCode = "";
+
+      switch (response.statusCode) {
+        case 201:
+          respCode = "Abnormality was successfully logged";
+          responseCheck(respCode);
+          break;
+        case 400:
+          respCode = "Bad request (missing parameters in request body)";
+          responseCheck(respCode);
+          break;
+        case 401:
+          respCode = "Invalid :driverid and token combination";
+          responseCheck(respCode);
+          break;
+        case 500:
+          respCode = "Server error";
+          responseCheck(respCode);
+          break;
+      }
     }
-    if (_character == Abnormality.lunch)
-    {
-      resp = "Stopped for lunch";
-    }
-    if (_character == Abnormality.traffic)
-    {
-      resp = "Filled the vehicle with fuel";
-    }
-    if (_character == Abnormality.other)
-    {
-      resp = other;
-    }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
-
-    print (lat);
-    print (long);
-    print (time);
-    Map data = {
-      "code": "100",
-      "token": token,
-      "description": resp,
-      "latitude": lat,
-      "longitude": long,
-      "timestamp": time
-    };
-
-    Map<String, String> requestHeaders = {
-      'Accept': 'application/json',
-      'Authorization':'Bearer $bearerToken'
-    };
-
-    var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
-        headers: requestHeaders,
-        body: data);
-
-    String respCode ="";
-
-    switch(response.statusCode)
-    {
-      case 201:
-        respCode = "Abnormality was successfully logged";
-        responseCheck(respCode);
-        break;
-      case 400:
-        respCode = "Bad request (missing parameters in request body)";
-        responseCheck(respCode);
-        break;
-      case 401:
-        respCode = "Invalid :driverid and token combination";
-        responseCheck(respCode);
-        break;
-      case 500:
-        respCode = "Server error";
-        responseCheck(respCode);
-        break;
-    }
-  }
-
-
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        RadioListTile(
-          title: const Text('Filling up vehicle'),
-
-          value: Abnormality.fuelstop,
-          groupValue: _character,
-          onChanged: (Abnormality value) {
-            print(value);
-            setState(() {
-              _character = value;
-            });
-          },
-          secondary: new Icon(Icons.add_circle),
-        ),
-        RadioListTile(
-          title: const Text('Stopped for lunch break'),
-
-          value: Abnormality.lunch,
-          groupValue: _character,
-          onChanged: (Abnormality value) {
-            print(value);
-            setState(() {
-              _character = value;
-            });
-          },
-          secondary: new Icon(Icons.add_circle),
-        ),
-
-        RadioListTile(
-          title: const Text('Severe traffic'),
-          value: Abnormality.traffic,
-          groupValue: _character,
-          onChanged: (Abnormality value) {
-            print(value);
-            setState(() {
-              _character = value;
-            });
-          },
-          secondary: new Icon(Icons.add_circle),
-        ),
-
-        RadioListTile(
-          title: const Text('Other (Specify)'),
-          value: Abnormality.other,
-          groupValue: _character,
-          onChanged: (Abnormality value) {
-            print(value);
-            setState(() {
-              _character = value;
-            });
-          },
-          secondary: new Icon(Icons.add_circle),
-        ),
-
-        TextField(
-          controller: textController,
-          decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Specify reason'
+    @override
+    Widget build(BuildContext context) {
+      return Column(
+        children: <Widget>[
+          RadioListTile(
+            title: const Text('Filling up vehicle'),
+            value: Abnormality.fuelstop,
+            groupValue: _character,
+            onChanged: (Abnormality value) {
+              print(value);
+              setState(() {
+                _character = value;
+              });
+            },
+            secondary: new Icon(Icons.add_circle),
           ),
         ),
 
@@ -245,9 +186,53 @@ class _FeedbackState extends State<Feedback> {
           onPressed: (){
             checkForEmptyText();
             },
-          child: const Text('Submit', style: TextStyle(fontSize: 20)),
-        ),
-      ],
-    );
+            secondary: new Icon(Icons.add_circle),
+          ),
+          RadioListTile(
+            title: const Text('Severe traffic'),
+            value: Abnormality.traffic,
+            groupValue: _character,
+            onChanged: (Abnormality value) {
+              print(value);
+              setState(() {
+                _character = value;
+              });
+            },
+            secondary: new Icon(Icons.add_circle),
+          ),
+          RadioListTile(
+            title: const Text('Other (Specify)'),
+            value: Abnormality.other,
+            groupValue: _character,
+            onChanged: (Abnormality value) {
+              print(value);
+              setState(() {
+                _character = value;
+              });
+            },
+            secondary: new Icon(Icons.add_circle),
+          ),
+          TextField(
+            controller: textController,
+            decoration: InputDecoration(
+                border: InputBorder.none, hintText: 'Specify reason'),
+          ),
+          const SizedBox(height: 30),
+          RaisedButton(
+            onPressed: () {
+              checkForEmptyText();
+              homePage();
+            },
+            child: const Text('Submit', style: TextStyle(fontSize: 20)),
+          ),
+        ],
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
   }
 }
