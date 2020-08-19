@@ -43,4 +43,8 @@ class Leg{
   int getDeliveryDistance(){
     return distance;
   }
+
+  String getDeliveryAddress(){
+    return endAddress;
+  }
 }

@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 
 import 'deliveries.dart';
 
@@ -50,7 +51,7 @@ class MapSampleState extends State<GMap> {
   NavigatorService _navigatorService = NavigatorService(jsonFile: _routeFile);
   String _directions = "LOADING...";
   String _stepTimeRemaining = "LOADING...";
-  int _stepTimeStamp;
+  // ignore: non_constant_identifier_names
   String _distance_ETA = "";
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
@@ -61,6 +62,7 @@ class MapSampleState extends State<GMap> {
     getCurrentLocation();
     getCurrentRoute();
     _createRoute();
+    setInformationVariables();
   }
 
   BorderRadiusGeometry radius = BorderRadius.only(
@@ -289,6 +291,24 @@ class MapSampleState extends State<GMap> {
     });
   }
 
+  setInformationVariables(){
+    if(_navigatorService.directions != null){
+      _directions = _navigatorService.directions;
+    }
+    if(_navigatorService.stepTimeRemaining != null){
+      _stepTimeRemaining = _navigatorService.stepTimeRemaining;
+    }
+    if(_navigatorService.distance_ETA != null){
+      _distance_ETA = _navigatorService.distance_ETA;
+    }
+    if(_navigatorService.delivery != null){
+      _delivery = _navigatorService.delivery;
+    }
+    if(_navigatorService.deliveryAddress != null){
+      _deliveryAddress = _navigatorService.deliveryAddress;
+    }
+  }
+
   /*
    * Author: Gian Geyser
    * Parameters: none
@@ -309,6 +329,7 @@ class MapSampleState extends State<GMap> {
     // Stream of Position objects of current location.
     _currentPosition = Provider.of<Position>(context);
     _navigatorService.setNotificationContext(context);
+    var html = """<h3 style='color:white;'>$_directions</h3>""";
 
     // Calls abnormality service
     if (_currentPosition != null) {
@@ -316,6 +337,22 @@ class MapSampleState extends State<GMap> {
       _routeLogging.writeToFile(
           _geolocatorService.convertPositionToString(_currentPosition) + "\n",
           "locationFile");
+
+      if(_directions.length == 0 || _directions == "LOADING..."){
+        setInformationVariables();
+      }
+      if(_delivery.length == 0 || _directions == "LOADING..."){
+        setInformationVariables();
+      }
+      if(_stepTimeRemaining.length == 0 || _directions == "LOADING..."){
+        setInformationVariables();
+      }
+      if(_distance_ETA.length == 0){
+        setInformationVariables();
+      }
+      if(_deliveryAddress.length == 0){
+        setInformationVariables();
+      }
     }
 
     BoxDecoration myBoxDecoration() {
@@ -464,12 +501,7 @@ class MapSampleState extends State<GMap> {
                             children: <Widget>[
                               ListTile(
                                 leading: Icon(Icons.arrow_upward),
-                                title: Text( _directions,
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: "OpenSans-Regular",
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.w600)),
+                                title: new HtmlWidget(html),
                               )
                             ],
                           ),

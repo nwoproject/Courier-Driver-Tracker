@@ -37,6 +37,7 @@ class NavigatorService{
   // info variables
   String directions;
   String stepTimeRemaining;
+  DateTime startTime;
   DateTime stepTimeStamp;
   int distance;
   String ETA;
@@ -51,7 +52,7 @@ class NavigatorService{
     "sudden_stop" : "Sudden Stop!",
     "stopping_too_long" : "You Stopped Moving!",
     "speeding" : "You Are Speeding!",
-    "driving_slow" : "You Are Driving Slow!"
+    "driving_too_slow" : "You Are Driving Slow!"
   };
   Map<String, String> _abnormalityMessages =
   {
@@ -59,7 +60,7 @@ class NavigatorService{
     "sudden_stop" : "You stopped very quickly. Are you OK?",
     "stopping_too_long" : "You have stopped for too long.",
     "speeding" : "You are driving above the speed limit.",
-    "driving_slow" : "You are driving slow for a while now."
+    "driving_too_slow" : "You are driving slow for a while now."
   };
 
   NavigatorService({this.jsonFile, BuildContext context}){
@@ -98,6 +99,11 @@ class NavigatorService{
     if(splitPolylineAfter == null || splitPolylineBefore == null){
       setCurrentSplitPolylines();
     }
+    if(directions == null || ETA == null || distance == null ||
+        distance_ETA == null || stepTimeStamp == null ||
+        stepTimeRemaining == null || delivery == null || deliveryAddress == null){
+      setInitialInfoVariables();
+    }
     findCurrentPoint();
     LatLng current = currentPolyline.points[_currentPoint];
     LatLng next;
@@ -119,9 +125,16 @@ class NavigatorService{
 
     }
     else{
-      _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
+      if(!_abnormalityService.getStillOffRoute()){
+        _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
+      }
       // start marking the route he followed.
     }
+
+    //update info
+    updateDistanceETA();
+    updateStepTimeRemaining();
+
     // call abnormalities
     if(_abnormalityService.suddenStop()){
       _notificationManager.showNotifications(_abnormalityHeaders["sudden_stop"], _abnormalityMessages["sudden_stop"]);
@@ -153,7 +166,60 @@ class NavigatorService{
     double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
         cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
             (1 - cos((currentPosition.longitude - lastPosition.longitude) * p))/2;
-    return 12742 * asin(sqrt(a)) * 1000 as int;
+    return (12742 * asin(sqrt(a)) * 1000).round();
+  }
+
+  int calculateTimeToNextDelivery(){
+    int times = 0;
+    for(int step = 0; step < _currentStep; step++){
+      times += _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[step].duration;
+    }
+
+    return ((getDeliveryArrivalTime() - times)/60 * distance/getDistance()).ceil();
+  }
+
+  String calculateETA(){
+    if(startTime == null){
+      startTime = DateTime.now();
+    }
+    int arrivalTime = (getDeliveryArrivalTime()/60).ceil();
+    int hours = 0;
+    int minutes = 0;
+    int temp = arrivalTime;
+    if(arrivalTime > 60){
+      while(temp > 60){
+        temp -= 60;
+        hours += 1;
+      }
+    }
+    minutes += temp;
+    if(stepTimeStamp == null){
+      stepTimeStamp = DateTime.now();
+    }
+
+    stepTimeStamp = stepTimeStamp.add(Duration(hours: hours, minutes: minutes));
+    hours = stepTimeStamp.hour;
+    minutes = stepTimeStamp.minute;
+
+    String hourString;
+    String minuteString;
+    if(hours < 10){
+      hourString = "0$hours";
+    }
+    else{
+      hourString = "$hours";
+    }
+
+    if(minutes < 10){
+      minuteString = "0$minutes";
+    }
+    else{
+      minuteString = "$minutes";
+    }
+
+    ETA = "$hourString:$minuteString";
+
+    return ETA;
   }
 
   /*
@@ -216,23 +282,9 @@ class NavigatorService{
 
       //Setinfo variables
       directions = getDirection();
-      int arrivalTime = (getArrivalTime()/60).round();
+      int arrivalTime = (getDeliveryArrivalTime()/60).round();
       stepTimeRemaining = "$arrivalTime min";
       distance = getDistance();
-      int hour = stepTimeStamp.hour;
-      int minutes = stepTimeStamp.minute;
-
-      if(arrivalTime > 60){
-        int temp = arrivalTime;
-        while(temp > 60){
-          temp -= 60;
-          hour += 1;
-        }
-        minutes += temp;
-      }
-
-      ETA = "$hour:$minutes";
-
       distance_ETA = "$distance . $ETA";
 
       // uncomment when not using replacement functions from abnormality service
@@ -359,14 +411,45 @@ class NavigatorService{
     }
     totalDistanceTravelled += calculateDistanceBetween(LatLng(_position.latitude, _position.longitude), currentPolyline.points[_currentPoint]);
 
-    distance = getDistance() - totalDistanceTravelled;
+    distance = ((getDistance() - totalDistanceTravelled)/10).round() * 10;
   }
 
   updateDistanceETA(){
+    if(ETA == null || ETA.length == 0){
+      ETA = calculateETA();
+    }
     updateDistanceToTravel();
-    distance_ETA = "$distance . $ETA";
+    if(distance < 1000){
+      distance_ETA = "$distance m . $ETA";
+    }
+
+    int km = 0;
+    int m = distance;
+    while(m > 1000){
+      km += 1;
+      m -= 1000;
+    }
+    if(km > 0){
+      m = (m/100).round();
+      distance_ETA = "$km,$m Km . $ETA";
+    }
   }
 
+  updateStepTimeRemaining(){
+    int timeRemaining = calculateTimeToNextDelivery();
+    stepTimeRemaining = "$timeRemaining min";
+  }
+
+  updateDeliveryAddress(){
+    String address = getDeliveryAddress();
+    List<String> delAddress = address.split(",");
+    if(delAddress.length > 2){
+      deliveryAddress =  delAddress[0] + "," + delAddress[1];
+    }
+    else{
+      deliveryAddress =  delAddress[0];
+    }
+  }
 
   /*
   *     ---- Getters ----
@@ -404,6 +487,9 @@ class NavigatorService{
   }
 
   String getNextDirection(){
+    if(_deliveryRoutes == null){
+      return "LOADING...";
+    }
     return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep + 1);
   } // gets the next directions
 
@@ -414,10 +500,16 @@ class NavigatorService{
    *              \u003c = opening tag and \u003e = closing tags
    */
   String getDirection(){
+    if(_deliveryRoutes == null){
+      return "LOADING...";
+    }
     return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep);
   }
 
   getDirectionIcon(){
+    if(_deliveryRoutes == null){
+      return "LOADING...";
+    }
     String direction = _deliveryRoutes.getManeuver(_currentRoute, _currentLeg, _currentStep);
     switch(direction){
       case "turn-right":
@@ -435,30 +527,61 @@ class NavigatorService{
   } // gets icon to display directions such as right arrow for turn right
 
   int getArrivalTime(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getDuration(_currentRoute, _currentLeg, _currentStep);
   } // gets arrival time
 
   int getDistance(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getDistance(_currentRoute, _currentLeg, _currentStep);
   }
 
   int getDeliveryArrivalTime(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
   }
 
   int getDeliveryDistance(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getDeliveryDistance(_currentRoute, _currentLeg);
   }
 
   int getRemainingDeliveries(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return getTotalDeliveries() - _currentRoute -1;
   }
 
   int getTotalDeliveries(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getTotalDeliveries();
   }
 
+  String getDeliveryAddress(){
+    if(_deliveryRoutes == null){
+      return "";
+    }
+    else{
+      return _deliveryRoutes.getDeliveryAddress(_currentRoute, _currentLeg);
+    }
+
+  }
+
   LatLng getPointOnPolyline(){
+    if(currentPolyline == null){
+      return null;
+    }
     LatLng start = currentPolyline.points[_currentPoint];
     LatLng end;
     if(_currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1){
@@ -599,59 +722,23 @@ class NavigatorService{
   }
 
   setInitialInfoVariables(){
-    stepTimeStamp = DateTime.now();
+    startTime = DateTime.now();
+    ETA = calculateETA();
     int del = _currentLeg + 1;
     delivery = "Delivery $del";
     directions = getDirection();
     int arrivalTime = (getArrivalTime()/60).round();
     stepTimeRemaining = "$arrivalTime min";
     int distance = getDistance();
-    int hours = stepTimeStamp.hour;
-    int minutes = stepTimeStamp.minute;
-
-    if(arrivalTime > 60){
-      int temp = arrivalTime;
-      while(temp > 60){
-        temp -= 60;
-        hours += 1;
-      }
-      minutes += temp;
-
-      if(hours > 23){
-        int over = hours - 23;
-        hours = over - 1;
-      }
-    }
-
-    String hourString;
-    String minuteString;
-
-    if(hours < 10){
-      hourString = "0$hours";
-    }
-    else{
-      hourString = "$hours";
-    }
-
-    if(minutes < 10){
-      minuteString = "0$minutes";
-    }
-    else{
-      minuteString = "$minutes";
-    }
-
-    distance_ETA = "$distance . $hourString:$minuteString";
+    distance_ETA = "$distance . $ETA";
+    updateDeliveryAddress();
   }
 
 }
 
 /*
 TODO
-  - write function to handle the navigation checks
   - if off route add black poly where they drive
   - UI design and testing
   - integrate API
-  - integrate abnormailties
-  - integrate notifications
-  + add icon to notifications
  */

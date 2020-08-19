@@ -25,6 +25,8 @@ class AbnormalityService{
   int _speedingCount = 0;
   int _maxSpeedingCount = 3;
   bool _stopped = false;
+  bool _wentOffRoute = false;
+  bool _stillOffRoute = false;
 
 
   void setCurrentLocation(Position position){
@@ -46,6 +48,14 @@ class AbnormalityService{
 
   void setMaxStopCount(int i){
     _maxStopCount = i;
+  }
+
+  bool getStillOffRoute(){
+    return _stillOffRoute;
+  }
+
+  setStillOffRoute(bool off){
+    _stillOffRoute = off;
   }
 
   double calculateDistanceBetween(Position currentPosition, Position lastPosition){
@@ -137,9 +147,19 @@ class AbnormalityService{
 
     // checks if the distance of the courier is more than 20m away from route.
     if(distanceFromPolyline > _currentPosition.accuracy + 20){
+      if(_wentOffRoute){
+        if(!_stillOffRoute){
+          _stillOffRoute = true;
+        }
+      }
+      _wentOffRoute = true;
       return true;
     }
     else{
+      if(_wentOffRoute){
+        _wentOffRoute = false;
+        _stillOffRoute = false;
+      }
       return false;
     }
   }

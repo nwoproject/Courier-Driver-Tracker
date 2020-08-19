@@ -53,8 +53,6 @@ class LocalNotifications {
     _notificationContext = context;
   }
 
-
-
    Future onSelectNotification(String payLoad) async{
     if (payLoad != null) {
       print(payLoad);

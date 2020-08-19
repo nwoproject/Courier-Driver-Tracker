@@ -37,4 +37,8 @@ class Route{
   int getDeliveryDistance(int leg){
     return legs[leg].getDeliveryDistance();
   }
+
+  String getDeliveryAddress(int leg){
+    return legs[leg].getDeliveryAddress();
+  }
 }

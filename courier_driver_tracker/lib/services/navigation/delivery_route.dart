@@ -47,4 +47,8 @@ class DeliveryRoute{
   int getDeliveryDistance(int deliveryRoute, int leg){
     return routes[deliveryRoute].getDeliveryDistance(leg);
   }
+
+  String getDeliveryAddress(int deliveryRoute, int leg){
+    return routes[deliveryRoute].getDeliveryAddress(leg);
+  }
 }
