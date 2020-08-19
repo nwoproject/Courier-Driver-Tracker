@@ -19,6 +19,8 @@ class NavigatorService{
   int _currentLeg;
   int _currentStep;
   int _currentPoint;
+  int _stepStartPoint;
+  int _stepEndPoint;
   String jsonFile;
   LocalNotifications _notificationManager = LocalNotifications();
   AbnormalityService _abnormalityService = AbnormalityService();
@@ -245,7 +247,38 @@ class NavigatorService{
     }
   }
 
+  findStepStartPoint(){
+    LatLng start = LatLng(_deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].startLocation.lat,
+        _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].startLocation.lng);
+    print(start);
+    for(int i = 0; i < currentPolyline.points.length; i++){
+      if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
+        _stepStartPoint = i;
+        print("Found start at $i");
+        return;
+      }
+    }
+  }
+
+  findStepEndPoint(){
+    LatLng start = LatLng(_deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].endLocation.lat,
+        _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].endLocation.lng);
+    print(start);
+    for(int i = 0; i < currentPolyline.points.length; i++){
+      if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
+        _stepEndPoint = i;
+        print("Found start at $i");
+        return;
+      }
+    }
+  }
+
   bool passedStepPoint(){
+    /*
+    TODO
+      - remove this shit
+      - change to find the step end location in current
+     */
     int nextStep = _currentStep + 1;
     LatLng lastPoint = currentPolyline.points.last;
     Polyline poly = getPolyline("$_currentRoute-$_currentLeg-$nextStep");
@@ -467,6 +500,14 @@ class NavigatorService{
     return _currentStep;
   }
 
+  int getStepStartPosition(){
+    return _stepStartPoint;
+  }
+
+  int getStepEndPosition(){
+    return _stepEndPoint;
+  }
+
   int getLeg(){
     return _currentLeg;
   }
@@ -656,40 +697,40 @@ class NavigatorService{
         icon: BitmapDescriptor.defaultMarker,
       );
       markers.add(marker);
-      for(int step = 0; step < _deliveryRoutes.routes[route].legs[leg].steps.length; step++){
-        List<LatLng> polylineCoordinates = [];
-        String polyId = "$route-$leg-$step";
 
-        // get polyline points from DeliveryRoute in navigator service
-        List<PointLatLng> result = decodeEncodedPolyline(_deliveryRoutes.routes[route].legs[leg].steps[step].polyline.points);
+      List<LatLng> polylineCoordinates = [];
+      String polyId = "$route-$leg";
 
-        // Adding the coordinates to the list
-        if (result.isNotEmpty) {
-          result.forEach((PointLatLng point) {
-            polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-          });
-        }
+      // get polyline points from DeliveryRoute in navigator service
+      List<PointLatLng> result = decodeEncodedPolyline(_deliveryRoutes.routes[route].overviewPolyline.points);
 
-        // Defining an ID
-        PolylineId id = PolylineId(polyId);
-
-        // Initializing Polyline
-        Polyline polyline = Polyline(
-          polylineId: id,
-          color: Colors.purple,
-          points: polylineCoordinates,
-          width: 10
-        );
-
-        // adds polyline to the polylines to be displayed.
-        polylines[polyId] = polyline;
+      // Adding the coordinates to the list
+      if (result.isNotEmpty) {
+        result.forEach((PointLatLng point) {
+          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+        });
       }
+
+      // Defining an ID
+      PolylineId id = PolylineId(polyId);
+
+      // Initializing Polyline
+      Polyline polyline = Polyline(
+        polylineId: id,
+        color: Colors.purple,
+        points: polylineCoordinates,
+        width: 10
+      );
+
+      // adds polyline to the polylines to be displayed.
+      polylines[polyId] = polyline;
+
     }
     // after all polylines are created set current polyline and split it for navigation.
   }
 
   setCurrentPolyline(){
-    currentPolyline = polylines.remove("$_currentRoute-$_currentLeg-$_currentStep");
+    currentPolyline = polylines.remove("$_currentRoute-$_currentLeg");
   }
 
   setCurrentSplitPolylines(){
@@ -706,8 +747,8 @@ class NavigatorService{
     splitPolylineCoordinatesAfter.addAll(currentPolyline.points);
     splitPolylineCoordinatesAfter.removeAt(0);
 
-    PolylineId polyBeforeID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-before");
-    PolylineId polyAfterID = PolylineId("$_currentRoute-$_currentLeg-$_currentStep-after");
+    PolylineId polyBeforeID = PolylineId("$_currentRoute-$_currentLeg-before");
+    PolylineId polyAfterID = PolylineId("$_currentRoute-$_currentLeg-after");
 
     splitPolylineBefore = Polyline(
         polylineId: polyBeforeID,
@@ -753,7 +794,10 @@ class NavigatorService{
 
 /*
 TODO
+  - when point is bigger than step end, move to next step, update everything
+    - step start and end,
+    - directions and icon, 
+    - time to next step.
   - if off route add black poly where they drive
-  - UI design and testing
   - integrate API
  */
