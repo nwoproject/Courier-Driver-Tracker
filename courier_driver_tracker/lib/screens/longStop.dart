@@ -100,7 +100,6 @@ class _FeedbackState extends State<Feedback> {
     String long = position.longitude.toString();
     String time = position.timestamp.toString();
 
-    void report() async {
       String resp = "";
 
       if (_character == Abnormality.fuelstop) {
@@ -179,15 +178,20 @@ class _FeedbackState extends State<Feedback> {
             },
             secondary: new Icon(Icons.add_circle),
           ),
-        ),
 
-        const SizedBox(height: 30),
-        RaisedButton(
-          onPressed: (){
-            checkForEmptyText();
+          RadioListTile(
+            title: const Text('Stopped for lunch'),
+            value: Abnormality.lunch,
+            groupValue: _character,
+            onChanged: (Abnormality value) {
+              print(value);
+              setState(() {
+                _character = value;
+              });
             },
             secondary: new Icon(Icons.add_circle),
           ),
+
           RadioListTile(
             title: const Text('Severe traffic'),
             value: Abnormality.traffic,
@@ -221,7 +225,6 @@ class _FeedbackState extends State<Feedback> {
           RaisedButton(
             onPressed: () {
               checkForEmptyText();
-              homePage();
             },
             child: const Text('Submit', style: TextStyle(fontSize: 20)),
           ),
@@ -230,9 +233,3 @@ class _FeedbackState extends State<Feedback> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-}
