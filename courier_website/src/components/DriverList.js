@@ -90,39 +90,27 @@ function DriverList(){
             })
         }
     }
-
-    /*return(
-        <Card className="OuterCard">
-            <Card.Body>
-                <Row>
-                    <Col xs={3}>
-                        <ListGroup>
-                            {Drivers.Drivers.map((item)=>                   
-                                <ListGroup.Item key={item.id} id={item.id} action onClick={Clicked}>{item.name + " " + item.surname}</ListGroup.Item>               
-                            )}   
-                        </ListGroup>
-                    </Col>
-                    {DriverSelected ? <DriverProfile DriverID={DriverID}/>: null}
-                </Row>
-            </Card.Body>
-        </Card>
-    );*/
     return(
         <Card className="OuterCard">
+            <Card.Header>Manage Drivers</Card.Header>
             <Card.Body>
                 <Row>
                     <Col xs={4}>
                         <Row>
-                            <Form onSubmit={SubmitID}>
-                                <Form.Label>Driver ID</Form.Label>
-                                <Form.Control
-                                    name="DriverID"
-                                    placeholder="Enter Driver ID"
-                                    onChange={handleChange}
-                                />
-                                <br />
-                                <Button type="submit">Submit</Button>
-                            </Form> 
+                            <Card>
+                                <Card.Body>
+                                    <Form onSubmit={SubmitID}>
+                                        <Form.Label>Driver ID</Form.Label>
+                                        <Form.Control
+                                            name="DriverID"
+                                            placeholder="Enter Driver ID"
+                                            onChange={handleChange}
+                                        />
+                                        <br />
+                                        <Button type="submit">Submit</Button>
+                                    </Form> 
+                                </Card.Body>
+                            </Card>
                         </Row>< br/>
                         <Row>
                             <Card>

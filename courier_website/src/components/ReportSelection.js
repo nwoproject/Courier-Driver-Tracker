@@ -8,6 +8,7 @@ import Col from 'react-bootstrap/Col';
 import ReportAbnormalities from "./ReportAbnormalities";
 import ReportRoutes from './ReportRoutes';
 import SendReport from './SendReport';
+import Alert from 'react-bootstrap/Alert';
 
 function ReportSelection(props){
     
@@ -17,6 +18,7 @@ function ReportSelection(props){
     const [ToggleAbnor, setTA] = useState(false);
     const [RoutesReport, setRR] = useState(false);
     const [SendReportB, setSR] = useState(false);
+    const [DriverNotFound, setDNF] = useState(false);
 
     function handleButton(event){
         if(event.target.name==="Abnor"){
@@ -54,6 +56,10 @@ function ReportSelection(props){
                     setL(false);
                 });
             }
+            else{
+                setDNF(true);
+                setL(false);
+            }
         })
     },[]);
 
@@ -65,21 +71,29 @@ function ReportSelection(props){
                 </Spinner>
                 :
                 <Card>
-                    <Card.Header>{DriverName + " " + DriverSurname}</Card.Header>
+                    {DriverNotFound ? 
                     <Card.Body>
-                        <Row>
-                            <Col xs={4}>
-                                <Button name="Abnor" onClick={handleButton}>See Abnormalities</Button>
-                            </Col>
-                            <Col xs={4}>
-                                <Button name="Routes" onClick={handleButton}>See Routes</Button>
-                            </Col>
-                            
-                        </Row>
-                        {ToggleAbnor ? <div><br /><ReportAbnormalities DriverID={props.DriverID}/></div>:null}
-                        {RoutesReport ? <div><br /><ReportRoutes DriverID={props.DriverID}/></div>:null}
-                        {SendReportB ? <div><br /><SendReport DriverID={props.DriverID}/></div>:null}
+                        <Alert variant="danger">A driver matching that ID was not found. You can search by Name and Surname in Manage Drivers</Alert>
                     </Card.Body>
+                    :
+                    <div>
+                        <Card.Header>{DriverName + " " + DriverSurname}</Card.Header>
+                        <Card.Body>
+                            <Row>
+                                <Col xs={4}>
+                                    <Button name="Abnor" onClick={handleButton}>See Abnormalities</Button>
+                                </Col>
+                                <Col xs={4}>
+                                    <Button name="Routes" onClick={handleButton}>See Routes</Button>
+                                </Col>
+                                
+                            </Row>
+                            {ToggleAbnor ? <div><br /><ReportAbnormalities DriverID={props.DriverID}/></div>:null}
+                            {RoutesReport ? <div><br /><ReportRoutes DriverID={props.DriverID}/></div>:null}
+                            {SendReportB ? <div><br /><SendReport DriverID={props.DriverID}/></div>:null}
+                        </Card.Body>
+                    </div>
+                    }
                 </Card>
             }
         </div>

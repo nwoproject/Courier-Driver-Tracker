@@ -99,6 +99,47 @@
                     ]
                 }
             ]
+        },
+        {
+            "driver_id" : 6,
+            "routes":[
+                {
+                    "route_id":1,
+                    "location":[
+                        {
+                            "location_id":23,
+                            "time_expected":"2020-08-11 09:00:00",
+                            "time_completed":"2020-08-11 9:30:00"
+                        },
+                        {
+                            "location_id":24,
+                            "time_expected":"2020-08-11 10:00:00",
+                            "time_completed":"2020-08-11 10:30:00"
+                        },
+                        {
+                            "location_id":25,
+                            "time_expected":"2020-08-11 11:00:00",
+                            "time_completed":"2020-08-11 12:00:00"
+                        }
+                    ]
+                },
+                {
+                    "route_id":9,
+                    "location":[
+                        {
+                            "location_id":24,
+                            "time_expected":"2020-08-14 09:00:00",
+                            "time_completed":null
+                        },
+                        {
+                            "location_id":28,
+                            "time_expected":"2020-08-14 10:00:00",
+                            "time_completed":null
+                        }
+
+                    ]
+                }
+            ]
         }
     ]
 }

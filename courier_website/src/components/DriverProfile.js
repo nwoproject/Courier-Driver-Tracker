@@ -65,8 +65,10 @@ function DriverProfile(props){
                 </Card.Body>
             :   
             <div>
-                {InvalidId ? 
-                    <Alert variant="danger">The User you tried to load does not exist</Alert>
+                {InvalidId ?
+                    <Card.Body> 
+                        <Alert variant="danger">The User you tried to load does not exist</Alert>
+                    </Card.Body>
                     : 
                     <div>
                         <Card.Header>{DriverName + " " + DriverSurname}</Card.Header>

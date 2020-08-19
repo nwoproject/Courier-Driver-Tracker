@@ -27,9 +27,6 @@ function Header() {
                 />{' '}
             </Navbar.Brand>
                 <Nav className="mr-auto">
-                    <Nav.Link href="#Home" className="BrandHome" as={Link} to={Logged ? "/pages/Home":"/pages/Login"}>
-                        Home
-                    </Nav.Link>
                     <Nav.Link href="#Login" as={Link} to="/pages/Login">
                         Account
                     </Nav.Link>
