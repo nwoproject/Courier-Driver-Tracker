@@ -264,7 +264,6 @@ function SendReport(props){
                     <Card className="ReportCard">
                         <Card.Header>Driver List</Card.Header>
                         <Card.Body>
-                            <b>Driver List</b>< br/>
                             <hr className="BorderLine"/>
                             <Row>
                                 <Col xs={3}>
