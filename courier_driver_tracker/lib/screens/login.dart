@@ -21,13 +21,13 @@ class _LoginPageState extends State<LoginPage>
 
   final headingLabelStyle = TextStyle(
     color: Colors.white,
-    fontSize: 20,
+    fontSize: 25,
     fontFamily: 'OpenSans-Regular',
   );
   final hintLabelStyle = TextStyle(
-    color: Colors.black.withOpacity(0.2),
-    fontFamily: 'OpenSans-Regular',
-  );
+      color: Colors.white.withOpacity(0.8),
+      fontFamily: 'OpenSans-Regular',
+      fontSize: 20);
 
   void createLoginResponse(String response) {
     var errorWidget = Card(
@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage>
         ],
       ),
     );
-    
+
     setState(() {
       loginResponse.add(errorWidget);
     });
@@ -59,32 +59,32 @@ class _LoginPageState extends State<LoginPage>
       loginResponse.clear();
     });
 
-    if(email.text.isEmpty)
-    {
+    if (email.text.isEmpty) {
       createLoginResponse('Please enter your email address.');
       return;
     }
 
-    bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email.text.trim());
-    if(!emailValid)
-    {
+    bool emailValid = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email.text.trim());
+    if (!emailValid) {
       createLoginResponse('Email is invalid.');
       return;
     }
 
-    if(password.text.isEmpty)
-    {
+    if (password.text.isEmpty) {
       createLoginResponse('Please enter a password.');
       return;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
-    
+    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
+        defaultValue: DotEnv().env['BEARER_TOKEN']);
+
     await storage.deleteAll();
     Map data = {"email": email.text.trim(), "password": password.text.trim()};
     Map<String, String> requestHeaders = {
       'Accept': 'application/json',
-      'Authorization':'Bearer $bearerToken'
+      'Authorization': 'Bearer $bearerToken'
     };
 
     var response = await http.post(
@@ -97,6 +97,7 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'token', value: responseData['token']);
       await storage.write(key: 'name', value: responseData['name']);
       await storage.write(key: 'surname', value: responseData['surname']);
+      await storage.write(key: 'email', value: responseData['emial']);
 
       Navigator.of(context)
           .pushNamed('/home', arguments: responseData['token']);
@@ -105,8 +106,7 @@ class _LoginPageState extends State<LoginPage>
       print(response.statusCode);
       String errorResponse = '';
 
-      switch(response.statusCode)
-      {
+      switch (response.statusCode) {
         case 401:
           errorResponse = 'Incorrect Email or password!';
           break;
@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage>
           break;
       }
 
-      createLoginResponse(errorResponse); 
+      createLoginResponse(errorResponse);
     }
   }
 
@@ -134,12 +134,13 @@ class _LoginPageState extends State<LoginPage>
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-            color: Colors.white,
+            border: Border.all(color: Colors.grey[100], width: 4),
+            color: Colors.transparent,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(5),
-                topRight: Radius.circular(5),
-                bottomLeft: Radius.circular(5),
-                bottomRight: Radius.circular(5)),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
                   color: Colors.black.withOpacity(0.2),
@@ -153,16 +154,13 @@ class _LoginPageState extends State<LoginPage>
             controller: email,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.5),
-              fontFamily: "OpenSans-Regular",
-            ),
+                color: Colors.white,
+                fontFamily: "OpenSans-Regular",
+                fontSize: 22),
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 14.0),
-              prefixIcon: Icon(
-                Icons.email,
-                color: Colors.black,
-              ),
+              contentPadding: EdgeInsets.only(top: 9.0),
+              prefixIcon: Icon(Icons.email, color: Colors.grey[100], size: 30),
               hintStyle: hintLabelStyle,
               hintText: "Enter your Email",
             ),
@@ -184,12 +182,13 @@ class _LoginPageState extends State<LoginPage>
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-            color: Colors.white,
+            border: Border.all(color: Colors.grey[100], width: 4),
+            color: Colors.transparent,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(5),
-                topRight: Radius.circular(5),
-                bottomLeft: Radius.circular(5),
-                bottomRight: Radius.circular(5)),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -205,15 +204,17 @@ class _LoginPageState extends State<LoginPage>
             obscureText: true,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.white,
+              fontSize: 22,
               fontFamily: "OpenSans-Regular",
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 14.0),
+              contentPadding: EdgeInsets.only(top: 9.0),
               prefixIcon: Icon(
                 Icons.lock,
-                color: Colors.black,
+                color: Colors.grey[100],
+                size: 30,
               ),
               hintText: "Enter your Password",
               hintStyle: hintLabelStyle,
@@ -277,8 +278,6 @@ class _LoginPageState extends State<LoginPage>
             decoration: BoxDecoration(
               image: DecorationImage(
                 fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.4), BlendMode.darken),
                 image: AssetImage("assets/images/login.jpg"),
               ),
             ),
@@ -300,7 +299,7 @@ class _LoginPageState extends State<LoginPage>
                           style: TextStyle(
                             color: Colors.white,
                             fontFamily: 'OpenSans',
-                            fontSize: 30.0,
+                            fontSize: 35.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -313,10 +312,13 @@ class _LoginPageState extends State<LoginPage>
                         Container(
                           padding: EdgeInsets.only(bottom: 0.0),
                           alignment: Alignment.bottomCenter,
-                          child: Text(
-                            "By CTRL-ALT-ELITE",
-                            style: TextStyle(
-                              color: Colors.white,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 100.0),
+                            child: Text(
+                              "By CTRL-ALT-ELITE",
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
