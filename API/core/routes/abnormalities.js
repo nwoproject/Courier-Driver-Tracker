@@ -1,25 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
-
-const abnormalityDescription = (code) =>
-{
-    switch(code.toString())
-    {
-        case '100': 
-            return 'Standing still for too long.'
-        case '101':
-            return 'Driver came to a sudden stop.'
-        case '102':
-            return 'Driver exceeded the speed limit.'
-        case '103':
-            return 'Driver took a diffrent route than what was prescribed.'
-        case '104':
-            return 'Driver was driving with the company car when no deliveries were scheduled.'
-        default :
-            return 'error';
-    }
-}
+const format =  require('../utility/json_formatter');
 
 const objectConvertor = (results) =>
 {
@@ -28,6 +10,8 @@ const objectConvertor = (results) =>
     let code_102 = [];
     let code_103 = [];
     let code_104 = [];
+    let code_105 = [];
+    let code_106 = [];
 
     for(let k=0; k < results.rowCount;k++)
     {
@@ -47,6 +31,12 @@ const objectConvertor = (results) =>
                 break;
             case 104:
                 code_104.push(abnormalitiesObjectCovertor(results , k));
+                break;
+            case 105:
+                code_105.push(abnormalitiesObjectCovertor(results , k));
+                break;
+            case 106:
+                code_106.push(abnormalitiesObjectCovertor(results , k));
                 break;
         }
     }
@@ -72,6 +62,14 @@ const objectConvertor = (results) =>
                     "code_104" : {
                         "code_description" : abnormalityDescription(104),
                         "driver_abnormalities" : code_104
+                    },
+                    "code_105" : {
+                        "code_description" : abnormalityDescription(105),
+                        "driver_abnormalities" : code_105
+                    },
+                    "code_106" : {
+                        "code_description" : abnormalityDescription(106),
+                        "driver_abnormalities" : code_106
                     }
                 }
             };
@@ -94,7 +92,7 @@ router.post('/:driverid',(req,res)=>{
     }
     else
     {
-        const description = abnormalityDescription(req.body.code);
+        const description = format.abnormalityDescription(req.body.code);
         if(description=='error') //Invalid abnormality code
         {
             res.status(400).end();
