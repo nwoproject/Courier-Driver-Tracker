@@ -332,16 +332,5 @@ describe('Server', ()=>{
                     done();
                 }).timeout(5000);
         });
-        it("Get driver Centerpoint", done =>{
-            chai
-                .request(app)
-                .post('/api/drivers/centerpoint/14')
-                .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
-                .send(validManager)
-                .end((err,res)=>{
-                    expect(res).to.have.status(200);
-                    done();
-                }).timeout(5000);
-        });
     });
 });
