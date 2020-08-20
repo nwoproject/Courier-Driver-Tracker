@@ -122,29 +122,32 @@ class _HomePageViewState extends State<HomePageView> {
             currentIndex: _currentIndex,
             items: [
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.home, size: 30),
+                icon: Icon(FontAwesomeIcons.home,
+                    size: 30, color: Colors.grey[100]),
                 title: SizedBox(
                   width: 0,
                   height: 0,
                 ),
               ),
               BottomNavigationBarItem(
-                backgroundColor: Colors.blue,
-                icon: Icon(FontAwesomeIcons.mapMarkerAlt, size: 30),
+                icon: Icon(FontAwesomeIcons.mapMarkerAlt,
+                    size: 30, color: Colors.blue),
                 title: SizedBox(
                   width: 0,
                   height: 0,
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.userAlt, size: 30),
+                icon: Icon(FontAwesomeIcons.userAlt,
+                    size: 30, color: Colors.grey[100]),
                 title: SizedBox(
                   width: 0,
                   height: 0,
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.cog, size: 30),
+                icon: Icon(FontAwesomeIcons.cog,
+                    size: 30, color: Colors.grey[100]),
                 title: SizedBox(
                   width: 0,
                   height: 0,

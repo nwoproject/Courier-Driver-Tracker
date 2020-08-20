@@ -5,8 +5,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
-import 'package:courier_driver_tracker/screens/home.dart';
-
 
 class UserFeedbackLong extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
@@ -16,7 +14,8 @@ class UserFeedbackLong extends StatelessWidget {
     return MaterialApp(
       title: _title,
       home: Scaffold(
-        appBar: AppBar(title: const Text(_title)),
+        appBar: AppBar(
+            title: const Text(_title), backgroundColor: Colors.grey[900]),
         body: Center(
           child: Feedback(),
         ),
@@ -41,9 +40,13 @@ class _FeedbackState extends State<Feedback> {
   String other;
   final storage = new FlutterSecureStorage();
 
+  final headingLabelStyle2 = TextStyle(
+      fontSize: 30, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+  final subtitle = TextStyle(
+      fontSize: 15, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+
   GeolocatorService geolocatorService = new GeolocatorService();
   Position position;
-
 
   void initState() {
     super.initState();
@@ -57,13 +60,9 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-  void homePage() async {
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (BuildContext context) => HomePage()
-        ));
-  }
-
+//  void homePage() async {
+//    Navigator.of(context).pushNamed("/home");
+//  }
 
   void checkForEmptyText() {
     other = textController.text;
@@ -75,26 +74,25 @@ class _FeedbackState extends State<Feedback> {
           gravity: ToastGravity.CENTER,
           timeInSecForIos: 1,
           backgroundColor: Colors.red,
-          textColor: Colors.white
-      );
-    }
-    else {
+          textColor: Colors.white);
+    } else {
       textController.clear();
       report();
     }
   }
 
   void responseCheck(String r) {
+//    if (r != null){
+//      homePage();
+//    }
     Fluttertoast.showToast(
         msg: r,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.CENTER,
         timeInSecForIos: 1,
         backgroundColor: Colors.blue,
-        textColor: Colors.white
-    );
+        textColor: Colors.white);
   }
-
 
   void report() async {
     position = await geolocatorService.getPosition();
@@ -104,7 +102,6 @@ class _FeedbackState extends State<Feedback> {
     String lat = position.latitude.toString();
     String long = position.longitude.toString();
     String time = position.timestamp.toString();
-
 
     String resp = "";
 
@@ -173,7 +170,13 @@ class _FeedbackState extends State<Feedback> {
     return Column(
       children: <Widget>[
         RadioListTile(
-          title: const Text('Filling up vehicle'),
+          title: const Text(
+            'Filling up vehicle',
+            style: TextStyle(
+              fontSize: 17,
+              fontFamily: 'OpenSans-Regular',
+            ),
+          ),
           value: Abnormality.fuelstop,
           groupValue: _character,
           onChanged: (Abnormality value) {
@@ -182,10 +185,19 @@ class _FeedbackState extends State<Feedback> {
               _character = value;
             });
           },
-          secondary: new Icon(Icons.add_circle),
+          secondary: new Icon(
+            Icons.add_circle,
+            size: 20,
+          ),
         ),
         RadioListTile(
-          title: const Text('Stopped for lunch break'),
+          title: const Text(
+            'Stopped for lunch',
+            style: TextStyle(
+              fontSize: 17,
+              fontFamily: 'OpenSans-Regular',
+            ),
+          ),
           value: Abnormality.lunch,
           groupValue: _character,
           onChanged: (Abnormality value) {
@@ -194,22 +206,39 @@ class _FeedbackState extends State<Feedback> {
               _character = value;
             });
           },
-          secondary: new Icon(Icons.add_circle),
+          secondary: new Icon(
+            Icons.add_circle,
+            size: 20,
+          ),
         ),
         RadioListTile(
-          title: const Text('Severe traffic'),
-          value: Abnormality.traffic,
-          groupValue: _character,
-          onChanged: (Abnormality value) {
-            print(value);
-            setState(() {
-              _character = value;
-            });
-          },
-          secondary: new Icon(Icons.add_circle),
-        ),
+            title: const Text(
+              'Severe traffic',
+              style: TextStyle(
+                fontSize: 17,
+                fontFamily: 'OpenSans-Regular',
+              ),
+            ),
+            value: Abnormality.traffic,
+            groupValue: _character,
+            onChanged: (Abnormality value) {
+              print(value);
+              setState(() {
+                _character = value;
+              });
+            },
+            secondary: new Icon(
+              Icons.add_circle,
+              size: 20,
+            )),
         RadioListTile(
-          title: const Text('Other (Specify)'),
+          title: const Text(
+            'Other (Specify)',
+            style: TextStyle(
+              fontSize: 17,
+              fontFamily: 'OpenSans-Regular',
+            ),
+          ),
           value: Abnormality.other,
           groupValue: _character,
           onChanged: (Abnormality value) {
@@ -218,21 +247,33 @@ class _FeedbackState extends State<Feedback> {
               _character = value;
             });
           },
-          secondary: new Icon(Icons.add_circle),
+          secondary: new Icon(
+            Icons.add_circle,
+            size: 20,
+          ),
         ),
-        TextField(
-          controller: textController,
-          decoration: InputDecoration(
-              border: InputBorder.none, hintText: 'Specify reason'),
+        Padding(
+          padding: const EdgeInsets.only(left: 24.0, right: 24.0),
+          child: Container(
+            decoration: new BoxDecoration(
+                border: Border(
+                    bottom: BorderSide(color: Colors.grey[900], width: 2))),
+            child: TextField(
+              controller: textController,
+              decoration: InputDecoration(
+                  border: InputBorder.none, hintText: 'Specify reason'),
+            ),
+          ),
         ),
         const SizedBox(height: 30),
         RaisedButton(
-          onPressed: () {
-            checkForEmptyText();
-            homePage();
-          },
-          child: const Text('Submit', style: TextStyle(fontSize: 20)),
-        ),
+            elevation: 5.0,
+            color: Colors.grey[900],
+            onPressed: () {
+              checkForEmptyText();
+            },
+            child: const Text('Submit',
+                style: TextStyle(fontSize: 20, color: Colors.white))),
       ],
     );
   }
