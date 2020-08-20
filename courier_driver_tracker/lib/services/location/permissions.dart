@@ -13,7 +13,7 @@ import 'package:courier_driver_tracker/services/location/route_logging.dart';
    * Parameters: none
    * Returns: bool
    * Description: Checks if location service is enabled.
-   */
+*/
 Future<bool> isLocationServiceEnabled() async {
   return await Geolocator().isLocationServiceEnabled();
 }
@@ -24,7 +24,7 @@ Future<bool> isLocationServiceEnabled() async {
    * Parameters: none
    * Returns: async
    * Description: Checks if always location permission is enabled.
-   */
+*/
 Future<bool> isLocationPermissionGranted() async {
   final GeolocationStatus geoPermission = await Geolocator()
       .checkGeolocationPermissionStatus(
@@ -38,13 +38,12 @@ Future<bool> isLocationPermissionGranted() async {
   }
 }
 
-
 /*
    * Author: Gian Geyser
    * Parameters: none
    * Returns: bool
    * Description: Requests to enable the location service.
-   */
+*/
 Future<bool> requestLocationService() async {
   final Location location = Location();
   bool _serviceEnabled;
@@ -59,7 +58,6 @@ Future<bool> requestLocationService() async {
   print("returning");
   return _serviceEnabled;
 }
-
 
 /*
    * Author: Gian Geyser
@@ -141,7 +139,6 @@ Future<void> showMyDialog(BuildContext context) async {
   );
 }
 
-
 /*
    * Author: Gian Geyser
    * Description: Widget displaying a list of all permissions needed by the application with explanations why.
@@ -152,7 +149,6 @@ class Permissions extends StatefulWidget {
 }
 
 class _PermissionsState extends State<Permissions> {
-
   static bool servicesEnabled = false;
   static bool locationPermissionGiven = false;
   static bool writePermissionGiven = false;
