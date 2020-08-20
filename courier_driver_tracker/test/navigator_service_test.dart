@@ -2,6 +2,7 @@ import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:courier_driver_tracker/services/navigation/navigator_service.dart';
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
@@ -10,6 +11,7 @@ Future<void> main() async {
   String filename = "route.json";
   Map<String, dynamic> json = await JsonHandler().parseJson(filename);
   NavigatorService navigatorService;
+  Position currentPosition;
 
   test("Initialisation Test",() async {
     bool created;
@@ -45,6 +47,18 @@ Future<void> main() async {
       navigatorService = NavigatorService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
+
+    currentPosition = Position(
+      latitude: json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["steps"][navigatorService.getStep()]["start_location"]["lat"],
+      longitude: json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["steps"][navigatorService.getStep()]["start_location"]["lng"],
+      accuracy: 10.0,
+      speed: 100.0
+    );
+
+    navigatorService.setInitialPolyPointsAndMarkers(0);
+    navigatorService.setCurrentPolyline();
+    navigatorService.findStepEndPoint();
+    navigatorService.navigate(currentPosition);
     String direction = navigatorService.getDirection();
     expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["steps"][navigatorService.getStep()]["html_instructions"]);
   });

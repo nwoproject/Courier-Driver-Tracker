@@ -273,7 +273,6 @@ class NavigatorService{
   findStepStartPoint(){
     LatLng start = LatLng(_deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].startLocation.lat,
         _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].startLocation.lng);
-    print(start);
     for(int i = 0; i < currentPolyline.points.length; i++){
       if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
         _stepStartPoint = i;
@@ -285,7 +284,6 @@ class NavigatorService{
   findStepEndPoint(){
     LatLng start = LatLng(_deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].endLocation.lat,
         _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].endLocation.lng);
-    print(start);
     for(int i = 0; i < currentPolyline.points.length; i++){
       if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
         _stepEndPoint = i;
