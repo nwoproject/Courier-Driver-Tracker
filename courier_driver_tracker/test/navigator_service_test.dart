@@ -109,9 +109,7 @@ Future<void> main() async {
     int numPolys = 0;
 
     for(int leg = 0; leg < routes.routes[delivery].legs.length; leg++){
-      for(int step = 0; step < routes.routes[delivery].legs[leg].steps.length; step++){
-        numPolys += 1;
-      }
+      numPolys += 1;
     }
 
     if(navigatorService.markers.length == routes.routes[delivery].legs.length){
@@ -137,9 +135,9 @@ Future<void> main() async {
       await navigatorService.getRoutes();
     }
     bool created;
-    String ID = "0-0-0";
+    String id = "0-0";
     navigatorService.setInitialPolyPointsAndMarkers(0);
-    Polyline poly = navigatorService.getPolyline(ID);
+    Polyline poly = navigatorService.getPolyline(id);
 
     if(poly is Polyline){
       created  = true;
@@ -150,24 +148,41 @@ Future<void> main() async {
     expect(created, true);
   });
 
-  test("Get Polyline test", () async {
+  test("findStepStartPoint test should return true", () async {
     if(navigatorService == null){
       navigatorService = NavigatorService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
-    bool created;
-    String ID = "0-0-0";
     navigatorService.setInitialPolyPointsAndMarkers(0);
-    Polyline poly = navigatorService.getPolyline(ID);
+    navigatorService.setCurrentPolyline();
+    navigatorService.findStepStartPoint();
+    bool found = false;
 
-    if(poly is Polyline){
-      created  = true;
+    if(navigatorService.getStepStartPoint() is int){
+      found = true;
     }
-    else{
-      created = false;
-    }
-    expect(created, true);
+
+    expect(found, true);
   });
+
+  test("findStepEndPoint test should return true", () async {
+    if(navigatorService == null){
+      navigatorService = NavigatorService(jsonFile: filename);
+      await navigatorService.getRoutes();
+    }
+    navigatorService.setInitialPolyPointsAndMarkers(0);
+    navigatorService.setCurrentPolyline();
+    navigatorService.findStepEndPoint();
+    bool found = false;
+
+    if(navigatorService.getStepEndPoint() is int){
+      found = true;
+    }
+
+    expect(found, true);
+  });
+
+
 
 
 }

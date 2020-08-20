@@ -8,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -73,34 +72,6 @@ class _HomePageViewState extends State<HomePageView> {
 
   @override
   Widget build(BuildContext context) {
-    BorderRadiusGeometry radius = BorderRadius.only(
-      topLeft: Radius.circular(24.0),
-      topRight: Radius.circular(24.0),
-    );
-
-    final headingLabelStyle = TextStyle(
-      fontSize: 20,
-      fontFamily: 'OpenSans-Regular',
-    );
-
-    Widget _deliveryCards(String text, String date) {
-      return Card(
-        elevation: 10,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-          child: ListTile(
-            title: Text(
-              text,
-              style: headingLabelStyle,
-            ),
-            subtitle: Text(
-              date,
-            ),
-          ),
-        ),
-      );
-    }
-
     return SafeArea(
       child: Scaffold(
         bottomNavigationBar: _buildBottomNavigationBar,
