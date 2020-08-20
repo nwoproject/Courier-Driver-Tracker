@@ -7,6 +7,7 @@ import "dart:io" show Platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -31,17 +32,15 @@ class HomePageView extends StatefulWidget {
 
 class _HomePageViewState extends State<HomePageView> {
   final storage = new FlutterSecureStorage();
-  var userData = {
-    'name' : 'name',
-    'surname': 'surname'
-  };
+  var userData = {'name': 'name', 'surname': 'surname'};
+  int _currentIndex = 1;
 
   Future<Null> readUserData() async {
     var name = await storage.read(key: 'name');
     var surname = await storage.read(key: 'surname');
     setState(() {
       return userData = {
-        'name' : name,
+        'name': name,
         'surname': surname,
       };
     });
@@ -49,7 +48,7 @@ class _HomePageViewState extends State<HomePageView> {
 
   @override
   void initState(){
-    readUserData();
+    //readUserData();
     super.initState();
     startServiceInPlatform();
   }
@@ -62,60 +61,80 @@ class _HomePageViewState extends State<HomePageView> {
     }
   }
 
+  BoxDecoration myBoxDecoration() {
+    return BoxDecoration(
+      border: Border.all(width: 2.5),
+      borderRadius: BorderRadius.all(
+          Radius.circular(30) //         <--- border radius here
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        drawer: new Drawer(
-          child: new ListView(
-            children: <Widget>[
-              new UserAccountsDrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                ),
-                accountName:Text(userData['name']),
-                accountEmail: new Text(userData['surname']),   // data should be pulled from database
-                currentAccountPicture: new CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: new Text(userData['name'].toString()[0])
-                ),
-              ),
-              new ListTile(
-                title: new Text("Deliveries"),
-                trailing: new Icon(Icons.local_shipping),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pushNamed("/delivery");
-                },
-              ),
-              new ListTile(
-                title: new Text("Settings"),
-                trailing: new Icon(Icons.settings),
-              ),
-              new Divider(height: 10.0),
-              new ListTile(
-                title: new Text("Close"),
-                trailing: new Icon(Icons.close),
-                onTap: () => Navigator.of(context).pop(),
-              )
-            ],
-          ),
-        ),
-        body: Column(
-          children: <Widget>[
-            AppBar(
-              backgroundColor: Colors.black,
-              title: Text(
-                'Route',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            Expanded(child: GMap()),
-          ],
-        ),
+        bottomNavigationBar: _buildBottomNavigationBar,
+        body: GMap(),
       ),
     );
+  }
+
+  Widget get _buildBottomNavigationBar {
+    return ClipRRect(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(30),
+          topLeft: Radius.circular(30),
+        ),
+        child: BottomNavigationBar(
+            backgroundColor: Colors.grey[800],
+            unselectedItemColor: Colors.grey[100],
+            type: BottomNavigationBarType.fixed,
+            currentIndex: _currentIndex,
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.home,
+                    size: 30, color: Colors.grey[100]),
+                title: SizedBox(
+                  width: 0,
+                  height: 0,
+                ),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.mapMarkerAlt,
+                    size: 30, color: Colors.blue),
+                title: SizedBox(
+                  width: 0,
+                  height: 0,
+                ),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.userAlt,
+                    size: 30, color: Colors.grey[100]),
+                title: SizedBox(
+                  width: 0,
+                  height: 0,
+                ),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.cog,
+                    size: 30, color: Colors.grey[100]),
+                title: SizedBox(
+                  width: 0,
+                  height: 0,
+                ),
+              )
+            ],
+            onTap: (index) {
+              if (index == 0) {
+                Navigator.of(context).pushNamed("/delivery");
+              } else if (index == 1) {
+                Navigator.of(context).pushNamed("/home2");
+              } else if (index == 2) {
+                Navigator.of(context).pushNamed("/profile");
+              } else if (index == 3) {
+                Navigator.of(context).pushNamed("/settings");
+              }
+            }));
   }
 }

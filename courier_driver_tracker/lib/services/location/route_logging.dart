@@ -7,7 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class RouteLogging{
 
-  final String locationPath ="/Download/test.txt";
+  final String locationPath ="/Download/test.json";
   final String deliveriesPath = "/Download/deliveries.json";
 
   static Future<bool> checkPermissions() async {

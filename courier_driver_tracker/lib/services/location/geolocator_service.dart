@@ -25,7 +25,7 @@ class GeolocatorService{
   }
 
   Future<String> getAddress(Position position) async {
-    String address = 'unkown';
+    String address = 'unknown';
     final List<Placemark> placemarks = await Geolocator()
       .placemarkFromCoordinates(position.latitude, position.longitude);
 
