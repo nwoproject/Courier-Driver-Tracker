@@ -9,6 +9,8 @@ const EMAIL_DRIVER = process.env.EMAIL_TEST_D;
 const PASSWORD_MANAGER = process.env.PASSWORD_TEST_M;
 const PASSWORD_DRIVER = process.env.PASSWORD_TEST_D;
 const TOKEN_DRIVER = process.env.TOKEN_TEST_D;
+const MANAGER_TOKEN = process.env.MANAGER_TOKEN;
+const MANAGER_ID = process.env.MANAGER_ID;
 
 /* User Athentication Test data */
 const successManagerAuth = {
@@ -78,6 +80,44 @@ const responseGetLocation = {
         }
     ]
 }
+
+const createCenterPoint = {
+    "id" : MANAGER_ID,
+    "driver_id": 14 ,
+    "token": MANAGER_TOKEN,
+    "latitude": "-25",
+    "longitude": "28",
+    "radius": 20
+}
+
+const createCenterPointDoesntExist = {
+    "id" : MANAGER_ID,
+    "driver_id": 1 ,
+    "token": MANAGER_TOKEN,
+    "latitude": "-25",
+    "longitude": "28",
+    "radius": 20
+}
+
+const createCenterPointMissingParams = {
+    "id" : MANAGER_ID,
+    "token": MANAGER_TOKEN,
+}
+
+const invalidManager = {
+    "id" : 1,
+    "token": "dfwq",
+    "driver_id": 1 ,
+    "latitude": "-25",
+    "longitude": "28",
+    "radius": 20
+}
+
+const validManager = {
+    "id" : MANAGER_ID,
+    "token": MANAGER_TOKEN,
+}
+
 
 /* unit tests */
 
@@ -243,6 +283,52 @@ describe('Server', ()=>{
                 .send()
                 .end((err,res)=>{
                     expect(res).to.have.status(404);
+                    done();
+                }).timeout(5000);
+        });
+    });
+    describe('Driver Centerpoint', ()=>{
+        it("Create new centerpoint for driver that allready has one", done =>{
+            chai
+                .request(app)
+                .post('/api/drivers/centerpoint')
+                .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
+                .send(createCenterPoint)
+                .end((err,res)=>{
+                    expect(res).to.have.status(409);
+                    done();
+                }).timeout(5000);
+        });
+        it("Create new centerpoint for driver that doesn't exist", done =>{
+            chai
+                .request(app)
+                .post('/api/drivers/centerpoint')
+                .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
+                .send(createCenterPointDoesntExist)
+                .end((err,res)=>{
+                    expect(res).to.have.status(404);
+                    done();
+                }).timeout(5000);
+        });
+        it("Create new centerpoint with missing parameters", done =>{
+            chai
+                .request(app)
+                .post('/api/drivers/centerpoint')
+                .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
+                .send(createCenterPointMissingParams)
+                .end((err,res)=>{
+                    expect(res).to.have.status(400);
+                    done();
+                }).timeout(5000);
+        });
+        it("Create new centerpoint with unauthorized manager", done =>{
+            chai
+                .request(app)
+                .post('/api/drivers/centerpoint')
+                .set('Authorization', 'Bearer ' + process.env.BEARER_TOKEN)
+                .send(invalidManager)
+                .end((err,res)=>{
+                    expect(res).to.have.status(401);
                     done();
                 }).timeout(5000);
         });

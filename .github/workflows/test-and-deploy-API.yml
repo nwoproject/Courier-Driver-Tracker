@@ -18,10 +18,12 @@ env:
   CLIENT_ID: ${{secrets.CLIENT_ID}}
   CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
   REACT_APP_GOOGLE_API: ${{secrets.REACT_APP_GOOGLE_API}}
+  MANAGER_TOKEN: ${{secrets.MANAGER_TOKEN}}
+  MANAGER_ID: ${{secrets.MANAGER_ID}}
   
 on:
   push:
-    branches: [ master ]
+    branches: [ master , release/api-alpha ]
   pull_request:
     branches: [ master ]
 
@@ -45,6 +47,7 @@ jobs:
   deploy-API:
     needs: Run-API-tests
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
       - uses: akhileshns/heroku-deploy@v3.0.5

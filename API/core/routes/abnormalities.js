@@ -44,31 +44,31 @@ const objectConvertor = (results) =>
     return {"driver_id" : results.rows[0].driver_id,
             "abnormalities" :
                 {"code_100" : {
-                    "code_description" : abnormalityDescription(100),
+                    "code_description" : format.abnormalityDescription(100),
                     "driver_abnormalities" : code_100
                     },
                     "code_101" : {
-                        "code_description" : abnormalityDescription(101),
+                        "code_description" : format.abnormalityDescription(101),
                         "driver_abnormalities" : code_101
                     },
                     "code_102" : {
-                        "code_description" : abnormalityDescription(102),
+                        "code_description" : format.abnormalityDescription(102),
                         "driver_abnormalities" : code_102
                     },
                     "code_103" : {
-                        "code_description" : abnormalityDescription(103),
+                        "code_description" : format.abnormalityDescription(103),
                         "driver_abnormalities" : code_103
                     },
                     "code_104" : {
-                        "code_description" : abnormalityDescription(104),
+                        "code_description" : format.abnormalityDescription(104),
                         "driver_abnormalities" : code_104
                     },
                     "code_105" : {
-                        "code_description" : abnormalityDescription(105),
+                        "code_description" : format.abnormalityDescription(105),
                         "driver_abnormalities" : code_105
                     },
                     "code_106" : {
-                        "code_description" : abnormalityDescription(106),
+                        "code_description" : format.abnormalityDescription(106),
                         "driver_abnormalities" : code_106
                     }
                 }
