@@ -25,6 +25,7 @@ class MapSampleState extends State<GMap> {
   Set<Marker> markers = {};
   List<LatLng> polylineCoordinates = [];
   Map<String, Polyline> polylines = {};
+  bool lockedOnPosition = true;
 
   //Location service
   GeolocatorService _geolocatorService = GeolocatorService();
@@ -333,6 +334,7 @@ class MapSampleState extends State<GMap> {
     _currentPosition = Provider.of<Position>(context);
     _navigatorService.setNotificationContext(context);
     var html = """<h3 style='color:white;'>$_directions</h3>""";
+    double fontSize = MediaQuery.of(context).size.height * 0.027;
 
     // Calls abnormality service
     if (_currentPosition != null) {
@@ -355,6 +357,9 @@ class MapSampleState extends State<GMap> {
       }
       if(_deliveryAddress.length == 0){
         setInformationVariables();
+      }
+      if(lockedOnPosition){
+        moveToCurrentLocation();
       }
     }
 
@@ -409,7 +414,7 @@ class MapSampleState extends State<GMap> {
                           style: TextStyle(
                               color: Colors.green,
                               fontFamily: "OpenSans-Regular",
-                              fontSize: 25.0,
+                              fontSize: fontSize,
                               fontWeight: FontWeight.w600)),
                     ),
                   ),
@@ -421,7 +426,7 @@ class MapSampleState extends State<GMap> {
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "OpenSans-Regular",
-                              fontSize: 20.0)),
+                              fontSize: fontSize - 5)),
                     ),
                   ),
                 ],
@@ -445,7 +450,7 @@ class MapSampleState extends State<GMap> {
                           style: TextStyle(
                               color: Colors.black,
                               fontFamily: "OpenSans-Regular",
-                              fontSize: 25.0,
+                              fontSize: fontSize,
                               fontWeight: FontWeight.w600)),
                     ),
                   ),
@@ -456,7 +461,7 @@ class MapSampleState extends State<GMap> {
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "OpenSans-Regular",
-                              fontSize: 20.0)),
+                              fontSize: fontSize - 5)),
                     ),
                   ),
                 ],
@@ -465,113 +470,117 @@ class MapSampleState extends State<GMap> {
           ),
         ),
       ),
-      body: Expanded(child: Container(
-        child: Column(
-          // Google map container with buttons stacked on top
-          children: <Widget>[
-            Expanded(
-              flex: 5,
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    child: GoogleMap(
-                      initialCameraPosition: _initialLocation,
-                      markers: markers != null ? Set<Marker>.from(markers) : null,
-                      polylines: Set<Polyline>.of(polylines.values),
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      mapType: MapType.normal,
-                      zoomGesturesEnabled: true,
-                      zoomControlsEnabled: false,
-                      onMapCreated: (GoogleMapController controller) {
-                        mapController = controller;
-                      },
-                    ),
-                  ),
-                  // Design for current location button
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20.0, left: 10.0, right: 10.0),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          color: Colors.green,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              ListTile(
-                                leading: Image(image: AssetImage(_directionIconPath),
-                                height: 40,),
-                                title: new HtmlWidget(html),
-                              )
-                            ],
-                          ),
-                        )),
-                  ),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 110.0, right: 10.0),
-                      child: Container(
-                        decoration: myBoxDecoration(),
-                        child: ClipOval(
-                          child: Material(
-                            color: Colors.white, // button color
-                            child: InkWell(
-                              splashColor: Colors.white, // inkwell color
-                              child: SizedBox(
-                                width: 56,
-                                height: 56,
-                                child: Icon(Icons.my_location),
+      body: Column(
+        children: <Widget>[
+          Expanded(child: Container(
+            child: Column(
+              // Google map container with buttons stacked on top
+              children: <Widget>[
+                Expanded(
+                  flex: 5,
+                  child: Stack(
+                    children: <Widget>[
+                      Container(
+                        child: GoogleMap(
+                          initialCameraPosition: _initialLocation,
+                          markers: markers != null ? Set<Marker>.from(markers) : null,
+                          polylines: Set<Polyline>.of(polylines.values),
+                          myLocationEnabled: true,
+                          myLocationButtonEnabled: false,
+                          mapType: MapType.normal,
+                          zoomGesturesEnabled: true,
+                          zoomControlsEnabled: false,
+                          onMapCreated: (GoogleMapController controller) {
+                            mapController = controller;
+                          },
+                        ),
+                      ),
+                      // Design for current location button
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 20.0, left: 10.0, right: 10.0),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
                               ),
-                              onTap: () {
-                                _currentPosition != null
-                                    ? moveToCurrentLocation()
-                                    : getCurrentLocation();
-                              },
+                              color: Colors.green,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: Image(image: AssetImage(_directionIconPath),
+                                    height: 40,),
+                                    title: new HtmlWidget(html),
+                                  )
+                                ],
+                              ),
+                            )),
+                      ),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 110.0, right: 10.0),
+                          child: Container(
+                            decoration: myBoxDecoration(),
+                            child: ClipOval(
+                              child: Material(
+                                color: Colors.white, // button color
+                                child: InkWell(
+                                  splashColor: Colors.white, // inkwell color
+                                  child: SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: Icon(Icons.my_location),
+                                  ),
+                                  onTap: () {
+                                    _currentPosition != null
+                                        ? moveToCurrentLocation()
+                                        : getCurrentLocation();
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 180.0, right: 10.0),
-                      child: Container(
-                        decoration: myBoxDecoration(),
-                        child: ClipOval(
-                          child: Material(
-                            color: Colors.white, // button color
-                            child: InkWell(
-                              splashColor: Colors.white, // inkwell color
-                              child: SizedBox(
-                                width: 56,
-                                height: 56,
-                                child: Icon(Icons.explore),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 180.0, right: 10.0),
+                          child: Container(
+                            decoration: myBoxDecoration(),
+                            child: ClipOval(
+                              child: Material(
+                                color: Colors.white, // button color
+                                child: InkWell(
+                                  splashColor: Colors.white, // inkwell color
+                                  child: SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: Icon(Icons.explore),
+                                  ),
+                                  onTap: () {
+                                    _currentPosition != null
+                                        ? showEntireRoute()
+                                        : getCurrentLocation();
+                                  },
+                                ),
                               ),
-                              onTap: () {
-                                _currentPosition != null
-                                    ? showEntireRoute()
-                                    : getCurrentLocation();
-                              },
                             ),
                           ),
                         ),
                       ),
-                    ),
+                      // Show zoom buttons
+                    ],
                   ),
-                  // Show zoom buttons
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      )
+          )
+          ),
+        ],
       ),
       borderRadius: radius,
     );

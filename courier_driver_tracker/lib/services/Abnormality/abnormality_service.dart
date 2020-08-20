@@ -146,7 +146,7 @@ class AbnormalityService{
     double distanceFromPolyline = calculateDistanceBetween(_currentPosition, Position(longitude: shouldBeAt, latitude: _currentPosition.latitude));
 
     // checks if the distance of the courier is more than 20m away from route.
-    if(distanceFromPolyline > _currentPosition.accuracy + 20){
+    if(distanceFromPolyline > _currentPosition.accuracy + 40){
       if(_wentOffRoute){
         if(!_stillOffRoute){
           _stillOffRoute = true;
@@ -208,7 +208,7 @@ class AbnormalityService{
     if(_slowCount >= _maxSlowCount){
       return true;
     }
-    else if(_currentPosition.speed < _speedLimits["speedLimits"][currentPoint]["speedLimit"] * 0.5){
+    else if(_currentPosition.speed < _speedLimits["speedLimits"][currentPoint]["speedLimit"] * 0.1){
       _slowCount += 1;
       return false;
     }

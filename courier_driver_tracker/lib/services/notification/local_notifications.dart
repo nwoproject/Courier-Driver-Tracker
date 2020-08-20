@@ -11,7 +11,7 @@ class LocalNotifications {
   IOSInitializationSettings iosInitializationSettings;
   InitializationSettings initializationSettings;
   bool initialised = false;
-  String report = "long";
+  String report = "";
   BuildContext _notificationContext;
 
   void initializing(BuildContext context) async {
@@ -65,6 +65,18 @@ class LocalNotifications {
     if (report == "sudden") {
       await  Navigator.of(_notificationContext)
           .pushNamed('/reportSudden');
+    }
+    if (report == "speeding") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportSpeed');
+    }
+    if (report == "slow") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportSpeed');
+    }
+    if (report == "offRoute") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportOff');
     }
   }
 

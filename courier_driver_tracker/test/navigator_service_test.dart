@@ -135,9 +135,9 @@ Future<void> main() async {
       await navigatorService.getRoutes();
     }
     bool created;
-    String ID = "0-0";
+    String id = "0-0";
     navigatorService.setInitialPolyPointsAndMarkers(0);
-    Polyline poly = navigatorService.getPolyline(ID);
+    Polyline poly = navigatorService.getPolyline(id);
 
     if(poly is Polyline){
       created  = true;
@@ -158,7 +158,7 @@ Future<void> main() async {
     navigatorService.findStepStartPoint();
     bool found = false;
 
-    if(navigatorService.getStepStartPosition() is int){
+    if(navigatorService.getStepStartPoint() is int){
       found = true;
     }
 
@@ -175,7 +175,7 @@ Future<void> main() async {
     navigatorService.findStepEndPoint();
     bool found = false;
 
-    if(navigatorService.getStepEndPosition() is int){
+    if(navigatorService.getStepEndPoint() is int){
       found = true;
     }
 

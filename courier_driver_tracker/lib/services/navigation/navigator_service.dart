@@ -42,7 +42,7 @@ class NavigatorService{
   DateTime startTime;
   DateTime stepTimeStamp;
   int distance;
-  String ETA;
+  String eta;
   String distanceETA;
   String delivery;
   String deliveryAddress;
@@ -103,7 +103,7 @@ class NavigatorService{
     if(splitPolylineAfter == null || splitPolylineBefore == null){
       setCurrentSplitPolylines();
     }
-    if(directions == null || ETA == null || distance == null ||
+    if(directions == null || eta == null || distance == null ||
         distanceETA == null || stepTimeStamp == null ||
         stepTimeRemaining == null || delivery == null || deliveryAddress == null){
       setInitialInfoVariables();
@@ -111,28 +111,46 @@ class NavigatorService{
     if(directionIconPath == null){
       getDirectionIcon();
     }
+    // find where in the delivery the driver is.
     findCurrentPoint();
     LatLng current = currentPolyline.points[_currentPoint];
     LatLng next;
     if(_currentPoint < currentPolyline.points.length -1){
       next = currentPolyline.points[_currentPoint + 1];
     }
-    else if(_currentPoint == currentPolyline.points.length - 1 && _currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1){
+    else if(_currentPoint == currentPolyline.points.length - 1 && _currentLeg < _deliveryRoutes.routes[_currentRoute].legs.length - 1){
       int nextLeg = _currentLeg + 1;
-      next = getPolyline("$_currentRoute-$nextLeg-0").points[0];
+      next = getPolyline("$_currentRoute-$nextLeg").points[0];
     }
     else{
-      int nextStep = _currentStep + 1;
-      next = getPolyline("$_currentRoute-$_currentLeg-$nextStep").points[0];
+      current = currentPolyline.points[_currentPoint - 1];
+      next = currentPolyline.points[_currentPoint];
     }
+
+    if(_stepStartPoint == null || _stepEndPoint == null ){
+      findStepStartPoint();
+      findStepEndPoint();
+    }
+    if(_currentPoint == 0){
+      directions = getDirection();
+      getDirectionIcon();
+    }
+
+    // check if on the route
     if(!_abnormalityService.offRoute(current, next)){
-      moveToNextStep();
-      moveToNextLeg();
+      if(_currentPoint > _stepEndPoint){
+        moveToNextStep();
+      }
+      else{
+        updateCurrentPolyline();
+      }
       // set info vars
 
     }
     else{
+      // making sure only on notification gets sent.
       if(!_abnormalityService.getStillOffRoute()){
+        _notificationManager.report = "offRoute";
         _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
       }
       //start marking the route he followed.
@@ -144,9 +162,11 @@ class NavigatorService{
 
     // call abnormalities
     if(_abnormalityService.suddenStop()){
+      _notificationManager.report = "sudden";
       _notificationManager.showNotifications(_abnormalityHeaders["sudden_stop"], _abnormalityMessages["sudden_stop"]);
     }
     if(_abnormalityService.stoppingTooLong()){
+      _notificationManager.report = "long";
       _notificationManager.showNotifications(_abnormalityHeaders["stopping_too_long"], _abnormalityMessages["stopping_too_long"]);
     }
     /*
@@ -155,10 +175,12 @@ class NavigatorService{
      as the
      */
     if(_abnormalityService.isSpeedingTemp()){
+      _notificationManager.report = "speeding";
       _notificationManager..showNotifications(_abnormalityHeaders["speeding"], _abnormalityMessages["speeding"]);
     }
     if(_abnormalityService.drivingTooSlowTemp()){
-      _notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
+      _notificationManager.report = "slow";
+      //_notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
     }
   }
 
@@ -224,9 +246,9 @@ class NavigatorService{
       minuteString = "$minutes";
     }
 
-    ETA = "$hourString:$minuteString";
+    eta = "$hourString:$minuteString";
 
-    return ETA;
+    return eta;
   }
 
   /*
@@ -245,6 +267,7 @@ class NavigatorService{
         return;
       }
     }
+    _currentPoint = currentPolyline.points.length;
   }
 
   findStepStartPoint(){
@@ -254,7 +277,6 @@ class NavigatorService{
     for(int i = 0; i < currentPolyline.points.length; i++){
       if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
         _stepStartPoint = i;
-        print("Found start at $i");
         return;
       }
     }
@@ -267,81 +289,54 @@ class NavigatorService{
     for(int i = 0; i < currentPolyline.points.length; i++){
       if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
         _stepEndPoint = i;
-        print("Found start at $i");
         return;
       }
     }
   }
 
-  bool passedStepPoint(){
-    /*
-    TODO
-      - remove this shit
-      - change to find the step end location in current
-     */
-    int nextStep = _currentStep + 1;
-    LatLng lastPoint = currentPolyline.points.last;
-    Polyline poly = getPolyline("$_currentRoute-$_currentLeg-$nextStep");
-    LatLng nextPoint;
-    if(poly != null){
-      nextPoint = poly.points.first;
-    }
-    else{
-      return false;
-    }
-    double d1 = sqrt(pow((_position.latitude - lastPoint.latitude),2) + pow((_position.longitude - lastPoint.longitude),2));
-    double d2 = sqrt(pow((nextPoint.latitude - lastPoint.latitude),2) + pow(nextPoint.longitude - lastPoint.longitude,2));
-
-    if(d1 < d2){
-      return true;
-    }
-    else{
-      return false;
-    }
-  }
-
-  bool reachedStepPoint(){
-    Polyline poly = getPolyline("$_currentRoute-$_currentLeg-$_currentStep");
-    if(poly != null && _currentPoint == poly.points.length - 1){
-      polylines["$_currentRoute-$_currentLeg-$_currentStep"] = poly;
-      return true;
-    }
-    else{
-      return false;
-    }
+  bool reachedDeliveryPoint(){
+    // if point is last and distance is close enough
+    return false;
   }
 
   moveToNextStep(){
-    if(passedStepPoint()){
+    if(_currentPoint == currentPolyline.points.length) {
+      moveToNextLeg();
+    }
+    else{
       _currentStep += 1;
-      updatePreviousStepPolyline();
-      setCurrentPolyline();
-      setCurrentSplitPolylines();
+      findStepStartPoint();
+      findStepEndPoint();
 
       //Setinfo variables
       directions = getDirection();
       int arrivalTime = (getDeliveryArrivalTime()/60).round();
       stepTimeRemaining = "$arrivalTime min";
       distance = getDistance();
-      distanceETA = "$distance . $ETA";
+      distanceETA = "$distance . $eta";
       getDirectionIcon();
+
       // uncomment when not using replacement functions from abnormality service
       //_abnormalityService.getSpeedLimit(currentPolyline.points);
-    }
-    else{
-      updateCurrentPolyline();
     }
   }
 
   moveToNextLeg(){
-    if(reachedStepPoint() && _currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1 && _doneWithDelivery){
-      stepTimeStamp = DateTime.now();
+    if(_currentPoint == currentPolyline.points.length &&
+        _currentLeg < _deliveryRoutes.routes[_currentRoute].legs.length - 1 && _doneWithDelivery){
       _currentLeg += 1;
+
       _currentStep = 0;
-      updatePreviousStepPolyline();
+      findStepStartPoint();
+      findStepEndPoint();
+
+      updatePreviousLegPolyline();
       setCurrentPolyline();
       setCurrentSplitPolylines();
+
+      stepTimeStamp = DateTime.now();
       setInitialInfoVariables();
+
       _doneWithDelivery = false;
     }
   }
@@ -391,7 +386,7 @@ class NavigatorService{
    * Description: After driver has reached the next step update the previous
    *              polyline to show the step has been completed.
    */
-  updatePreviousStepPolyline(){
+  updatePreviousLegPolyline(){
     // remove before and after split polys
     polylines.remove(splitPolylineBefore.polylineId.value);
     polylines.remove(splitPolylineAfter.polylineId.value);
@@ -453,12 +448,12 @@ class NavigatorService{
   }
 
   updateDistanceETA(){
-    if(ETA == null || ETA.length == 0){
-      ETA = calculateETA();
+    if(eta == null || eta.length == 0){
+      eta = calculateETA();
     }
     updateDistanceToTravel();
     if(distance < 1000){
-      distanceETA = "$distance m . $ETA";
+      distanceETA = "$distance m . $eta";
     }
 
     int km = 0;
@@ -469,7 +464,7 @@ class NavigatorService{
     }
     if(km > 0){
       m = (m/100).round();
-      distanceETA = "$km,$m Km . $ETA";
+      distanceETA = "$km,$m Km . $eta";
     }
   }
 
@@ -500,11 +495,11 @@ class NavigatorService{
     return _currentStep;
   }
 
-  int getStepStartPosition(){
+  int getStepStartPoint(){
     return _stepStartPoint;
   }
 
-  int getStepEndPosition(){
+  int getStepEndPoint(){
     return _stepEndPoint;
   }
 
@@ -516,8 +511,8 @@ class NavigatorService{
     return _currentRoute;
   }
 
-  Polyline getPolyline(String ID){
-    return polylines.remove(ID);
+  Polyline getPolyline(String id){
+    return polylines.remove(id);
   }
 
   /*
@@ -549,7 +544,27 @@ class NavigatorService{
     if(_deliveryRoutes == null){
       return "LOADING...";
     }
-    return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep);
+    int distFromStart;
+    int distFromEnd;
+    int displayNextDirectionFromStartDistance = 15;
+    int displayNextDirectionFromEndDistance = 15;
+    if(_currentPoint == 0){
+      distFromStart = calculateDistanceBetween(LatLng(_position.latitude, _position.longitude) , currentPolyline.points[_currentPoint]);
+    }
+    else if(_currentPoint == currentPolyline.points.length -2){
+      distFromEnd = calculateDistanceBetween(LatLng(_position.latitude, _position.longitude) , currentPolyline.points.last);
+    }
+
+    if((distFromStart != null && distFromStart < displayNextDirectionFromStartDistance) || _currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1){
+      if(_currentPoint == currentPolyline.points.length -2 && distFromEnd < displayNextDirectionFromEndDistance){
+        return "ARRIVED AT DESTINATION";
+      }
+      return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep);
+    }
+    else{
+      return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep + 1);
+    }
+
   }
 
   getDirectionIcon(){
@@ -557,7 +572,20 @@ class NavigatorService{
     if(_deliveryRoutes == null){
       path += "navigation_marker";
     }
-    String direction = _deliveryRoutes.getManeuver(_currentRoute, _currentLeg, _currentStep);
+    int distFromStart;
+    int displayNextDirectionFromStartDistance = 15;
+    String direction;
+    if(_currentPoint == 0){
+      distFromStart = calculateDistanceBetween(LatLng(_position.latitude, _position.longitude) , currentPolyline.points[_currentPoint]);
+    }
+
+    if((distFromStart != null && distFromStart < displayNextDirectionFromStartDistance) || _currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1){
+      direction = _deliveryRoutes.getManeuver(_currentRoute, _currentLeg, _currentStep);
+    }
+    else{
+      direction = _deliveryRoutes.getManeuver(_currentRoute, _currentLeg, _currentStep + 1);
+    }
+
     switch(direction){
       case "turn-right":
         path += "right_turn_arrow";
@@ -734,7 +762,7 @@ class NavigatorService{
   }
 
   setCurrentSplitPolylines(){
-    if(_position == null){
+    if(_position == null || currentPolyline == null){
       return;
     }
 
@@ -778,14 +806,14 @@ class NavigatorService{
 
   setInitialInfoVariables(){
     startTime = DateTime.now();
-    ETA = calculateETA();
+    eta = calculateETA();
     int del = _currentLeg + 1;
     delivery = "Delivery $del";
     directions = getDirection();
     int arrivalTime = (getArrivalTime()/60).round();
     stepTimeRemaining = "$arrivalTime min";
     int distance = getDistance();
-    distanceETA = "$distance . $ETA";
+    distanceETA = "$distance . $eta";
     updateDeliveryAddress();
     getDirectionIcon();
   }
@@ -796,7 +824,7 @@ class NavigatorService{
 TODO
   - when point is bigger than step end, move to next step, update everything
     - step start and end,
-    - directions and icon, 
+    - directions and icon,
     - time to next step.
   - if off route add black poly where they drive
   - integrate API

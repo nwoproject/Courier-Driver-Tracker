@@ -7,7 +7,7 @@ void main() {
 
     test('Local path should contain the path.', () async{
       bool created = false;
-      String path = await logger.localPath.toString();
+      String path = logger.localPath.toString();
       if (path.length > 0)
         {
           created = true;
