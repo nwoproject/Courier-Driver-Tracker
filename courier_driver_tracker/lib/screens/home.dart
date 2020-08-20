@@ -105,8 +105,9 @@ class _HomePageViewState extends State<HomePageView> {
     return SafeArea(
       child: Scaffold(
         bottomNavigationBar: _buildBottomNavigationBar,
+        backgroundColor: Colors.white,
         body: SlidingUpPanel(
-          color: Color.fromARGB(255, 58, 52, 64),
+          color: Colors.white,
           panel: Center(
             child: Container(
               padding: EdgeInsets.all(10),
@@ -197,8 +198,9 @@ class _HomePageViewState extends State<HomePageView> {
               ),
             ),
           ),
-          body: Expanded(child: GMap()),
-          borderRadius: radius,
+          body: Column(children: <Widget>[
+            Expanded(flex: 1, child: GMap()),
+          ]),
         ),
       ),
     );
