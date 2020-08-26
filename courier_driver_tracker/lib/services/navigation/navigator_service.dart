@@ -16,9 +16,9 @@ class NavigatorService{
 
   DeliveryRoute _deliveryRoutes;
   int _currentRoute;
-  int _currentLeg;
-  int _currentStep;
-  int _currentPoint;
+  int _currentLeg; // delivery
+  int _currentStep; // directions
+  int _currentPoint; // point on the polyline
   int _stepStartPoint;
   int _stepEndPoint;
   String jsonFile;
@@ -30,10 +30,9 @@ class NavigatorService{
   // Map polylines and markers
   Map<String, Polyline> polylines = {};
   Polyline currentPolyline;
-  Polyline splitPolylineBefore;
-  List<LatLng> splitPolylineCoordinatesBefore;
-  Polyline splitPolylineAfter;
-  List<LatLng> splitPolylineCoordinatesAfter;
+
+  //Polyline splitPolylineAfter;
+  //List<LatLng> splitPolylineCoordinatesAfter;
   Set<Marker> markers = {};
 
   // info variables
@@ -77,6 +76,10 @@ class NavigatorService{
     initialiseNotifications(context);
   }
 
+  //__________________________________________________________________________________________________
+  //                            Main Function
+  //__________________________________________________________________________________________________
+
   /*
    * Parameters: Position
    * Returns: int
@@ -99,9 +102,6 @@ class NavigatorService{
       setCurrentPolyline();
       // uncomment when not using replacement functions from abnormality service
       //_abnormalityService.getSpeedLimit(currentPolyline.points);
-    }
-    if(splitPolylineAfter == null || splitPolylineBefore == null){
-      setCurrentSplitPolylines();
     }
     if(directions == null || eta == null || distance == null ||
         distanceETA == null || stepTimeStamp == null ||
@@ -184,72 +184,84 @@ class NavigatorService{
     }
   }
 
-  /*
-   * Author: Jordan Nijs
-   * Parameters: none
-   * Returns: int
-   * Description: Uses a current position to determine distance away from next point.
-   */
-  int calculateDistanceBetween(LatLng currentPosition, LatLng lastPosition){
-    double p = 0.017453292519943295;
-    double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
-        cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
-            (1 - cos((currentPosition.longitude - lastPosition.longitude) * p))/2;
-    return (12742 * asin(sqrt(a)) * 1000).round();
+
+  //__________________________________________________________________________________________________
+  //                            Initialisation
+  //__________________________________________________________________________________________________
+
+  initialiseNotifications(BuildContext context){
+    _notificationManager.initializing(context);
   }
 
-  int calculateTimeToNextDelivery(){
-    int times = 0;
-    for(int step = 0; step < _currentStep; step++){
-      times += _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[step].duration;
+  setInitialPolyPointsAndMarkers(int route) async {
+    if(_deliveryRoutes == null){
+      await getRoutes();
     }
+    for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
+      int delivery = leg + 1;
+      Marker marker = Marker(
+        markerId: MarkerId('$route-$leg'),
+        position: LatLng(
+          _deliveryRoutes.routes[route].legs[leg].endLocation.lat,
+          _deliveryRoutes.routes[route].legs[leg].endLocation.lng,
+        ),
+        infoWindow: InfoWindow(
+          title: 'Delivery $delivery',
+          snippet: _deliveryRoutes.routes[route].legs[leg].endAddress,
+        ),
+        icon: BitmapDescriptor.defaultMarker,
+      );
+      markers.add(marker);
 
-    return ((getDeliveryArrivalTime() - times)/60 * distance/getDistance()).ceil();
-  }
+      List<LatLng> polylineCoordinates = [];
+      String polyId = "$route-$leg";
 
-  String calculateETA(){
-    if(startTime == null){
-      startTime = DateTime.now();
-    }
-    int arrivalTime = (getDeliveryArrivalTime()/60).ceil();
-    int hours = 0;
-    int minutes = 0;
-    int temp = arrivalTime;
-    if(arrivalTime > 60){
-      while(temp > 60){
-        temp -= 60;
-        hours += 1;
+      // get polyline points from DeliveryRoute in navigator service
+      List<PointLatLng> result = decodeEncodedPolyline(_deliveryRoutes.routes[route].overviewPolyline.points);
+
+      // Adding the coordinates to the list
+      if (result.isNotEmpty) {
+        result.forEach((PointLatLng point) {
+          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+        });
       }
-    }
-    minutes += temp;
-    if(stepTimeStamp == null){
-      stepTimeStamp = DateTime.now();
-    }
 
-    stepTimeStamp = stepTimeStamp.add(Duration(hours: hours, minutes: minutes));
-    hours = stepTimeStamp.hour;
-    minutes = stepTimeStamp.minute;
+      // Defining an ID
+      PolylineId id = PolylineId(polyId);
 
-    String hourString;
-    String minuteString;
-    if(hours < 10){
-      hourString = "0$hours";
-    }
-    else{
-      hourString = "$hours";
-    }
+      // Initializing Polyline
+      Polyline polyline = Polyline(
+          polylineId: id,
+          color: Colors.purple,
+          points: polylineCoordinates,
+          width: 10
+      );
 
-    if(minutes < 10){
-      minuteString = "0$minutes";
-    }
-    else{
-      minuteString = "$minutes";
-    }
+      // adds polyline to the polylines to be displayed.
+      polylines[polyId] = polyline;
 
-    eta = "$hourString:$minuteString";
-
-    return eta;
+    }
+    // after all polylines are created set current polyline and split it for navigation.
   }
+
+  setInitialInfoVariables(){
+    startTime = DateTime.now();
+    eta = calculateETA();
+    int del = _currentLeg + 1;
+    delivery = "Delivery $del";
+    directions = getDirection();
+    int arrivalTime = (getArrivalTime()/60).round();
+    stepTimeRemaining = "$arrivalTime min";
+    int distance = getDistance();
+    distanceETA = "$distance . $eta";
+    updateDeliveryAddress();
+    getDirectionIcon();
+  }
+
+
+  //__________________________________________________________________________________________________
+  //                            Update functions
+  //__________________________________________________________________________________________________
 
   /*
    * Parameters: none
@@ -332,7 +344,6 @@ class NavigatorService{
 
       updatePreviousLegPolyline();
       setCurrentPolyline();
-      setCurrentSplitPolylines();
 
       stepTimeStamp = DateTime.now();
       setInitialInfoVariables();
@@ -349,35 +360,21 @@ class NavigatorService{
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline(){
-    // remove previous position from before and after polyline
-    splitPolylineCoordinatesBefore.removeLast();
-    splitPolylineCoordinatesAfter.removeAt(0);
+    // remove previous position from polyline
+    currentPolyline.points.removeAt(0);
+    int newLength = currentPolyline.points.length - _currentPoint;
 
-    while(splitPolylineCoordinatesBefore.length < _currentPoint + 1){
-      splitPolylineCoordinatesBefore.add(splitPolylineCoordinatesAfter.removeAt(0));
+    print("Current Polyline: " + currentPolyline.points.length.toString());
+    print("Current point: " + _currentPoint.toString());
+
+    while(currentPolyline.points.length >= newLength){
+      currentPolyline.points.removeAt(0);
     }
 
-    splitPolylineCoordinatesBefore.add(getPointOnPolyline());
-    splitPolylineCoordinatesAfter.insert(0, getPointOnPolyline());
-    String beforeId = "$_currentRoute-$_currentLeg-$_currentStep-before";
-    String afterId = "$_currentRoute-$_currentLeg-$_currentStep-after";
-    splitPolylineBefore = Polyline(
-      polylineId: PolylineId(beforeId),
-      color: Colors.green[200],
-      points: splitPolylineCoordinatesBefore,
-      width: 10
-    );
-    splitPolylineAfter = Polyline(
-      polylineId: PolylineId(afterId),
-      color: Colors.purple,
-      points: splitPolylineCoordinatesAfter,
-      width: 10
-    );
+    print("Current Polyline: " + currentPolyline.points.length.toString());
+    print("Current point: " + _currentPoint.toString());
 
-    polylines.remove(beforeId);
-    polylines.remove(afterId);
-    polylines[beforeId] = splitPolylineBefore;
-    polylines[afterId] = splitPolylineAfter;
+    currentPolyline.points.insert(0, getPointOnPolyline());
   }
 
   /*
@@ -387,61 +384,17 @@ class NavigatorService{
    *              polyline to show the step has been completed.
    */
   updatePreviousLegPolyline(){
-    // remove before and after split polys
-    polylines.remove(splitPolylineBefore.polylineId.value);
-    polylines.remove(splitPolylineAfter.polylineId.value);
-    // add the delivery route again with lighter colour
-    polylines[currentPolyline.polylineId.value] = Polyline(
-      polylineId: currentPolyline.polylineId,
-      color: Colors.green[200],
-      points: currentPolyline.points,
-      width: 10
-    );
-  }
-
-  /*
-   * Author: dammy_ololade (https://github.com/Dammyololade/flutter_polyline_points/blob/master/lib/src/network_util.dart)
-   * Parameters: Google Encoded String
-   * Returns: List
-   * Description: Decode the google encoded string using Encoded Polyline Algorithm Format.
-   *              For more info about the algorithm check  https://developers.google.com/maps/documentation/utilities/polylinealgorithm
-   */
-  List<PointLatLng> decodeEncodedPolyline(String encoded) {
-    List<PointLatLng> poly = [];
-    int index = 0, len = encoded.length;
-    int lat = 0, lng = 0;
-
-    while (index < len) {
-      int b, shift = 0, result = 0;
-      do {
-        b = encoded.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-      do {
-        b = encoded.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lng += dlng;
-      PointLatLng p =
-      new PointLatLng((lat / 1E5).toDouble(), (lng / 1E5).toDouble());
-      poly.add(p);
-    }
-    return poly;
+    // remove previous polyline
+    polylines.remove(currentPolyline.polylineId.value);
   }
 
   updateDistanceToTravel(){
     int totalDistanceTravelled = 0;
-    for(int i = 0; i < _currentPoint - 1; i++){
-     totalDistanceTravelled += calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i + 1]);
+    // distance from next point to end
+    for(int i = _currentPoint + 1; i < currentPolyline.points.length - 1; i++){
+      totalDistanceTravelled += calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i + 1]);
     }
+    // distance from current position to next point
     totalDistanceTravelled += calculateDistanceBetween(LatLng(_position.latitude, _position.longitude), currentPolyline.points[_currentPoint]);
 
     distance = ((getDistance() - totalDistanceTravelled)/10).round() * 10;
@@ -484,9 +437,122 @@ class NavigatorService{
     }
   }
 
+
+
+  //__________________________________________________________________________________________________
+  //                            Calculation functions
+  //__________________________________________________________________________________________________
+
   /*
-  *     ---- Getters ----
-  */
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: int
+   * Description: Uses a current position to determine distance away from next point.
+   */
+  int calculateDistanceBetween(LatLng currentPosition, LatLng lastPosition){
+    double p = 0.017453292519943295;
+    double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
+        cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
+            (1 - cos((currentPosition.longitude - lastPosition.longitude) * p))/2;
+    return (12742 * asin(sqrt(a)) * 1000).round();
+  }
+
+  int calculateTimeToNextDelivery(){
+    int times = 0;
+    for(int step = 0; step < _currentStep; step++){
+      times += _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[step].duration;
+    }
+
+    return ((getDeliveryArrivalTime() - times)/60 * distance/getDistance()).ceil();
+  }
+
+  String calculateETA(){
+    if(startTime == null){
+      startTime = DateTime.now();
+    }
+    int arrivalTime = (getDeliveryArrivalTime()/60).ceil();
+    int hours = 0;
+    int minutes = 0;
+    int temp = arrivalTime;
+    if(arrivalTime > 60){
+      while(temp > 60){
+        temp -= 60;
+        hours += 1;
+      }
+    }
+    minutes += temp;
+    if(stepTimeStamp == null){
+      stepTimeStamp = DateTime.now();
+    }
+
+    stepTimeStamp = stepTimeStamp.add(Duration(hours: hours, minutes: minutes));
+    hours = stepTimeStamp.hour;
+    minutes = stepTimeStamp.minute;
+
+    String hourString;
+    String minuteString;
+    if(hours < 10){
+      hourString = "0$hours";
+    }
+    else{
+      hourString = "$hours";
+    }
+
+    if(minutes < 10){
+      minuteString = "0$minutes";
+    }
+    else{
+      minuteString = "$minutes";
+    }
+
+    eta = "$hourString:$minuteString";
+
+    return eta;
+  }
+
+  /*
+   * Author: dammy_ololade (https://github.com/Dammyololade/flutter_polyline_points/blob/master/lib/src/network_util.dart)
+   * Parameters: Google Encoded String
+   * Returns: List
+   * Description: Decode the google encoded string using Encoded Polyline Algorithm Format.
+   *              For more info about the algorithm check  https://developers.google.com/maps/documentation/utilities/polylinealgorithm
+   */
+  List<PointLatLng> decodeEncodedPolyline(String encoded) {
+    List<PointLatLng> poly = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+      PointLatLng p =
+      new PointLatLng((lat / 1E5).toDouble(), (lng / 1E5).toDouble());
+      poly.add(p);
+    }
+    return poly;
+  }
+
+
+  //__________________________________________________________________________________________________
+  //                            Getters
+  //__________________________________________________________________________________________________
+
   DeliveryRoute getDeliveryRoute(){
     return _deliveryRoutes;
   }
@@ -695,9 +761,11 @@ class NavigatorService{
     return currentPoint;
   }
 
-  /*
-  *   ---- Setters ----
-  */
+
+  //__________________________________________________________________________________________________
+  //                            Setters
+  //__________________________________________________________________________________________________
+
   setRouteFilename(String filename){
     jsonFile = filename;
   }
@@ -706,126 +774,26 @@ class NavigatorService{
     _position = position;
   }
 
-  setInitialPolyPointsAndMarkers(int route) async {
-    if(_deliveryRoutes == null){
-      await getRoutes();
-    }
-    for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
-      int delivery = leg + 1;
-      Marker marker = Marker(
-        markerId: MarkerId('$route-$leg'),
-        position: LatLng(
-          _deliveryRoutes.routes[route].legs[leg].endLocation.lat,
-          _deliveryRoutes.routes[route].legs[leg].endLocation.lng,
-        ),
-        infoWindow: InfoWindow(
-          title: 'Delivery $delivery',
-          snippet: _deliveryRoutes.routes[route].legs[leg].endAddress,
-        ),
-        icon: BitmapDescriptor.defaultMarker,
-      );
-      markers.add(marker);
-
-      List<LatLng> polylineCoordinates = [];
-      String polyId = "$route-$leg";
-
-      // get polyline points from DeliveryRoute in navigator service
-      List<PointLatLng> result = decodeEncodedPolyline(_deliveryRoutes.routes[route].overviewPolyline.points);
-
-      // Adding the coordinates to the list
-      if (result.isNotEmpty) {
-        result.forEach((PointLatLng point) {
-          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-        });
-      }
-
-      // Defining an ID
-      PolylineId id = PolylineId(polyId);
-
-      // Initializing Polyline
-      Polyline polyline = Polyline(
-        polylineId: id,
-        color: Colors.purple,
-        points: polylineCoordinates,
-        width: 10
-      );
-
-      // adds polyline to the polylines to be displayed.
-      polylines[polyId] = polyline;
-
-    }
-    // after all polylines are created set current polyline and split it for navigation.
-  }
-
   setCurrentPolyline(){
-    currentPolyline = polylines.remove("$_currentRoute-$_currentLeg");
-  }
-
-  setCurrentSplitPolylines(){
-    if(_position == null || currentPolyline == null){
-      return;
-    }
-
-    splitPolylineCoordinatesBefore = [];
-    splitPolylineCoordinatesAfter = [];
-    LatLng pointOnPoly = getPointOnPolyline();
-    splitPolylineCoordinatesBefore.add(currentPolyline.points.first);
-    splitPolylineCoordinatesBefore.add(pointOnPoly);
-    splitPolylineCoordinatesAfter.add(pointOnPoly);
-    splitPolylineCoordinatesAfter.addAll(currentPolyline.points);
-    splitPolylineCoordinatesAfter.removeAt(0);
-
-    PolylineId polyBeforeID = PolylineId("$_currentRoute-$_currentLeg-before");
-    PolylineId polyAfterID = PolylineId("$_currentRoute-$_currentLeg-after");
-
-    splitPolylineBefore = Polyline(
-        polylineId: polyBeforeID,
-        color: Colors.green[200],
-        points: splitPolylineCoordinatesBefore,
-        width: 10
-    );
-    splitPolylineAfter = Polyline(
-        polylineId: polyAfterID,
-        color: Colors.purple,
-        points: splitPolylineCoordinatesAfter,
-        width: 10
-    );
-
-    // add split polys to the polylines
-    polylines[polyBeforeID.value] = splitPolylineBefore;
-    polylines[polyAfterID.value] = splitPolylineAfter;
-  }
-
-  initialiseNotifications(BuildContext context){
-    _notificationManager.initializing(context);
+    currentPolyline = polylines["$_currentRoute-$_currentLeg"];
   }
 
   setNotificationContext(BuildContext context){
     _notificationManager.setContext(context);
   }
 
-  setInitialInfoVariables(){
-    startTime = DateTime.now();
-    eta = calculateETA();
-    int del = _currentLeg + 1;
-    delivery = "Delivery $del";
-    directions = getDirection();
-    int arrivalTime = (getArrivalTime()/60).round();
-    stepTimeRemaining = "$arrivalTime min";
-    int distance = getDistance();
-    distanceETA = "$distance . $eta";
-    updateDeliveryAddress();
-    getDirectionIcon();
+  setCurrentPoint(int i){
+    _currentPoint = i;
   }
 
 }
 
+
 /*
 TODO
-  - when point is bigger than step end, move to next step, update everything
-    - step start and end,
-    - directions and icon,
-    - time to next step.
-  - if off route add black poly where they drive
-  - integrate API
+  - remove previous poly
+  - update time and distance correctly
  */
+
+// u14022096@tuks.co.za
+// 569edec8

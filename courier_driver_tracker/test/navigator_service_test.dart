@@ -14,7 +14,6 @@ Future<void> main() async {
   test("Initialisation Test",() async {
     bool created;
     navigatorService = NavigatorService(jsonFile: filename);
-
     if(navigatorService is NavigatorService){
       created  = true;
     }
@@ -181,6 +180,21 @@ Future<void> main() async {
 
     expect(found, true);
   });
+
+  test("Some tests",() async {
+    if(navigatorService == null){
+      navigatorService = NavigatorService(jsonFile: filename);
+      await navigatorService.getRoutes();
+    }
+
+    navigatorService.setInitialPolyPointsAndMarkers(0);
+    navigatorService.setCurrentPolyline();
+    navigatorService.setCurrentPoint(4);
+    navigatorService.updateCurrentPolyline();
+
+    expect(true, true);
+  });
+
 
 
 
