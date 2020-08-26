@@ -21,7 +21,7 @@ router.post('/', async (req, res)=>{
             await checks.driverExistsCheck(req.body.driver_id,res);
             if(!res.writableEnded)
             {
-                await db_query.addRoute(req,req.body.driver_id,res);
+                await db_query.addRoute(req.body.route,req.body.driver_id,res,true);
                 if(!res.writableEnded)
                 {
                     res.status(201).end();
@@ -61,7 +61,7 @@ router.post('/auto-assign', async (req, res)=>{
                         {
                             centerPoints[k].distance = coords.distanceBetweenLocation(routeCenter.latitude,routeCenter.longitude,centerPoints[k].lat,centerPoints[k].lon);
                         }
-                        centerPoints.sort(format.sortObject('distance')); // Ranks drivers closest
+                        centerPoints.sort(format.sortObject('distance')); // Ranks drivers according to distance from center point of route
 
                         const contains = (routes, id) =>
                         {
@@ -78,18 +78,19 @@ router.post('/auto-assign', async (req, res)=>{
                         let freeDriver = false;
                         let freeDriverIndex = 0;
 
-                        for(let k=0;centerPoints.length;k++)
+                        for(let k=0; k < centerPoints.length;k++)
                         {
                             if(!contains(todaysRoutes,centerPoints[k].driver_id) && (centerPoints[k].distance <= centerPoints[k].radius))
                             {
                                 freeDriver = true;
                                 freeDriverIndex = k;
+                                break;
                             }
                         }
                         if(freeDriver)
                         {
-                            await db_query.addRoute(req,res);
-                            if(!writableEnded) //Route successfully assigned to driver
+                            await db_query.addRoute(req.body.route,centerPoints[freeDriverIndex].driver_id,res,true);
+                            if(!res.writableEnded) //Route successfully assigned to driver
                             {
                                 let driverDetails = await db_query.getDriver(centerPoints[freeDriverIndex].driver_id);
                                 res.status(201).json({
@@ -98,11 +99,12 @@ router.post('/auto-assign', async (req, res)=>{
                                     "surname":driverDetails.rows[0].surname
                                 });
                             }
-                        }
+                        } 
                         else
                         {
                             res.status(204).end();
                         }
+                        
                     }
                 }
             }
@@ -148,7 +150,7 @@ router.get('/:driverid', (req,res)=>{
                     }
                     else
                     {
-                        res.status(200).json({"driver_id":driver_id,"active_routes: ": routes}).end();
+                        res.status(200).json({"driver_id":driver_id,"active_routes": routes}).end();
                     }
                });
             }
@@ -215,21 +217,52 @@ router.put('/completed/:routeid',async(req,res)=>{
                     }
                     else
                     {
-                        const completed = await checks.routeLocationsCheck(route_id,res);
+                        const completed = await checks.routeLocationsCheck(req.body.id,route_id,res);
                         if(!res.writableEnded)
                         {
                             if(completed)
                             {
                                 res.status(204).end();
                             }
-                            else // TODO Log that driver potentially missed a delivery
+                            else // Driver potentially missed a delivery
                             {
+
                                 res.status(206).end();
                             }   
                         }
                     }
                 }
             });
+        }
+    }
+});
+
+// POST api/routes/repeating
+router.post('/repeating',async(req,res)=>{
+    if(!req.body.id || !req.body.token || !req.body.route || !req.body.occurrence)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        if(req.body.occurrence == 'daily' || req.body.occurrence=='weekly' || req.body.occurrence=='monthly')
+        {
+            await checks.managerCheck(req.body.id,req.body.token,res);
+            if(!res.writableEnded)
+            {
+                if(!res.writableEnded)
+                {
+                    await db_query.addRepeatingRoute(req,res);
+                    if(!res.writableEnded)
+                    {
+                        res.status(201).end();
+                    }
+                }
+            }
+        }
+        else
+        {
+            res.status(400).end();
         }
     }
 });

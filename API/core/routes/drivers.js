@@ -50,7 +50,7 @@ router.post('/', (req, res) =>{
                 };
                 tokenGenerator();
                 bcrypt.hash(driverPassword, 10, (hasherr, hash)=>{
-                    DB.pool.query('INSERT INTO public."driver"("email","password","name","surname","token","epoch")VALUES($1,$2,$3,$4,$5,$6)',[req.body.email,hash,req.body.name,req.body.surname,token,Math.floor(new Date() / 1000)],(error,insertResult)=>{
+                    DB.pool.query('INSERT INTO public."driver"("email","password","name","surname","token","epoch")VALUES($1,$2,$3,$4,$5,$6) RETURNING *',[req.body.email,hash,req.body.name,req.body.surname,token,Math.floor(new Date() / 1000)],(error,insertResult)=>{
                         if(error)
                         {
                             dbErrorHandler(res,error);
@@ -59,7 +59,7 @@ router.post('/', (req, res) =>{
                         {
                             var driverEmail = mailer.driverMessage(req.body.email,driverPassword);
                             mailer.mailer(driverEmail);
-                            res.status(201).end();
+                            res.status(201).json({"id": insertResult.rows[0].id});
                         }
                     });
                 });
@@ -150,7 +150,7 @@ router.put('/:driverid/password', (req, res) =>{
 });
 
 // DELETE api/drivers/:driverid
-router.delete('/:driverid',(req,res)=>{
+router.delete('/:driverid',async (req,res)=>{
     const driverID = req.params.driverid;
     if(!req.body.token)
     {
@@ -264,7 +264,7 @@ router.post('/centerpoint',async (req,res)=>{
             await checks.driverExistsCheck(req.body.driver_id,res);
             if(!res.writableEnded)
             {
-                await checks.centerPointExistsCheck(req.body.driver_id,res);
+                await checks.centerPointExistsCheck(req.body.driver_id,false,res);
                 if(!res.writableEnded)
                 {
                     DB.pool.query('INSERT INTO route."center_point"("driver_id","latitude","longitude","radius")VALUES($1,$2,$3,$4)',[req.body.driver_id,req.body.latitude,req.body.longitude,req.body.radius],(err,results)=>{
@@ -347,8 +347,8 @@ router.put('/centerpoint/coords',async (req,res)=>{
     }
 });
 
-// DELETE api/drivers/centerpoint
-router.delete('/centerpoint',async (req,res)=>{
+// DELETE api/drivers/centerpoint/:driverid
+router.delete('/centerpoint/:driverid',async (req,res)=>{
     if(!req.body.id || !req.body.driver_id || !req.body.token)
     {
         res.status(400).end();
@@ -391,7 +391,11 @@ router.post('/centerpoint/:driverid',async (req,res)=>{
         await checks.managerCheck(req.body.id,req.body.token,res);
         if(!res.writableEnded)
         {
-            const centerpoint = await checks.centerPointExistsCheck(driver_id,res);
+            const centerpoint = await checks.centerPointExistsCheck(driver_id,true,res);
+            if(!res.writableEnded && centerpoint.rowCount==0)
+            {
+                res.status(404).end();
+            }
             if(!res.writableEnded)
             {
                 const driver = await db_query.getDriver(driver_id);

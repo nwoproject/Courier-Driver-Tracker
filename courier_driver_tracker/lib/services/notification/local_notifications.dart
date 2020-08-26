@@ -1,58 +1,39 @@
 import 'dart:async';
-import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
 
-void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LocalNotifications(),
-    );
-  }
-}
-
-class LocalNotifications extends StatefulWidget {
-  @override
-  _LocalNotificationsState createState() => _LocalNotificationsState();
-}
-
-class _LocalNotificationsState extends State<LocalNotifications> {
+class LocalNotifications {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
   AndroidInitializationSettings androidInitializationSettings;
   IOSInitializationSettings iosInitializationSettings;
   InitializationSettings initializationSettings;
-  Position _currentPosition;
+  bool initialised = false;
+  String report = "";
+  BuildContext _notificationContext;
 
-  //Abnormality service
-  AbnormalityService _abnormalityService = AbnormalityService();
-
-  @override
-  void initState() {
-    super.initState();
-    initializing();
-  }
-
-  void initializing() async {
-    androidInitializationSettings = AndroidInitializationSettings('app_icon');
+  void initializing(BuildContext context) async {
+    setContext(context);
+    androidInitializationSettings = AndroidInitializationSettings('ic_stat_name');
     iosInitializationSettings = IOSInitializationSettings();
     initializationSettings = InitializationSettings(
         androidInitializationSettings, iosInitializationSettings);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings
-        );
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+    initialised = true;
   }
 
-  void _showNotifications(String header, String message) async {
-    await notification(header, message);
+  void showNotifications(String header, String message) async {
+    if(!initialised){
+      print("Dev: Notification initialisation failed.");
+      return;
+    }
+    await _notification(header, message);
   }
 
-  Future<void> notification(String header, String message) async {
+  Future<void> _notification(String header, String message) async {
     AndroidNotificationDetails androidNotificationDetails =
     AndroidNotificationDetails(
         'Channel ID', 'Channel title', 'channel body',
@@ -68,28 +49,35 @@ class _LocalNotificationsState extends State<LocalNotifications> {
         0, header, message, notificationDetails);
   }
 
-  onSelectNotification(String payLoad) {
+  setContext(BuildContext context){
+    _notificationContext = context;
+  }
+
+   Future onSelectNotification(String payLoad) async{
     if (payLoad != null) {
       print(payLoad);
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    _currentPosition = Provider.of<Position>(context);
-
-    // Calls abnormality service
-    if(_currentPosition != null){
-      _abnormalityService.setCurrentLocation(_currentPosition);
-      if(_abnormalityService.suddenStop()){
-        _showNotifications("Warning", "You stopped very quickly!");
-      }
-      if(_abnormalityService.stoppingTooLong()){
-          _showNotifications("Warning", "You haven't moved in a while!");
-      }
-
+    if (report == "long") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportLong');
     }
-
-    return Container();
+    if (report == "sudden") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportSudden');
+    }
+    if (report == "speeding") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportSpeed');
+    }
+    if (report == "slow") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportSpeed');
+    }
+    if (report == "offRoute") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportOff');
+    }
   }
+
 }

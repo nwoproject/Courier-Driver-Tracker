@@ -22,8 +22,6 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import com.ctrlaltelite.courier_driver_tracker.location_service.Common;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -262,13 +260,15 @@ public class BackgroundService extends Service {
         String title = "Courier Tracker";
         String message = "Application is running in the background.";
 
+
+
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
         PendingIntent servicePendingIntent = PendingIntent.getService(this, 0,intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelID)
                 .addAction(R.drawable.ic_baseline_launch_24, "Launch", activityPendingIntent)
                 .addAction(R.drawable.ic_baseline_cancel_24,"Remove",servicePendingIntent)
                 .setContentText(message)

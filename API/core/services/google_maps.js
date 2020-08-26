@@ -42,7 +42,7 @@ router.get('/web', (req, res) => {
     }
     else
     {
-        https.get(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQeury}&inputtype=textquery&fields=formatted_address,photos,name,geometry,place_id&key=${process.env.REACT_APP_GOOGLE_API}`, (resp)=>{
+        https.get(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQeury}&inputtype=textquery&fields=formatted_address,photos,name,geometry,place_id&locationbias=circle:4000000@-25.7614241,28.2679049&key=${process.env.REACT_APP_GOOGLE_API}`, (resp)=>{
             let data = ' ';
             resp.on('data', (chunk) => {
                 data += chunk;
@@ -181,4 +181,5 @@ router.post('/navigation', (req, res) => {
         });
     }
 });
+
 module.exports = router;
