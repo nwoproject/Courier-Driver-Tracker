@@ -339,7 +339,7 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null) {
-      _navigatorService.navigate(_currentPosition);
+      _navigatorService.navigate(_currentPosition, context);
       setInformationVariables();
       if(lockedOnPosition){
         moveToCurrentLocation();

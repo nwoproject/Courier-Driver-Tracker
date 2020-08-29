@@ -22,7 +22,6 @@ class NavigationService {
   LocalNotifications _notificationManager = LocalNotifications();
   AbnormalityService _abnormalityService = AbnormalityService();
   Position _position;
-  bool _doneWithDelivery;
 
   // Map polylines and markers
   Map<String, Polyline> polylines = {};
@@ -142,7 +141,6 @@ class NavigationService {
   }
 
   initialiseInfoVariables(){
-    print("initialising");
     eta = getDeliveryArrivalTime();
     int del = _currentLeg + 1;
     delivery = "Delivery $del";
@@ -420,9 +418,8 @@ class NavigationService {
     }
     else{
       String address = _deliveryRoutes.getDeliveryAddress(_currentRoute, _currentLeg);
-      // cut after second ,
       List<String> temp = address.split(",");
-      address = temp[0] + "," + temp[1];
+      address = temp[0];
       return address;
     }
   }
@@ -516,7 +513,7 @@ class NavigationService {
    * Returns: int
    * Description: Navigation function that implements all the required steps for navigation.
    */
-  navigate(Position currentPosition) {
+  navigate(Position currentPosition, BuildContext context) {
     /*
     - set current location
     - find the current point
@@ -529,6 +526,7 @@ class NavigationService {
 
     _position = currentPosition;
     _abnormalityService.setCurrentLocation(currentPosition);
+    _notificationManager.setContext(context);
 
     // safety checks
     if(currentPolyline == null){
@@ -539,7 +537,6 @@ class NavigationService {
     if( directions == null || distance == null ||
         distanceETA == null || delivery == null || deliveryAddress == null
         || directionIconPath == null){
-      print(directionIconPath);
       initialiseInfoVariables();
     }
 
@@ -548,9 +545,11 @@ class NavigationService {
     if(!atDelivery){
       // check if on the route
       if(!_abnormalityService.offRoute(currentPolyline.points[0], currentPolyline.points[1])){
+        print("On route");
         updateCurrentPolyline();
       }
       else{
+        print("Off route");
         // making sure only one notification gets sent.
         if(!_abnormalityService.getStillOffRoute()){
           _notificationManager.report = "offRoute";
