@@ -111,11 +111,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextSpan(text: "Email:\n", style: labelStyle),
-          TextSpan(text: "example@gmail.com\n\n\n", style: textStyle),
+          TextSpan(text: " u18305980@tuks.co.za \n\n\n", style: textStyle),
           TextSpan(text: "Driver Score:\n", style: labelStyle),
-          TextSpan(text: "212\n\n\n", style: textStyle),
+          TextSpan(text: "0\n\n\n", style: textStyle),
           TextSpan(text: "Routes Completed:\n", style: labelStyle),
-          TextSpan(text: "12", style: textStyle)
+          TextSpan(text: "0", style: textStyle)
         ])),
       ),
     );
