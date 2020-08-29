@@ -18,7 +18,6 @@ class NavigationService {
   int _currentRoute;
   int _currentLeg; // delivery
   int _currentStep; // directions
-  int _stepEndPoint;
   String jsonFile;
   LocalNotifications _notificationManager = LocalNotifications();
   AbnormalityService _abnormalityService = AbnormalityService();
@@ -33,9 +32,7 @@ class NavigationService {
 
   // info variables
   String directions;
-  String stepTimeRemaining;
-  DateTime startTime;
-  DateTime stepTimeStamp;
+  String deliveryTimeRemaining;
   int distance;
   String eta;
   String distanceETA;
@@ -145,12 +142,12 @@ class NavigationService {
   }
 
   initialiseInfoVariables(){
-    startTime = DateTime.now();
+    print("initialising");
     eta = getDeliveryArrivalTime();
     int del = _currentLeg + 1;
     delivery = "Delivery $del";
     directions = getDirection();
-    stepTimeRemaining = getTimeToDelivery();
+    deliveryTimeRemaining = getTimeToDelivery();
     String distance = getDeliveryDistance();
     distanceETA = "$distance . $eta";
     deliveryAddress = getDeliveryAddress();
@@ -169,9 +166,6 @@ class NavigationService {
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline(){
-
-    print(polylines["0-0"].points.length);
-    print(currentPolyline.points.length);
     LatLng positionOnPoly = calculatePointOnPolyline();
 
     // remove previous position from polyline
@@ -196,6 +190,69 @@ class NavigationService {
 
     // re-add current position
     currentPolyline.points.insert(0, positionOnPoly);
+  }
+
+  String updateDistanceRemaining(){
+    int totalDistance = 0;
+
+    for(int i = 0; i < currentPolyline.points.length - 1; i++){
+      totalDistance += calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i + 1]);
+    }
+
+    if(totalDistance > 1000){
+      int km = 0;
+      int  m = (totalDistance/100).round() * 100;
+      while(m > 1000){
+        m -= 1000;
+        km += 1;
+      }
+      m = (m/100).round();
+
+      return "$km,$m km";
+    }
+
+    totalDistance = (totalDistance/10).round() * 10;
+    distance = totalDistance;
+    return "$totalDistance m";
+
+  }
+
+  String updateDistanceETA(){
+    DateTime now = DateTime.now();
+    int totalTime = _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
+    for(int i = 0; i < _currentStep; i++){
+      totalTime -= _deliveryRoutes.getStepDuration(_currentRoute, _currentLeg, i);
+    }
+
+    totalTime = (totalTime/60).ceil();
+    now.add(Duration(minutes: totalTime));
+
+    String distance = updateDistanceRemaining();
+
+    int hours = now.hour;
+    int minutes = now.minute;
+
+    distanceETA = "$distance . $hours:$minutes";
+
+    return distanceETA;
+  }
+
+  String updateDeliveryTimeRemaining(){
+    int totalTime = _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
+    for(int i = 0; i < _currentStep; i++){
+      totalTime -= _deliveryRoutes.getStepDuration(_currentRoute, _currentLeg, i);
+    }
+
+    totalTime = (totalTime/60).ceil();
+
+    deliveryTimeRemaining = "$totalTime min";
+    return deliveryTimeRemaining;
+  }
+
+  String updateDirections(){
+    getDirectionIcon();
+    directions = getDirection();
+    return directions;
   }
 
 
@@ -226,7 +283,7 @@ class NavigationService {
     return _deliveryRoutes.getHTMLInstruction(_currentRoute, _currentLeg, _currentStep);
   }
 
-  getDirectionIcon(){
+  String getDirectionIcon(){
     String path = "assets/images/";
     if(_deliveryRoutes == null){
       path += "navigation_marker";
@@ -254,6 +311,8 @@ class NavigationService {
     //chose color
     path += "_white.png";
     directionIconPath = path;
+
+    return directionIconPath;
 
   } // gets icon to display directions such as right arrow for turn right
 
@@ -312,14 +371,13 @@ class NavigationService {
         hours += 1;
       }
     }
-    minutes += temp;
-    if(stepTimeStamp == null){
-      stepTimeStamp = DateTime.now();
-    }
 
-    stepTimeStamp = stepTimeStamp.add(Duration(hours: hours, minutes: minutes));
-    hours = stepTimeStamp.hour;
-    minutes = stepTimeStamp.minute;
+    DateTime deliveryTimeStamp = DateTime.now();
+    minutes += temp;
+
+    deliveryTimeStamp = deliveryTimeStamp.add(Duration(hours: hours, minutes: minutes));
+    hours = deliveryTimeStamp.hour;
+    minutes = deliveryTimeStamp.minute;
 
     String hourString;
     String minuteString;
@@ -363,15 +421,11 @@ class NavigationService {
     else{
       String address = _deliveryRoutes.getDeliveryAddress(_currentRoute, _currentLeg);
       // cut after second ,
-
+      List<String> temp = address.split(",");
+      address = temp[0] + "," + temp[1];
       return address;
     }
-
   }
-
-
-
-
 
 
   //__________________________________________________________________________________________________
@@ -474,6 +528,7 @@ class NavigationService {
      */
 
     _position = currentPosition;
+    _abnormalityService.setCurrentLocation(currentPosition);
 
     // safety checks
     if(currentPolyline == null){
@@ -481,17 +536,69 @@ class NavigationService {
       // uncomment when not using replacement functions from abnormality service
       //_abnormalityService.getSpeedLimit(currentPolyline.points);
     }
-    if(directions == null || eta == null || distance == null ||
-        distanceETA == null || stepTimeStamp == null ||
-        stepTimeRemaining == null || delivery == null || deliveryAddress == null){
+    if( directions == null || distance == null ||
+        distanceETA == null || delivery == null || deliveryAddress == null
+        || directionIconPath == null){
+      print(directionIconPath);
       initialiseInfoVariables();
     }
 
 
+    // if the driver is not at a delivery point
+    if(!atDelivery){
+      // check if on the route
+      if(!_abnormalityService.offRoute(currentPolyline.points[0], currentPolyline.points[1])){
+        updateCurrentPolyline();
+      }
+      else{
+        // making sure only one notification gets sent.
+        if(!_abnormalityService.getStillOffRoute()){
+          _notificationManager.report = "offRoute";
+          _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
+        }
+        //start marking the route he followed.
+      }
+
+      if(_abnormalityService.stoppingTooLong()){
+        _notificationManager.report = "long";
+        _notificationManager.showNotifications(_abnormalityHeaders["stopping_too_long"], _abnormalityMessages["stopping_too_long"]);
+      }
+
+      /*
+       Temp functions being called to be replaced before actual deployment.
+       For more information about this see the AbnormalityService class as well
+       as the
+     */
+      if(_abnormalityService.drivingTooSlowTemp()){
+        _notificationManager.report = "slow";
+        //_notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
+      }
+      //update info
+      updateDistanceETA();
+      updateDeliveryTimeRemaining();
+      updateDistanceRemaining();
+      updateDirections();
+    }
+    else{
+      // if the driver is at a delivery point
 
 
-    updateCurrentPolyline();
+    }
 
+    // General abnormalities
+    if(_abnormalityService.suddenStop()){
+      _notificationManager.report = "sudden";
+      _notificationManager.showNotifications(_abnormalityHeaders["sudden_stop"], _abnormalityMessages["sudden_stop"]);
+    }
+    /*
+    Temp functions being called to be replaced before actual deployment.
+    For more information about this see the AbnormalityService class as well
+    as the
+    */
+    if(_abnormalityService.isSpeedingTemp()){
+      _notificationManager.report = "speeding";
+      _notificationManager..showNotifications(_abnormalityHeaders["speeding"], _abnormalityMessages["speeding"]);
+    }
   }
 
 }
