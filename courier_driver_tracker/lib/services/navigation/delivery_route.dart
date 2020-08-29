@@ -32,11 +32,11 @@ class DeliveryRoute{
     return routes[deliveryRoute].getManeuver(leg, step);
   }
 
-  int getDuration(int deliveryRoute, int leg, int step){
+  int getStepDuration(int deliveryRoute, int leg, int step){
     return routes[deliveryRoute].getDuration(leg, step);
   }
 
-  int getDistance(int deliveryRoute, int leg, int step){
+  int getStepDistance(int deliveryRoute, int leg, int step){
     return routes[deliveryRoute].getDistance(leg, step);
   }
 

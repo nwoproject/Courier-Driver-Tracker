@@ -1,7 +1,7 @@
 import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:courier_driver_tracker/services/location/route_logging.dart';
-import 'package:courier_driver_tracker/services/navigation/navigator_service.dart';
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -49,7 +49,7 @@ class MapSampleState extends State<GMap> {
   // Navigation
   int _route;
   static String _routeFile = "route.json";
-  NavigatorService _navigatorService = NavigatorService(jsonFile: _routeFile);
+  NavigationService _navigatorService = NavigationService(jsonFile: _routeFile);
   String _directions = "LOADING...";
   String _stepTimeRemaining = "LOADING...";
   String _distanceETA = "";
@@ -102,7 +102,9 @@ class MapSampleState extends State<GMap> {
    */
   getCurrentLocation() async {
     _currentPosition = await _geolocatorService.getPosition();
-    moveToCurrentLocation();
+    if(_currentPosition != null){
+      moveToCurrentLocation();
+    }
   }
 
   getCurrentRoute(){
@@ -293,19 +295,19 @@ class MapSampleState extends State<GMap> {
   }
 
   setInformationVariables(){
-    if(_navigatorService.directions != null){
+    if(_directions == "LOADING..." && _navigatorService.directions != null){
       _directions = _navigatorService.directions;
     }
-    if(_navigatorService.stepTimeRemaining != null){
+    if(_stepTimeRemaining == "LOADING..." && _navigatorService.stepTimeRemaining != null){
       _stepTimeRemaining = _navigatorService.stepTimeRemaining;
     }
-    if(_navigatorService.distanceETA != null){
+    if(_distanceETA == "" && _navigatorService.distanceETA != null){
       _distanceETA = _navigatorService.distanceETA;
     }
-    if(_navigatorService.delivery != null){
+    if(_delivery == "LOADING..." && _navigatorService.delivery != null){
       _delivery = _navigatorService.delivery;
     }
-    if(_navigatorService.deliveryAddress != null){
+    if(_deliveryAddress == "" && _navigatorService.deliveryAddress != null){
       _deliveryAddress = _navigatorService.deliveryAddress;
     }
     if(_navigatorService.directionIconPath != null){
@@ -323,7 +325,7 @@ class MapSampleState extends State<GMap> {
     /*TODO
       - make new function to replace polylines.
      */
-    await _navigatorService.setInitialPolyPointsAndMarkers(_route);
+    await _navigatorService.initialisePolyPointsAndMarkers(_route);
     polylines = _navigatorService.polylines;
     markers = _navigatorService.markers;
   }
@@ -332,32 +334,13 @@ class MapSampleState extends State<GMap> {
   Widget build(BuildContext context) {
     // Stream of Position objects of current location.
     _currentPosition = Provider.of<Position>(context);
-    _navigatorService.setNotificationContext(context);
     var html = """<h3 style='color:white;'>$_directions</h3>""";
     double fontSize = MediaQuery.of(context).size.height * 0.027;
 
     // Calls abnormality service
-    if (_currentPosition != null) {
+    if(_currentPosition != null) {
       _navigatorService.navigate(_currentPosition);
-      _routeLogging.writeToFile(
-          _geolocatorService.convertPositionToString(_currentPosition) + "\n",
-          "locationFile");
       setInformationVariables();
-      if(_directions.length == 0 || _directions == "LOADING..."){
-        setInformationVariables();
-      }
-      if(_delivery.length == 0 || _directions == "LOADING..."){
-        setInformationVariables();
-      }
-      if(_stepTimeRemaining.length == 0 || _directions == "LOADING..."){
-        setInformationVariables();
-      }
-      if(_distanceETA.length == 0){
-        setInformationVariables();
-      }
-      if(_deliveryAddress.length == 0){
-        setInformationVariables();
-      }
       if(lockedOnPosition){
         moveToCurrentLocation();
       }
@@ -538,6 +521,7 @@ class MapSampleState extends State<GMap> {
                                     _currentPosition != null
                                         ? moveToCurrentLocation()
                                         : getCurrentLocation();
+                                    lockedOnPosition = true;
                                   },
                                 ),
                               ),
@@ -565,6 +549,7 @@ class MapSampleState extends State<GMap> {
                                     _currentPosition != null
                                         ? showEntireRoute()
                                         : getCurrentLocation();
+                                    lockedOnPosition = false;
                                   },
                                 ),
                               ),

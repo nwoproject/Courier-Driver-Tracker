@@ -19,7 +19,6 @@ class NavigatorService{
   int _currentLeg; // delivery
   int _currentStep; // directions
   int _currentPoint; // point on the polyline
-  int _stepStartPoint;
   int _stepEndPoint;
   String jsonFile;
   LocalNotifications _notificationManager = LocalNotifications();
@@ -30,10 +29,8 @@ class NavigatorService{
   // Map polylines and markers
   Map<String, Polyline> polylines = {};
   Polyline currentPolyline;
-
-  //Polyline splitPolylineAfter;
-  //List<LatLng> splitPolylineCoordinatesAfter;
   Set<Marker> markers = {};
+  bool atDelivery = false;
 
   // info variables
   String directions;
@@ -112,24 +109,24 @@ class NavigatorService{
       getDirectionIcon();
     }
     // find where in the delivery the driver is.
-    findCurrentPoint();
     LatLng current = currentPolyline.points[_currentPoint];
     LatLng next;
-    if(_currentPoint < currentPolyline.points.length -1){
+    if(!atDelivery && _currentPoint < currentPolyline.points.length -2){
       next = currentPolyline.points[_currentPoint + 1];
     }
-    else if(_currentPoint == currentPolyline.points.length - 1 && _currentLeg < _deliveryRoutes.routes[_currentRoute].legs.length - 1){
-      int nextLeg = _currentLeg + 1;
-      next = getPolyline("$_currentRoute-$nextLeg").points[0];
-    }
     else{
-      current = currentPolyline.points[_currentPoint - 1];
-      next = currentPolyline.points[_currentPoint];
+      current = currentPolyline.points[0];
+      next = currentPolyline.points[currentPolyline.points.length - 1];
     }
 
-    if(_stepStartPoint == null || _stepEndPoint == null ){
-      findStepStartPoint();
-      findStepEndPoint();
+    // steps for directions
+    /*
+    TODO
+      - change to only find when to show next direction.
+      - special case for first
+     */
+    if(_stepEndPoint == null ){
+      findNextStep();
     }
     if(_currentPoint == 0){
       directions = getDirection();
@@ -263,41 +260,9 @@ class NavigatorService{
   //                            Update functions
   //__________________________________________________________________________________________________
 
-  /*
-   * Parameters: none
-   * Returns: none
-   * Description: Determines the point within the step where the driver is at.
-   *              Used to split the polyline for UI purposes.
-   */
-  findCurrentPoint(){
-    for(int i = 0; i < currentPolyline.points.length -1; i++){
-      double d1 = sqrt(pow((_position.latitude - currentPolyline.points[i].latitude),2) + pow(_position.longitude - currentPolyline.points[i].longitude,2));
-      double d2 = sqrt(pow((currentPolyline.points[i+1].latitude - currentPolyline.points[i].latitude),2) + pow(currentPolyline.points[i+1].longitude - currentPolyline.points[i].longitude,2));
-
-      if(d1 < d2){
-        _currentPoint = i;
-        return;
-      }
-    }
-    _currentPoint = currentPolyline.points.length;
-  }
-
-  findStepStartPoint(){
-    LatLng start = LatLng(_deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].startLocation.lat,
-        _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].startLocation.lng);
-    print(start);
-    for(int i = 0; i < currentPolyline.points.length; i++){
-      if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
-        _stepStartPoint = i;
-        return;
-      }
-    }
-  }
-
-  findStepEndPoint(){
+  findNextStep(){
     LatLng start = LatLng(_deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].endLocation.lat,
         _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps[_currentStep].endLocation.lng);
-    print(start);
     for(int i = 0; i < currentPolyline.points.length; i++){
       if(calculateDistanceBetween(start, currentPolyline.points[i]) < 1){
         _stepEndPoint = i;
@@ -317,8 +282,7 @@ class NavigatorService{
     }
     else{
       _currentStep += 1;
-      findStepStartPoint();
-      findStepEndPoint();
+      findNextStep();
 
       //Setinfo variables
       directions = getDirection();
@@ -339,8 +303,7 @@ class NavigatorService{
       _currentLeg += 1;
 
       _currentStep = 0;
-      findStepStartPoint();
-      findStepEndPoint();
+      findNextStep();
 
       updatePreviousLegPolyline();
       setCurrentPolyline();
@@ -362,7 +325,16 @@ class NavigatorService{
   updateCurrentPolyline(){
     // remove previous position from polyline
     currentPolyline.points.removeAt(0);
-    int newLength = currentPolyline.points.length - _currentPoint;
+
+    int newLength = 0;
+    for(int i = 0; i < currentPolyline.points.length - 2; i ++){
+      int dist1 = calculateDistanceBetween(LatLng(_position.latitude, _position.longitude), currentPolyline.points[i]);
+      int dist2 = calculateDistanceBetween(LatLng(_position.latitude, _position.longitude), currentPolyline.points[i]);
+      if(dist2 < dist1){
+        newLength = i;
+      }
+    }
+
 
     print("Current Polyline: " + currentPolyline.points.length.toString());
     print("Current point: " + _currentPoint.toString());
@@ -374,7 +346,12 @@ class NavigatorService{
     print("Current Polyline: " + currentPolyline.points.length.toString());
     print("Current point: " + _currentPoint.toString());
 
+    currentPolyline.points.forEach((element) {
+      print(element.toString());
+    });
+
     currentPolyline.points.insert(0, getPointOnPolyline());
+    _currentPoint = 0;
   }
 
   /*
@@ -561,10 +538,6 @@ class NavigatorService{
     return _currentStep;
   }
 
-  int getStepStartPoint(){
-    return _stepStartPoint;
-  }
-
   int getStepEndPoint(){
     return _stepEndPoint;
   }
@@ -679,14 +652,14 @@ class NavigatorService{
     if(_deliveryRoutes == null){
       return null;
     }
-    return _deliveryRoutes.getDuration(_currentRoute, _currentLeg, _currentStep);
+    return _deliveryRoutes.getStepDuration(_currentRoute, _currentLeg, _currentStep);
   } // gets arrival time
 
   int getDistance(){
     if(_deliveryRoutes == null){
       return null;
     }
-    return _deliveryRoutes.getDistance(_currentRoute, _currentLeg, _currentStep);
+    return _deliveryRoutes.getStepDistance(_currentRoute, _currentLeg, _currentStep);
   }
 
   int getDeliveryArrivalTime(){
@@ -731,21 +704,9 @@ class NavigatorService{
     if(currentPolyline == null){
       return null;
     }
+
     LatLng start = currentPolyline.points[_currentPoint];
-    LatLng end;
-    if(_currentStep == _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1){
-      if(_currentLeg == _deliveryRoutes.routes[_currentRoute].legs.length - 1){
-        int next = _currentLeg + 1;
-        end = getPolyline("$_currentRoute-$next-0").points[0];
-      }
-      else{
-        int next = _currentStep + 1;
-        end = getPolyline("$_currentRoute-$_currentLeg-$next").points[0];
-      }
-    }
-    else{
-      end = currentPolyline.points[_currentPoint + 1];
-    }
+    LatLng end = currentPolyline.points[_currentPoint + 1];
 
     // work out perpendicular intersect of line between polyline points and line that goes through current position.
     double m = (end.longitude - start.longitude)/(end.latitude - start.latitude);

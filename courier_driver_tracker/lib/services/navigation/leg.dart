@@ -28,11 +28,11 @@ class Leg{
     return steps[step].getManeuver();
   }
 
-  int getDuration(int step){
+  int getStepDuration(int step){
     return steps[step].getDuration();
   }
 
-  int getDistance(int step){
+  int getStepDistance(int step){
     return steps[step].getDistance();
   }
 
