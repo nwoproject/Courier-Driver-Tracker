@@ -1,16 +1,16 @@
-import 'package:courier_driver_tracker/screens/deliveryScreen.dart';
-import 'package:courier_driver_tracker/screens/suddenStop.dart';
+import 'package:courier_driver_tracker/screens/delivery_screen.dart';
+import 'package:courier_driver_tracker/screens/sudden_stop.dart';
 import 'package:flutter/material.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
 import 'screens/splash_screen.dart';
 import 'screens/profile.dart';
 import 'screens/settings.dart';
-import 'screens/longStop.dart';
-import 'screens/suddenStop.dart';
-import 'screens/offRoute.dart';
-import 'screens/companyCar.dart';
-import 'screens/speedExceeded.dart';
+import 'screens/long_stop.dart';
+import 'screens/sudden_stop.dart';
+import 'screens/off_route.dart';
+import 'screens/company_car.dart';
+import 'screens/speed_exceeded.dart';
 
 class Router {
   static Route<dynamic> generateRoute(RouteSettings settings) {
