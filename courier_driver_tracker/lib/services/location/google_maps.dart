@@ -23,6 +23,7 @@ class MapSampleState extends State<GMap> {
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
   Set<Marker> markers = {};
+  Set<Circle>  circles = {};
   List<LatLng> polylineCoordinates = [];
   Map<String, Polyline> polylines = {};
   bool lockedOnPosition = true;
@@ -468,6 +469,7 @@ class MapSampleState extends State<GMap> {
                           initialCameraPosition: _initialLocation,
                           markers: markers != null ? Set<Marker>.from(markers) : null,
                           polylines: Set<Polyline>.of(polylines.values),
+                          circles: circles != null ? Set<Circle>.from(circles) : null,
                           myLocationEnabled: true,
                           myLocationButtonEnabled: false,
                           mapType: MapType.normal,

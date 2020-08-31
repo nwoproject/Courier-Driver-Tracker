@@ -27,6 +27,7 @@ class NavigationService {
   Map<String, Polyline> polylines = {};
   Polyline currentPolyline;
   Set<Marker> markers = {};
+  Set<Circle> circles = {};
   bool atDelivery = false;
 
   // info variables
@@ -152,6 +153,15 @@ class NavigationService {
     directionIconPath = getDirectionIcon();
   }
 
+  initialiseDeliveryCircle(){
+    Circle deliveryCircle = Circle(
+      circleId: CircleId("$_currentRoute-$_currentLeg"),
+      center: currentPolyline.points.last,
+      fillColor: Colors.green[100],
+    );
+    circles.add(deliveryCircle);
+  }
+
 
   //__________________________________________________________________________________________________
   //                            Updates
@@ -176,13 +186,20 @@ class NavigationService {
       int dist2 = calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i + 1]);
       if(dist2 > dist1){
         newLength = i + 1;
-        _currentStep += 1;
       }
     }
 
     // remove any previous points
     newLength = currentPolyline.points.length - newLength;
     while(currentPolyline.points.length > 0 && currentPolyline.points.length > newLength){
+      if(_currentStep + 1 <= _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1
+          && calculateDistanceBetween(currentPolyline.points[1], getStepStartLatLng(_currentRoute, _currentLeg, _currentStep + 1)) < 1){
+        _currentStep += 1;
+      }
+      else if(_currentStep - 1 >= 0 && _currentStep + 1 <= _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1 &&
+          (calculateDistanceBetween(currentPolyline.points[0], getStepEndLatLng(_currentRoute, _currentLeg, _currentStep - 1)) < 1)){
+        _currentStep += 1;
+      }
       currentPolyline.points.removeAt(0);
     }
 
@@ -286,6 +303,8 @@ class NavigationService {
     if(_deliveryRoutes == null){
       path += "navigation_marker";
     }
+    print(currentPolyline.points.length);
+    print(_currentStep);
 
     String direction = _deliveryRoutes.getManeuver(_currentRoute, _currentLeg, _currentStep);
 
@@ -424,6 +443,14 @@ class NavigationService {
     }
   }
 
+  LatLng getStepStartLatLng(int route, int leg, int step){
+    return _deliveryRoutes.getStepStartLatLng(route, leg, step);
+  }
+
+  LatLng getStepEndLatLng(int route, int leg, int step){
+    return _deliveryRoutes.getStepEndLatLng(route, leg, step);
+  }
+
 
   //__________________________________________________________________________________________________
   //                            Calculation functions
@@ -505,6 +532,39 @@ class NavigationService {
 
 
   //__________________________________________________________________________________________________
+  //                            Delivery management
+  //__________________________________________________________________________________________________
+
+  bool isNearDelivery(){
+    if(currentPolyline.points.length == 2){
+      int dist = calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points[1]);
+      if(dist < 100){
+        atDelivery = true;
+      }
+      atDelivery = false;
+    }
+    else{
+      atDelivery = false;
+    }
+    showDeliveryRadiusOnMap();
+    return atDelivery;
+  }
+
+  showDeliveryRadiusOnMap(){
+    if(atDelivery){
+      initialiseDeliveryCircle();
+    }
+    else{
+      if(circles.length > 0){
+        circles.removeAll(circles);
+      }
+    }
+  }
+
+
+
+
+  //__________________________________________________________________________________________________
   //                            Main Function
   //__________________________________________________________________________________________________
 
@@ -540,16 +600,26 @@ class NavigationService {
       initialiseInfoVariables();
     }
 
+    if(currentPolyline.points.length < 4){
+      isNearDelivery();
+    }
+
 
     // if the driver is not at a delivery point
     if(!atDelivery){
       // check if on the route
-      if(!_abnormalityService.offRoute(currentPolyline.points[0], currentPolyline.points[1])){
-        print("On route");
+      bool onRoute = false;
+      for(int i = 0; i < currentPolyline.points.length - 1; i++){
+        if(!_abnormalityService.offRoute(currentPolyline.points[i], currentPolyline.points[i+1])){
+          onRoute = true;
+          break;
+        }
+      }
+
+      if(onRoute){
         updateCurrentPolyline();
       }
       else{
-        print("Off route");
         // making sure only one notification gets sent.
         if(!_abnormalityService.getStillOffRoute()){
           _notificationManager.report = "offRoute";
@@ -580,6 +650,11 @@ class NavigationService {
     }
     else{
       // if the driver is at a delivery point
+      /*
+      TODO
+        - make abnormalities for when at destination
+       */
+
 
 
     }
