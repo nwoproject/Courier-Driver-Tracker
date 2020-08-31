@@ -38,7 +38,11 @@ The following header field should be present in each request: `Authorization: Be
         6.2     [Calculate route](#calculate-route)  
 7.  [Abnormality Endpoints](#abnormality-ednpoints)  
         7.1     [Log driver abnormality](#log-driver-abnormality)  
-        7.2     [Get all driver abnormalities](#get-all-driver-abnormalities)  
+        7.2     [Get all driver abnormalities](#get-all-driver-abnormalities)
+8.  [Reporting Endpoints](#reporting-endpoints)
+        8.1     [Get all Drivers](#getDrivers)
+        8.2     [Get all abnormalities](getAbnormalities)
+        8.3     [Get all Deliveries](getDeliveries)
 
 # Endpoint Summary
 
@@ -1069,4 +1073,258 @@ This request expects no body.
 |-------------|-------------|
 | `200` | All logged abnormalities of driver returned |
 | `204` | Request executed successfully, but driver either has no logged abnormalities or doesn't exist. No request body returned | 
+| `500` | Server error |
+
+## Reporting Endpoints
+
+## Get all Drivers
+This endpoint will return a JSON object with all the Drivers.
+
+##### Http Request
+`GET /api/reports/drivers`
+
+##### Request Body
+This request does not expect a Body
+
+##### Response Body
+```json
+{
+    "drivers":[
+        {
+            "id" : 1,
+            "name": "Darth",
+            "surname": "Vader" 
+        },
+        {
+            "id" : 2,
+            "name": "Luke",
+            "surname": "Skywalker" 
+        },
+        {
+            "id" : 3,
+            "name": "Han",
+            "surname": "Solo" 
+        },
+        {
+            "id" : 4,
+            "name": "Leia",
+            "surname": "Organa" 
+        } 
+    ]
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | All drivers returned |
+| `404` | No Drivers were found| 
+| `500` | Server error |
+
+## Get all Abnormalities
+This endpoint will return a JSON object with all the Abnormalities.
+
+##### Http Request
+`GET /api/reports/abnormality/:time`
+
+##### Request Body
+This request does not expect a Body, but you must spesify in the request if you want the past week or months abnormalities. This is done by stating either week or month in the URL. 
+
+##### Response Body
+```json
+{
+    "abnormalities" : 
+        {
+            "types":[
+                {
+                    "code" : 100,
+                    "description" : "Standing Still for too long",
+                    "Cases":[
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.74",
+                            "longitude": "28.74",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 5,
+                            "latitude" : "-25.75",
+                            "longitude": "28.766",
+                            "timestamp" :"2020-08-12 09:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 101,
+                    "description" : "Driver came to a Sudden Stop",
+                    "Cases":[
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.74",
+                            "longitude": "28.74",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 102,
+                    "description" : "Driver exceeded the speed limit",
+                    "Cases":[
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.740001",
+                            "longitude": "28.7400001",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 1,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 103,
+                    "description" : "Driver took a diffrent route than what prescribed.",
+                    "Cases":[
+                        {
+                            "driver_id" : 8,
+                            "latitude" : "-25.74",
+                            "longitude": "28.74",
+                            "timestamp" :"2020-08-11 09:00:00"
+                        },
+                        {
+                            "driver_id" : 2,
+                            "latitude" : "-25.75",
+                            "longitude": "28.740002",
+                            "timestamp" :"2020-08-11 10:00:00"
+                        }
+                    ]
+                },
+                {
+                    "code" : 104,
+                    "description" : "Driver was driving with the company car when no deliveries were scheduled.",
+                    "Cases":[
+                    ]
+                }
+            ]
+        }  
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Query ran and all abnormalities have been returned |
+| `204` | Query ran, but no abnormalities were detected |
+| `400` | No time parameter was spesified of the spesefied parameter is inccorect | 
+| `500` | Server error |
+
+## Get all Deliveries
+This endpoint will return a JSON object with all the Deliveries.
+
+##### Http Request
+`GET /api/reports/abnormality/:time`
+
+##### Request Body
+This request does not expect a Body, but you must spesify in the request if you want the past week or months deliveries. This is done by stating either week or month in the URL. 
+
+##### Response Body
+```json
+{
+    "deliveries":[
+        {
+            "driver_id" : 5,
+            "routes":[
+                {
+                    "route_id":1,
+                    "location":[
+                        {
+                            "location_id":23,
+                            "time_expected":"2020-08-11 09:00:00",
+                            "time_completed":"2020-08-11 9:30:00"
+                        },
+                        {
+                            "location_id":24,
+                            "time_expected":"2020-08-11 10:00:00",
+                            "time_completed":"2020-08-11 10:30:00"
+                        },
+                        {
+                            "location_id":25,
+                            "time_expected":"2020-08-11 11:00:00",
+                            "time_completed":null
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "driver_id" : 1,
+            "routes":[
+                {
+                    "route_id":66,
+                    "location":[
+                        {
+                            "location_id":501,
+                            "time_expected":"2020-08-11 09:00:00",
+                            "time_completed":"2020-08-11 09:00:00"
+                        },
+                        {
+                            "location_id":502,
+                            "time_expected":"2020-08-11 10:00:00",
+                            "time_completed":"2020-08-11 10:00:00"
+                        },
+                        {
+                            "location_id":503,
+                            "time_expected":"2020-08-11 11:00:00",
+                            "time_completed":"2020-08-11 11:00:00"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "driver_id" : 6,
+            "routes":[
+                {
+                    "route_id":1,
+                    "location":[
+                        {
+                            "location_id":23,
+                            "time_expected":"2020-08-11 09:00:00",
+                            "time_completed":"2020-08-11 9:30:00"
+                        },
+                        {
+                            "location_id":24,
+                            "time_expected":"2020-08-11 10:00:00",
+                            "time_completed":"2020-08-11 10:30:00"
+                        },
+                        {
+                            "location_id":25,
+                            "time_expected":"2020-08-11 11:00:00",
+                            "time_completed":"2020-08-11 12:00:00"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Query ran and all deliveries have been returned |
+| `400` | No time parameter was spesified of the spesefied parameter is inccorect | 
 | `500` | Server error |

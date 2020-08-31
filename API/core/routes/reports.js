@@ -9,7 +9,7 @@ router.get('/drivers', (req, res) => {
         if (err) {
             DB.dbErrorHandler(res, err);
         } else {
-            if (result.rows[0] == 0) {
+            if (result.rows[0] == 0||result.rowCount==0) {
                 res.status(404).end();
             } else {
                 let DriverArr = { "drivers": [] };
@@ -22,7 +22,7 @@ router.get('/drivers', (req, res) => {
     });
 });
 
-// GET /api/reports/:time
+// GET /api/reports/abnormality/:time
 router.get('/abnormality/:time',(req, res)=>{
     if(!req.params.time){
         res.status(400).end(); 
