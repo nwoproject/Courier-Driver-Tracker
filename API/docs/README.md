@@ -38,11 +38,11 @@ The following header field should be present in each request: `Authorization: Be
         6.2     [Calculate route](#calculate-route)  
 7.  [Abnormality Endpoints](#abnormality-ednpoints)  
         7.1     [Log driver abnormality](#log-driver-abnormality)  
-        7.2     [Get all driver abnormalities](#get-all-driver-abnormalities)
-8.  [Reporting Endpoints](#reporting-endpoints)
-        8.1     [Get all Drivers](#getDrivers)
-        8.2     [Get all abnormalities](getAbnormalities)
-        8.3     [Get all Deliveries](getDeliveries)
+        7.2     [Get all driver abnormalities](#get-all-driver-abnormalities)  
+8.  [Reporting Endpoints](#reporting-endpoints)  
+        8.1     [Get all Drivers](#getDrivers)  
+        8.2     [Get all abnormalities](getAbnormalities)  
+        8.3     [Get all Deliveries](getDeliveries)  
 
 # Endpoint Summary
 
@@ -1233,7 +1233,7 @@ This request does not expect a Body, but you must spesify in the request if you 
 This endpoint will return a JSON object with all the Deliveries.
 
 ##### Http Request
-`GET /api/reports/abnormality/:time`
+`GET /api/reports/locations/:time`
 
 ##### Request Body
 This request does not expect a Body, but you must spesify in the request if you want the past week or months deliveries. This is done by stating either week or month in the URL. 

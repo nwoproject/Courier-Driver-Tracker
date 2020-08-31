@@ -26,12 +26,154 @@ function SendReport(props){
     const [MostAbnot, setMA] = useState([]);
     const [MostMissed, setMMiss] = useState([]);
     const [LeastAbb, setLA] = useState([]);
+    const [Time, setT] = useState(true);
 
     useEffect(()=>{
         let tempNum = 0;
         let DriverItem = MockDrivers.drivers;
         let Deliveries = MockDeliveries.deliveries;
-        let AbnormalityFrequency = [];
+        let AbnormalityArr = MockAbnormalities.abnormalities;
+        fetch(process.env.REACT_APP_API_SERVER+"/api/reports/drivers",{
+            method: 'GET',
+            headers:{
+                'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                'Content-Type' : 'application/json'    
+            }
+        })
+        .then(response=>response.json())
+        .then(result=>{
+            DriverItem = result.drivers;
+            console.log(DriverItem);
+            let TimeVar = "week";
+            if(Time===false){
+                TimeVar="month";
+            }
+            let URL = process.env.REACT_APP_API_SERVER+"/api/reports/locations/"+TimeVar;
+            fetch(URL,{
+                method: 'GET',
+                headers:{
+                    'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                    'Content-Type' : 'application/json'    
+                }    
+            })
+            .then(response=>response.json())
+            .then(result=>{
+                Deliveries = result;
+                URL = process.env.REACT_APP_API_SERVER+"/api/reports/abnormality/"+TimeVar;
+                fetch(URL,{
+                    method: 'GET',
+                    headers:{
+                        'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                        'Content-Type' : 'application/json'    
+                    }    
+                })
+                .then(response=>response.json())
+                .then(result=>{
+                    AbnormalityArr = result;
+                    //======================================================================================================================
+                    let AbnormalityFrequency = [];
+                    let DeliveryCount = 0;
+                    let DeliveryComplete = 0;
+                    let DeliveryMissed = 0;
+                    let LateDeliveries = 0;
+                    DriverItem.map(item=>{
+                        item.AbnormalityCount = 0;
+                        item.DeliveryMade = 0;
+                        item.DeliverMissed = 0;
+                        item.DeliveryLate = 0;
+                    });
+                    AbnormalityArr.types.map((item, index)=>{
+                        let Abnormal = {};
+                        Abnormal.Desc = item.description;
+                        Abnormal.Count = item.Cases.length;
+                        AbnormalityFrequency[index] = Abnormal;
+                        tempNum += item.Cases.length;
+                        item.Cases.map(item=>{
+                            let aDriver = DriverItem.findIndex(element=>element.id===item.driver_id);
+                            DriverItem[aDriver].AbnormalityCount = DriverItem[aDriver].AbnormalityCount + 1;
+                        });
+                    });
+                    Deliveries.map(item=>{
+                        let RouteDriver = DriverItem.findIndex(element=>element.id===item.driver_id);
+                        item.routes.map(item=>{
+                            DeliveryCount += item.location.length;
+                            item.location.map(item=>{
+                                if(item.time_completed!==null){
+                                    DeliveryComplete = DeliveryComplete + 1;
+                                    DriverItem[RouteDriver].DeliveryMade = DriverItem[RouteDriver].DeliveryMade + 1;
+                                    if(item.time_completed>item.time_expected){
+                                        LateDeliveries++;
+                                        DriverItem[RouteDriver].DeliveryLate = DriverItem[RouteDriver].DeliveryLate + 1;    
+                                    }
+                                }
+                                else{
+                                    DeliveryMissed = DeliveryMissed + 1;
+                                    DriverItem[RouteDriver].DeliverMissed = DriverItem[RouteDriver].DeliverMissed + 1;
+                                }
+                            })
+                        });
+                    });
+                    Deliveries.Count = DeliveryCount;
+                    Deliveries.Made = DeliveryComplete;
+                    Deliveries.Missed = DeliveryMissed;
+                    Deliveries.Late = LateDeliveries;
+                    setANP(tempNum);
+                    setAAC(AbnormalityFrequency);
+                    setDA(DriverItem);
+                    //====================================================================================================================
+                        DriverItem.sort((a,b)=>{
+                            return b.AbnormalityCount - a.AbnormalityCount;
+                        });
+                        let tempArr = [];;
+                        let index = 0;
+                        tempArr[index] = DriverItem[0];
+                        while(tempArr[index].AbnormalityCount===DriverItem[index+1].AbnormalityCount){
+                            tempArr[index+1]=DriverItem[index+1];
+                            index++;
+                        }
+                        setMA(tempArr);
+                        tempArr=[];
+                        index=DriverItem.length-1;
+                        let rIndex = 0;
+                        tempArr[rIndex] = DriverItem[index];
+                        while(tempArr[rIndex].AbnormalityCount===DriverItem[index-1].AbnormalityCount){
+                            tempArr[rIndex+1] = DriverItem[index-1];
+                            rIndex++;
+                            index--;
+                        }
+                        setLA(tempArr);
+                        tempArr = [];
+                        index=0;
+                        DriverItem.sort((a,b)=>{
+                            return b.DeliveryMade - a.DeliveryMade;
+                        });
+                        tempArr[index] = DriverItem[index];
+                        while(tempArr[index].DeliveryMade===DriverItem[index+1].DeliveryMade){
+                            tempArr[index+1]=DriverItem[index+1];
+                            index++;
+                        }
+                        setMM(tempArr);
+                        tempArr=[];
+                        index=0;
+                        DriverItem.sort((a,b)=>{
+                            return b.DeliverMissed - a.DeliverMissed;
+                        });
+                        tempArr[index] = DriverItem[index];
+                        while(tempArr[index].DeliverMissed===DriverItem[index+1].DeliverMissed){
+                            tempArr[index+1]=DriverItem[index+1];
+                            index++;
+                        }
+                        setMMiss(tempArr);
+                    //====================================================================================================================
+                    DriverItem.sort((a,b)=>{
+                        return b.AbnormalityCount - a.AbnormalityCount;
+                    });
+                    setDlA(Deliveries);
+                    //======================================================================================================================
+                });
+            });
+        });
+        /*let AbnormalityFrequency = [];
         let DeliveryCount = 0;
         let DeliveryComplete = 0;
         let DeliveryMissed = 0;
@@ -42,7 +184,7 @@ function SendReport(props){
             item.DeliverMissed = 0;
             item.DeliveryLate = 0;
         });
-        MockAbnormalities.abnormalities.types.map((item, index)=>{
+        AbnormalityArr.types.map((item, index)=>{
             let Abnormal = {};
             Abnormal.Desc = item.description;
             Abnormal.Count = item.Cases.length;
@@ -128,7 +270,7 @@ function SendReport(props){
         DriverItem.sort((a,b)=>{
             return b.AbnormalityCount - a.AbnormalityCount;
         });
-        setDlA(Deliveries);
+        setDlA(Deliveries);*/
     },[])
 
     function sortDriversByAb(){
@@ -198,11 +340,17 @@ function SendReport(props){
         }
     }
 
+    function hanleChange(event){
+        if(event.target.name==="TimeButton"){
+            setT(!Time);
+        }
+    }
+
     return(
         <Card>
             <Card.Header>Full Reports</Card.Header>
             <Card.Body>
-                <Alert variant="info">This is a Mockup of a report. All the Data used has been imported from Mock json files.</Alert>
+                <Button name="TimeButton" onClick={hanleChange}>{Time ? "Swap to Montly View":"Swap to Weekly View"}</Button><br /><br />
                 <Row>
                     <Card className="ReportCard">
                         <Card.Header>Abnormalities</Card.Header>
