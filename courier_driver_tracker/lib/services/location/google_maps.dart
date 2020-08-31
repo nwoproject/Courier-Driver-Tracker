@@ -295,19 +295,19 @@ class MapSampleState extends State<GMap> {
   }
 
   setInformationVariables(){
-    if(_directions == "LOADING..." && _navigatorService.directions != null){
+    if(_navigatorService.directions != null){
       _directions = _navigatorService.directions;
     }
-    if(_stepTimeRemaining == "LOADING..." && _navigatorService.stepTimeRemaining != null){
-      _stepTimeRemaining = _navigatorService.stepTimeRemaining;
+    if(_navigatorService.deliveryTimeRemaining != null){
+      _stepTimeRemaining = _navigatorService.deliveryTimeRemaining;
     }
-    if(_distanceETA == "" && _navigatorService.distanceETA != null){
+    if(_navigatorService.distanceETA != null){
       _distanceETA = _navigatorService.distanceETA;
     }
-    if(_delivery == "LOADING..." && _navigatorService.delivery != null){
+    if(_navigatorService.delivery != null){
       _delivery = _navigatorService.delivery;
     }
-    if(_deliveryAddress == "" && _navigatorService.deliveryAddress != null){
+    if(_navigatorService.deliveryAddress != null){
       _deliveryAddress = _navigatorService.deliveryAddress;
     }
     if(_navigatorService.directionIconPath != null){
