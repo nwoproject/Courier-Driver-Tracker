@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
+const { dbErrorHandler } = require('../services/db_config');
 
 // GET /api/reports/drivers
 router.get('/drivers', (req, res) => {
@@ -22,7 +23,7 @@ router.get('/drivers', (req, res) => {
 });
 
 // GET /api/reports/:time
-router.get('/:time',(req, res)=>{
+router.get('/abnormality/:time',(req, res)=>{
     if(!req.params.time){
         res.status(400).end(); 
     }
@@ -34,6 +35,9 @@ router.get('/:time',(req, res)=>{
         }
         else if(Time=="month"){
             BackDate.setDate(BackDate.getDate() - 30);
+        }
+        else{
+            res.status(400).end()
         }
         DB.pool.query('SELECT "abnormality_code", "description", "driver_id", "datetime", "latitude", "longitude" FROM public."abnormality" WHERE "datetime">($1)',[BackDate],(err,result)=>{
             if(err){
@@ -69,5 +73,69 @@ router.get('/:time',(req, res)=>{
             }
         });
     }    
+});
+
+// GET /api/reports/locations/:time
+router.get("/locations/:time",(req,res)=>{
+    if(!req.params.time){
+        res.status(400).end(); 
+    }
+    else{
+        const Time = req.params.time;
+        let BackDate = new Date();
+        if(Time=="week"){
+            BackDate.setDate(BackDate.getDate() - 7);
+        }
+        else if(Time=="month"){
+            BackDate.setDate(BackDate.getDate() - 30);
+        }
+        else{
+            res.status(400).end()
+        }
+        let DeliveryArr = {"deliveries":[]};
+        let TempDID = 0;
+        let TempRID = 0;
+        DB.pool.query('SELECT * FROM log."location_log" L JOIN log."route_log" R ON R."route_id" = L."route_id" WHERE "date_assigned">($1) ORDER BY "driver_id" ASC, L."route_id" ASC',[BackDate],(err, result)=>{
+            if(err){
+                dbErrorHandler(res,err);
+            }
+            else{
+                if(result.rowCount == 0){
+                    res.status(404).end();
+                }
+                else{
+                    let DriverObj = {"driver_id":'',"routes":[]};
+                    let RouteObj = {"route_id":'',"locations":[]};
+                    for(i=0;i<result.rowCount;i++){
+                        let thisRow = result.rows[i];
+                        //Check if same driver to continue Driver object
+                        if(thisRow.driver_id == TempDID){
+                            //check if same route
+                            if(thisRow.route_id == TempRID){
+                                RouteObj.locations.push({"location_id":thisRow.location_id,"time_expected":null,"time_completed":thisRow.timestamp_completed});
+                            }
+                            else{
+                                DriverObj.routes.push(RouteObj);
+                                RouteObj = {"route_id":thisRow.route_id,"locations":[]};
+                                RouteObj.locations.push({"location_id":thisRow.location_id,"time_expected":null,"time_completed":thisRow.timestamp_completed});
+                                TempRID = thisRow.route_id;
+                            }
+                        }
+                        else{
+                            if(TempDID!=0){
+                                DeliveryArr.deliveries.push(DriverObj);
+                            }
+                            DriverObj = {"driver_id":thisRow.driver_id,"routes":[]};
+                            RouteObj = {"route_id":thisRow.route_id, "locations":[]};
+                            RouteObj.locations.push({"location_id":thisRow.location_id,"time_expected":null,"time_completed":thisRow.timestamp_completed});
+                            TempDID = thisRow.driver_id;
+                            TempRID = thisRow.route_id;
+                        }
+                    }
+                    res.status(200).json(DeliveryArr).end();
+                }
+            }
+        });      
+    }
 });
 module.exports = router;
