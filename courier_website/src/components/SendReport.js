@@ -58,7 +58,7 @@ function SendReport(props){
             })
             .then(response=>response.json())
             .then(result=>{
-                Deliveries = result;
+                Deliveries = result.deliveries;
                 URL = process.env.REACT_APP_API_SERVER+"/api/reports/abnormality/"+TimeVar;
                 fetch(URL,{
                     method: 'GET',
@@ -69,7 +69,7 @@ function SendReport(props){
                 })
                 .then(response=>response.json())
                 .then(result=>{
-                    AbnormalityArr = result;
+                    AbnormalityArr = result.abnormalities;
                     //======================================================================================================================
                     let AbnormalityFrequency = [];
                     let DeliveryCount = 0;
