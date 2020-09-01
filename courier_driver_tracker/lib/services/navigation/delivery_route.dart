@@ -1,4 +1,5 @@
 import 'package:courier_driver_tracker/services/navigation/route.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'delivery_route.g.dart';
@@ -50,5 +51,21 @@ class DeliveryRoute{
 
   String getDeliveryAddress(int deliveryRoute, int leg){
     return routes[deliveryRoute].getDeliveryAddress(leg);
+  }
+
+  LatLng getStepStartLatLng(int deliveryRoute, int leg, int step){
+    return routes[deliveryRoute].getStepStartLatLng(leg, step);
+  }
+
+  LatLng getStepEndLatLng(int deliveryRoute, int leg, int step){
+    return routes[deliveryRoute].getStepEndLatLng(leg, step);
+  }
+
+  LatLng getNorthEastBound(int deliveryRoute){
+    return routes[deliveryRoute].getNorthEastBound();
+  }
+
+  LatLng getSouthWestBound(int deliveryRoute){
+    return routes[deliveryRoute].getSouthWestBound();
   }
 }

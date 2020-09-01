@@ -10,10 +10,10 @@ Bounds _$BoundsFromJson(Map<String, dynamic> json) {
   return Bounds(
     southWest: json['southwest'] == null
         ? null
-        : Location.fromJson(json['southwest'] as Map<String, dynamic>),
+        : LatLng(json['southwest']["lat"], json['southwest']["lng"]),
     northEast: json['northeast'] == null
         ? null
-        : Location.fromJson(json['northeast'] as Map<String, dynamic>),
+        : LatLng(json['northeast']["lat"], json['northeast']["lng"]),
   );
 }
 

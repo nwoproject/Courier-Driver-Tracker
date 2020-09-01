@@ -1,5 +1,6 @@
 import 'package:courier_driver_tracker/services/navigation/location.dart';
 import 'package:courier_driver_tracker/services/navigation/step.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'leg.g.dart';
@@ -46,5 +47,13 @@ class Leg{
 
   String getDeliveryAddress(){
     return endAddress;
+  }
+
+  LatLng getStepStartLatLng(int step){
+    return steps[step].getStepStartLatLng();
+  }
+
+  LatLng getStepEndLatLng(int step){
+    return steps[step].getStepEndLatLng();
   }
 }

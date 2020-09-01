@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 
 class JsonHandler{
-  Future<String>loadJsonFromAsset(String filename) async {
+  Future<String> loadJsonFromAsset(String filename) async {
     return await rootBundle.loadString("assets/json/$filename");
   }
 
