@@ -1,6 +1,6 @@
 import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'file:///D:/COS/COS301/CapstoneProject/Courier-Driver-Tracker/Courier-Driver-Tracker/courier_driver_tracker/lib/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +23,7 @@ class MapSampleState extends State<GMap> {
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
   Set<Marker> markers = {};
+  Set<Circle>  circles = {};
   List<LatLng> polylineCoordinates = [];
   Map<String, Polyline> polylines = {};
   bool lockedOnPosition = true;
@@ -30,18 +31,6 @@ class MapSampleState extends State<GMap> {
   //Location service
   GeolocatorService _geolocatorService = GeolocatorService();
   Position _currentPosition;
-
-  // Deliveries
-  List<Position> deliveries = [
-    new Position(latitude: -25.7815, longitude: 28.2759),
-    new Position(latitude: -25.7597, longitude: 28.2436),
-    new Position(latitude: -25.7545, longitude: 28.2314),
-    new Position(latitude: -25.7608, longitude: 28.2310),
-    new Position(latitude: -25.7713, longitude: 28.2334)
-  ];
-  //String _currentDelivery = 'Loading';
-  Deliveries polyDeliveries;
-  List<Delivery> deliveryList;
 
   // Storage
   RouteLogging _routeLogging = RouteLogging();
@@ -56,6 +45,7 @@ class MapSampleState extends State<GMap> {
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
   String _directionIconPath = "assets/images/navigation_marker_white.png";
+  bool atDelivery = false;
 
   @override
   void initState() {
@@ -145,44 +135,16 @@ class MapSampleState extends State<GMap> {
    */
   showEntireRoute() {
     // Define two position variables
-    Position _northeastCoordinates;
-    Position _southwestCoordinates;
+    LatLng northEast = _navigatorService.northEast;
+    LatLng southWest = _navigatorService.southWest;
 
-    // Calculating to check that
-    // southwest coordinate <= northeast coordinate
-    // Determines the screen bounds
-    double minLat = deliveries[0].latitude;
-    double minLong = deliveries[0].longitude;
-    double maxLat = deliveries[0].latitude;
-    double maxLong = deliveries[0].longitude;
-
-    for (int del = 0; del < deliveries.length; del++) {
-      if (minLat > deliveries[del].latitude) {
-        minLat = deliveries[del].latitude;
-      }
-      if (minLong > deliveries[del].longitude) {
-        minLong = deliveries[del].longitude;
-      }
-      if (maxLat < deliveries[del].latitude) {
-        maxLat = deliveries[del].latitude;
-      }
-      if (maxLong < deliveries[del].longitude) {
-        maxLong = deliveries[del].longitude;
-      }
+    if(northEast == null || southWest == null){
+      return;
     }
 
-    _southwestCoordinates = new Position(latitude: minLat, longitude: minLong);
-    _northeastCoordinates = new Position(latitude: maxLat, longitude: maxLong);
-
     LatLngBounds routeBounds = new LatLngBounds(
-      northeast: LatLng(
-        _northeastCoordinates.latitude,
-        _northeastCoordinates.longitude,
-      ),
-      southwest: LatLng(
-        _southwestCoordinates.latitude,
-        _southwestCoordinates.longitude,
-      ),
+      northeast: northEast,
+      southwest: southWest,
     );
 
     // Center of route
@@ -281,19 +243,6 @@ class MapSampleState extends State<GMap> {
         southWestLongitudeCheck;
   }
 
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Gets the address of the delivery using coordinates.
-   */
-  getNextDelivery(Position position) async {
-    //String address = await _geolocatorService.getAddress(position);
-    setState(() {
-      //_currentDelivery = address;
-    });
-  }
-
   setInformationVariables(){
     if(_navigatorService.directions != null){
       _directions = _navigatorService.directions;
@@ -313,6 +262,8 @@ class MapSampleState extends State<GMap> {
     if(_navigatorService.directionIconPath != null){
       _directionIconPath = _navigatorService.directionIconPath;
     }
+    circles = _navigatorService.circles;
+    atDelivery = _navigatorService.atDelivery;
   }
 
   /*
@@ -371,7 +322,7 @@ class MapSampleState extends State<GMap> {
             padding: const EdgeInsets.all(5),
             children: <Widget>[
               _deliveryCards("Menlyn Park Shopping Centre",
-                  "01-25-2020 12:00"), //mock data
+                  "01-25-2020 12:00"),
               _deliveryCards(
                   "Aroma Gourmet Coffee Roastery", "01-25-2020 13:00"),
               _deliveryCards("University of Pretoria", "01-25-2020 13:45"),
@@ -394,7 +345,7 @@ class MapSampleState extends State<GMap> {
                     padding: const EdgeInsets.only(
                         top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(_stepTimeRemaining,
+                      child: Text(atDelivery ? "Arrived" : _stepTimeRemaining,
                           style: TextStyle(
                               color: Colors.green,
                               fontFamily: "OpenSans-Regular",
@@ -406,7 +357,7 @@ class MapSampleState extends State<GMap> {
                     padding: const EdgeInsets.only(
                         top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(_distanceETA,
+                      child: Text(atDelivery ? "at Destination" :_distanceETA,
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "OpenSans-Regular",
@@ -469,6 +420,7 @@ class MapSampleState extends State<GMap> {
                           initialCameraPosition: _initialLocation,
                           markers: markers != null ? Set<Marker>.from(markers) : null,
                           polylines: Set<Polyline>.of(polylines.values),
+                          circles: circles != null ? Set<Circle>.from(circles) : null,
                           myLocationEnabled: true,
                           myLocationButtonEnabled: false,
                           mapType: MapType.normal,
