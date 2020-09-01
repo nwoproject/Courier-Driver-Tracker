@@ -1,6 +1,6 @@
 import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
-import 'file:///D:/COS/COS301/CapstoneProject/Courier-Driver-Tracker/Courier-Driver-Tracker/courier_driver_tracker/lib/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services//file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +11,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 
-import 'deliveries.dart';
 
 class GMap extends StatefulWidget {
   @override
@@ -290,7 +289,8 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null) {
-      _navigatorService.navigate(_currentPosition);
+      _navigatorService.navigate(_currentPosition, context);
+      _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
       setInformationVariables();
       if(lockedOnPosition){
         moveToCurrentLocation();
