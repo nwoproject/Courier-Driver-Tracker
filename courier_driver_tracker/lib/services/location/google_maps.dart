@@ -314,6 +314,7 @@ class MapSampleState extends State<GMap> {
     if(_navigatorService.directionIconPath != null){
       _directionIconPath = _navigatorService.directionIconPath;
     }
+    circles = _navigatorService.circles;
   }
 
   /*

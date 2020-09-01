@@ -157,7 +157,10 @@ class NavigationService {
     Circle deliveryCircle = Circle(
       circleId: CircleId("$_currentRoute-$_currentLeg"),
       center: currentPolyline.points.last,
-      fillColor: Colors.green[100],
+      fillColor: Color(0x2082fa9e),
+      strokeColor: Colors.green[400],
+      strokeWidth: 2,
+      radius: 100.0,
     );
     circles.add(deliveryCircle);
   }
@@ -536,12 +539,10 @@ class NavigationService {
   //__________________________________________________________________________________________________
 
   bool isNearDelivery(){
-    if(currentPolyline.points.length == 2){
-      int dist = calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points[1]);
-      if(dist < 100){
-        atDelivery = true;
-      }
-      atDelivery = false;
+
+    int dist = calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last);
+    if(dist < 100){
+      atDelivery = true;
     }
     else{
       atDelivery = false;
@@ -552,6 +553,7 @@ class NavigationService {
 
   showDeliveryRadiusOnMap(){
     if(atDelivery){
+      print("Initialising circle");
       initialiseDeliveryCircle();
     }
     else{
@@ -654,6 +656,8 @@ class NavigationService {
       TODO
         - make abnormalities for when at destination
        */
+      updateCurrentPolyline();
+
 
 
 
