@@ -50,4 +50,12 @@ class Route{
   LatLng getStepEndLatLng(int leg, int step){
     return legs[leg].getStepEndLatLng(step);
   }
+
+  LatLng getNorthEastBound(){
+    return bounds.northEast;
+  }
+
+  LatLng getSouthWestBound(){
+    return bounds.southWest;
+  }
 }

@@ -60,4 +60,12 @@ class DeliveryRoute{
   LatLng getStepEndLatLng(int deliveryRoute, int leg, int step){
     return routes[deliveryRoute].getStepEndLatLng(leg, step);
   }
+
+  LatLng getNorthEastBound(int deliveryRoute){
+    return routes[deliveryRoute].getNorthEastBound();
+  }
+
+  LatLng getSouthWestBound(int deliveryRoute){
+    return routes[deliveryRoute].getSouthWestBound();
+  }
 }

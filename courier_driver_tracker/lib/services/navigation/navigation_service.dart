@@ -28,7 +28,10 @@ class NavigationService {
   Polyline currentPolyline;
   Set<Marker> markers = {};
   Set<Circle> circles = {};
+  LatLng northEast;
+  LatLng southWest;
   bool atDelivery = false;
+  bool nearDelivery = false;
 
   // info variables
   String directions;
@@ -135,10 +138,15 @@ class NavigationService {
 
       // adds polyline to the polylines to be displayed.
       polylines[polyId] = polyline;
-
+      initialiseBounds();
     }
     // after all polylines are created set current polyline for navigation.
     setCurrentPolyline();
+  }
+
+  initialiseBounds(){
+    northEast = getNorthEastBound(_currentRoute);
+    southWest = getSouthWestBound(_currentRoute);
   }
 
   initialiseInfoVariables(){
@@ -306,8 +314,11 @@ class NavigationService {
     if(_deliveryRoutes == null){
       path += "navigation_marker";
     }
-    print(currentPolyline.points.length);
-    print(_currentStep);
+    else if(atDelivery){
+      path += "navigation_marker_white.png";
+      directionIconPath = path;
+      return directionIconPath;
+    }
 
     String direction = _deliveryRoutes.getManeuver(_currentRoute, _currentLeg, _currentStep);
 
@@ -381,6 +392,11 @@ class NavigationService {
       return null;
     }
 
+    /*
+    TODO
+      - get all time of steps remaining
+     */
+
     int arrivalTime = (_deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg)/60).ceil();
     int hours = 0;
     int minutes = 0;
@@ -452,6 +468,14 @@ class NavigationService {
 
   LatLng getStepEndLatLng(int route, int leg, int step){
     return _deliveryRoutes.getStepEndLatLng(route, leg, step);
+  }
+
+  LatLng getNorthEastBound(int route){
+    return _deliveryRoutes.getNorthEastBound(route);
+  }
+
+  LatLng getSouthWestBound(int route){
+    return _deliveryRoutes.getSouthWestBound(route);
   }
 
 
@@ -541,19 +565,19 @@ class NavigationService {
   bool isNearDelivery(){
 
     int dist = calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last);
-    if(dist < 100){
-      atDelivery = true;
+    if(dist < 50){
+      nearDelivery = true;
+      isAtDelivery();
     }
     else{
-      atDelivery = false;
+      nearDelivery = false;
     }
     showDeliveryRadiusOnMap();
-    return atDelivery;
+    return nearDelivery;
   }
 
   showDeliveryRadiusOnMap(){
-    if(atDelivery){
-      print("Initialising circle");
+    if(nearDelivery){
       initialiseDeliveryCircle();
     }
     else{
@@ -562,6 +586,15 @@ class NavigationService {
       }
     }
   }
+
+  bool isAtDelivery(){
+    if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last) < _position.accuracy + 10){
+      atDelivery = true;
+    }
+    return atDelivery;
+  }
+
+
 
 
 
@@ -608,7 +641,7 @@ class NavigationService {
 
 
     // if the driver is not at a delivery point
-    if(!atDelivery){
+    if(!nearDelivery){
       // check if on the route
       bool onRoute = false;
       for(int i = 0; i < currentPolyline.points.length - 1; i++){
