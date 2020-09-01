@@ -5,7 +5,7 @@ const { dbErrorHandler } = require('../services/db_config');
 
 // GET /api/reports/drivers
 router.get('/drivers', (req, res) => {
-    DB.pool.query('SELECT "id", "name", "surname" FROM public."driver"', (err, result) => {
+    DB.pool.query('SELECT "id", "name", "surname" FROM public."driver" ORDER BY "name" ASC', (err, result) => {
         if (err) {
             DB.dbErrorHandler(res, err);
         } else {

@@ -267,153 +267,153 @@ function SendReport(props){
                 </Card.Body>
             :
             <div>
-            <Card.Body>
-                <Row>
-                    <Card className="ReportCard">
-                        <Card.Header>Abnormalities</Card.Header>
-                        <Card.Body>
-                            <p><b>Number of Abnormalities: </b>{AbnormalityNumberPresent}</p>
-                            <hr className="BorderLine"/>
-                            <p><b>Abnormality Counter</b></p>
-                            {AbnormalityArrayCount.map((item, index)=>
-                                <Row key={index}>
-                                    <Col xs={10}><b>Description: </b>{item.Desc}</Col>
-                                    <Col xs={2}><b>Count: </b>{item.Count}</Col>
-                                    <hr className="SmallerLine"/>
-                                </Row>    
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Row> <br />
-                <Row>
-                    <Card className="ReportCard">
-                        <Card.Header>Deliveries</Card.Header>
-                        <Card.Body>
-                            <Row>
-                                <Col xs={6}>
-                                    Total Deliveries Scheduled: 
-                                </Col>
-                                <Col xs={3}>
-                                    {DeliveryArray.Count}
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={6}>
-                                    Total Deliveries Made: 
-                                </Col>
-                                <Col xs={3}>
-                                    {DeliveryArray.Made}
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={6}>
-                                    Total Deliveries Missed: 
-                                </Col>
-                                <Col xs={3}>
-                                    {DeliveryArray.Missed}
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={6}>
-                                    Total Deliveries Late: 
-                                </Col>
-                                <Col xs={3}>
-                                    {DeliveryArray.Late}
-                                </Col>
-                            </Row>
-                            <hr className="BorderLine"/>
-                        </Card.Body>
-                    </Card>
-                </Row> <br />
-                <Row>
-                    <Card className="ReportCard">
-                        <Card.Header>Driver List</Card.Header>
-                        <Card.Body>
-                            <hr className="BorderLine"/>
-                            <Row>
-                                <Col xs={3}>
-                                    <Button name="Abnor" onClick={HandleSort}>Sort by Abnormality Count</Button>
-                                </Col>
-                                <Col xs={3}>
-                                    <Button name="Made" onClick={HandleSort}>Sort by Deliveries Made</Button>
-                                </Col>
-                                <Col xs={3}>
-                                    <Button name="Missed" onClick={HandleSort}>Sort by Deliveries Missed</Button>
-                                </Col>
-                                <Col xs={3}>
-                                    <Button name="Late" onClick={HandleSort}>Sort by Deliveries Late</Button>
-                                </Col>
-                            </Row>
-                            <hr className="BorderLine"/>
-                            {DriverArray.map((item, index)=>
-                                <Row key={index}>
-                                    <Col xs={5}>
-                                        Driver Name: {item.name + " " +item.surname}
+                <Card.Body>
+                    <Row>
+                        <Card className="ReportCard">
+                            <Card.Header>Abnormalities</Card.Header>
+                            <Card.Body>
+                                <p><b>Number of Abnormalities: </b>{AbnormalityNumberPresent}</p>
+                                <hr className="BorderLine"/>
+                                <p><b>Abnormality Counter</b></p>
+                                {AbnormalityArrayCount.map((item, index)=>
+                                    <Row key={index}>
+                                        <Col xs={10}><b>Description: </b>{item.Desc}</Col>
+                                        <Col xs={2}><b>Count: </b>{item.Count}</Col>
+                                        <hr className="SmallerLine"/>
+                                    </Row>    
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Row> <br />
+                    <Row>
+                        <Card className="ReportCard">
+                            <Card.Header>Deliveries</Card.Header>
+                            <Card.Body>
+                                <Row>
+                                    <Col xs={6}>
+                                        Total Deliveries Scheduled: 
                                     </Col>
-                                    <Col xs={4}>
-                                        {SortType}
-                                    </Col>
-                                    <Col xs={2}>
-                                        {AbnnorS ? item.AbnormalityCount:null}
-                                        {DMade ? item.DeliveryMade:null}
-                                        {DMissed ? item.DeliverMissed:null}
-                                        {DLate ? item.DeliveryLate:null}
+                                    <Col xs={3}>
+                                        {DeliveryArray.Count}
                                     </Col>
                                 </Row>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Row><br />
-                <Row>
-                    <Card className="ReportCard">
-                        <Card.Header>Notable Drivers</Card.Header>
-                        <Card.Body>
-                            <Row>
-                                <Col xs={5}>
-                                    Most Deliveries Made
-                                </Col>
-                                <Col xs={7}>
-                                    {MostMade.map((item, index)=><Row key={index}>
-                                        {item.name + " " + item.surname}
-                                    </Row>)}
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={5}>
-                                    Most Abnormalities Made
-                                </Col>
-                                <Col xs={7}>
-                                    {MostAbnot.map((item, index)=><Row key={index}>
-                                        {item.name + " " + item.surname}
-                                    </Row>)}
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={5}>
-                                    Most Deliveries Missed
-                                </Col>
-                                <Col xs={7}>
-                                    {MostMissed.map((item, index)=><Row key={index}>
-                                        {item.name + " " + item.surname}
-                                    </Row>)}
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={5}>
-                                    Least Abnormalities Made
-                                </Col>
-                                <Col xs={7}>
-                                    {LeastAbb.map((item, index)=><Row key={index}>
-                                        {item.name + " " + item.surname}
-                                    </Row>)}
-                                </Col>
-                            </Row>
-                        </Card.Body>
-                    </Card>
-                </Row>
-            </Card.Body>
+                                <Row>
+                                    <Col xs={6}>
+                                        Total Deliveries Made: 
+                                    </Col>
+                                    <Col xs={3}>
+                                        {DeliveryArray.Made}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xs={6}>
+                                        Total Deliveries Missed: 
+                                    </Col>
+                                    <Col xs={3}>
+                                        {DeliveryArray.Missed}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xs={6}>
+                                        Total Deliveries Late: 
+                                    </Col>
+                                    <Col xs={3}>
+                                        {DeliveryArray.Late}
+                                    </Col>
+                                </Row>
+                                <hr className="BorderLine"/>
+                            </Card.Body>
+                        </Card>
+                    </Row> <br />
+                    <Row>
+                        <Card className="ReportCard">
+                            <Card.Header>Driver List</Card.Header>
+                            <Card.Body>
+                                <hr className="BorderLine"/>
+                                <Row>
+                                    <Col xs={3}>
+                                        <Button name="Abnor" onClick={HandleSort}>Sort by Abnormality Count</Button>
+                                    </Col>
+                                    <Col xs={3}>
+                                        <Button name="Made" onClick={HandleSort}>Sort by Deliveries Made</Button>
+                                    </Col>
+                                    <Col xs={3}>
+                                        <Button name="Missed" onClick={HandleSort}>Sort by Deliveries Missed</Button>
+                                    </Col>
+                                    <Col xs={3}>
+                                        <Button name="Late" onClick={HandleSort}>Sort by Deliveries Late</Button>
+                                    </Col>
+                                </Row>
+                                <hr className="BorderLine"/>
+                                {DriverArray.map((item, index)=>
+                                    <Row key={index}>
+                                        <Col xs={5}>
+                                            Driver Name: {item.name + " " +item.surname}
+                                        </Col>
+                                        <Col xs={4}>
+                                            {SortType}
+                                        </Col>
+                                        <Col xs={2}>
+                                            {AbnnorS ? item.AbnormalityCount:null}
+                                            {DMade ? item.DeliveryMade:null}
+                                            {DMissed ? item.DeliverMissed:null}
+                                            {DLate ? item.DeliveryLate:null}
+                                        </Col>
+                                    </Row>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Row><br />
+                    <Row>
+                        <Card className="ReportCard">
+                            <Card.Header>Notable Drivers</Card.Header>
+                            <Card.Body>
+                                <Row>
+                                    <Col xs={5}>
+                                        Most Deliveries Made
+                                    </Col>
+                                    <Col xs={7}>
+                                        {MostMade.map((item, index)=><Row key={index}>
+                                            {item.name + " " + item.surname}
+                                        </Row>)}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xs={5}>
+                                        Most Abnormalities Made
+                                    </Col>
+                                    <Col xs={7}>
+                                        {MostAbnot.map((item, index)=><Row key={index}>
+                                            {item.name + " " + item.surname}
+                                        </Row>)}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xs={5}>
+                                        Most Deliveries Missed
+                                    </Col>
+                                    <Col xs={7}>
+                                        {MostMissed.map((item, index)=><Row key={index}>
+                                            {item.name + " " + item.surname}
+                                        </Row>)}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xs={5}>
+                                        Least Abnormalities Made
+                                    </Col>
+                                    <Col xs={7}>
+                                        {LeastAbb.map((item, index)=><Row key={index}>
+                                            {item.name + " " + item.surname}
+                                        </Row>)}
+                                    </Col>
+                                </Row>
+                            </Card.Body>
+                        </Card>
+                    </Row>
+                </Card.Body>
             </div>
-}
+        }
         </Card>
     )
 }

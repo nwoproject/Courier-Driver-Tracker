@@ -71,7 +71,7 @@ function DriverProfile(props){
                     </Card.Body>
                     : 
                     <div>
-                        <Card.Header>{DriverName + " " + DriverSurname}</Card.Header>
+                        <Card.Header>{DriverName + " " + DriverSurname + " ID: "+props.DriverID}</Card.Header>
                         <Card.Body>
                             <Button name="ChangeCP" onClick={handleChange}>Edit Center Point</Button>
                             {EditCenter ? <div><br /><CenterPoint DriverID={props.DriverID}/></div>: null}
