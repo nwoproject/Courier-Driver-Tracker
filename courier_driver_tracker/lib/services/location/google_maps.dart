@@ -1,6 +1,6 @@
 import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
-import 'file:///D:/COS/COS301/CapstoneProject/Courier-Driver-Tracker/Courier-Driver-Tracker/courier_driver_tracker/lib/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
