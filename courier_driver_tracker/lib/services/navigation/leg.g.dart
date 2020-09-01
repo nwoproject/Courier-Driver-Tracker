@@ -21,11 +21,11 @@ Leg _$LegFromJson(Map<String, dynamic> json) {
     endAddress: json['end_address'] as String,
     endLocation: json['end_location'] == null
         ? null
-        : Location.fromJson(json['end_location'] as Map<String, dynamic>),
+        : LatLng(json['end_location']["lat"], json['end_location']["lng"]),
     startAddress: json['start_address'] as String,
     startLocation: json['start_location'] == null
         ? null
-        : Location.fromJson(json['start_location'] as Map<String, dynamic>),
+        : LatLng(json['start_location']["lat"], json['start_location']["lng"]),
   );
 }
 

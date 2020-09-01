@@ -1,4 +1,3 @@
-import 'package:courier_driver_tracker/services/navigation/location.dart';
 import 'package:courier_driver_tracker/services/navigation/step.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -10,9 +9,9 @@ class Leg{
   int distance;
   int duration;
   String endAddress;
-  Location endLocation;
+  LatLng endLocation;
   String startAddress;
-  Location startLocation;
+  LatLng startLocation;
   List<Step> steps;
 
   Leg({this.distance,this.steps, this.duration, this.endAddress, this.endLocation, this.startAddress, this.startLocation});

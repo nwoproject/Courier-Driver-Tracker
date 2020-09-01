@@ -101,8 +101,8 @@ class NavigationService {
       Marker marker = Marker(
         markerId: MarkerId('$route-$leg'),
         position: LatLng(
-          _deliveryRoutes.routes[route].legs[leg].endLocation.lat,
-          _deliveryRoutes.routes[route].legs[leg].endLocation.lng,
+          _deliveryRoutes.routes[route].legs[leg].endLocation.latitude,
+          _deliveryRoutes.routes[route].legs[leg].endLocation.longitude,
         ),
         infoWindow: InfoWindow(
           title: 'Delivery $delivery',

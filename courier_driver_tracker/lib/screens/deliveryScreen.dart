@@ -1,6 +1,9 @@
-import 'file:///D:/COS/COS301/CapstoneProject/Courier-Driver-Tracker/Courier-Driver-Tracker/courier_driver_tracker/lib/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import "dart:ui";
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -16,6 +19,34 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       fontSize: 30, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
   final textStyle = TextStyle(
       fontSize: 20, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+
+  ApiHandler _api = ApiHandler();
+  FlutterSecureStorage storage = FlutterSecureStorage();
+
+  @override
+  void initState() {
+    /*
+    TODO
+      - call api and write json to file / read from file
+      - use json to populate the cards
+      - store filename in storage
+     */
+    _api.initDriverRoute();
+    getRoutes();
+
+    super.initState();
+  }
+
+  getRoutes() async{
+    List<delivery.Route> routes = await _api.getUncalculatedRoute();
+    for(int i = 0; i < routes.length; i++){
+      print(routes[i].routeID);
+      _api.initCalculatedRoute(routes[i].routeID);
+    }
+  }
+
+
+  //logging tests
   final RouteLogging routeLogging = RouteLogging();
 
   Future<String> getDeliveryDetails() async {

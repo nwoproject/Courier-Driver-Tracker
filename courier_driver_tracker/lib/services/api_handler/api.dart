@@ -74,8 +74,9 @@ class ApiHandler
           routeList[k].addLocation(Location.fromJson(location));
         }
         k++;
+        storage.write(key: 'num-routes', value: '$k');
       }
-        return routeList;
+      return routeList;
     }
     catch(e)
     {
@@ -94,7 +95,6 @@ class ApiHandler
       "token": token,
       "route_id": routeID
     };
-
     var response = await http.post(
       "$apiUrl/api/google-maps/navigation",
       headers: requestHeaders,
@@ -111,6 +111,7 @@ class ApiHandler
     if(response.statusCode == 200)
     {
       var responseData = response.body;
+      print(response.body);
       final file = await getFile("active-calculated-route.txt");
       return file.writeAsString(responseData.toString());
     }
