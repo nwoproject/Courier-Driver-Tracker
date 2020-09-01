@@ -55,7 +55,7 @@ class RouteLogging{
   Future<String> get localPath async {
 
     final directory = await getExternalStorageDirectory();
-    final directoryFolder = Directory(directory.path + "/Download/" +"/CourierDriverTracker/");
+    final directoryFolder = Directory(directory.path + "/Download" +"/CourierDriverTracker/");
 
     if(await directoryFolder.exists()){
       return directoryFolder.path;

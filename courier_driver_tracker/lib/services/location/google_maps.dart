@@ -340,6 +340,7 @@ class MapSampleState extends State<GMap> {
     // Calls abnormality service
     if(_currentPosition != null) {
       _navigatorService.navigate(_currentPosition);
+      _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
       setInformationVariables();
       if(lockedOnPosition){
         moveToCurrentLocation();
