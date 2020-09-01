@@ -1,4 +1,3 @@
-import 'package:courier_driver_tracker/screens/login.dart';
 import 'package:courier_driver_tracker/services/location/route_logging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -120,7 +119,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Icons.keyboard_arrow_right,
                     color: Colors.grey.shade400,
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/changePassword');
+                  },
                 ),
                 ListTile(
                   title: Text(

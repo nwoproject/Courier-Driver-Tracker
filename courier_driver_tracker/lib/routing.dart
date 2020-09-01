@@ -11,6 +11,7 @@ import 'screens/sudden_stop.dart';
 import 'screens/off_route.dart';
 import 'screens/company_car.dart';
 import 'screens/speed_exceeded.dart';
+import 'screens/change_password_screen.dart';
 
 class Router {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -56,23 +57,39 @@ class Router {
           builder: (_) => SettingsScreen(),
         );
       case '/reportLong':
-       return MaterialPageRoute(builder: (_) => UserFeedbackLong(),);
-       break;
+        return MaterialPageRoute(
+          builder: (_) => UserFeedbackLong(),
+        );
+        break;
 
       case '/reportSudden':
-        return MaterialPageRoute(builder: (_) => UserFeedbackSudden(),);
+        return MaterialPageRoute(
+          builder: (_) => UserFeedbackSudden(),
+        );
         break;
 
       case '/reportOff':
-        return MaterialPageRoute(builder: (_) => UserFeedbackOffRoute(),);
+        return MaterialPageRoute(
+          builder: (_) => UserFeedbackOffRoute(),
+        );
         break;
 
       case '/reportSpeed':
-        return MaterialPageRoute(builder: (_) => UserFeedbackSpeed(),);
+        return MaterialPageRoute(
+          builder: (_) => UserFeedbackSpeed(),
+        );
         break;
 
       case '/reportCompany':
-        return MaterialPageRoute(builder: (_) => UserFeedbackLongCompany(),);
+        return MaterialPageRoute(
+          builder: (_) => UserFeedbackLongCompany(),
+        );
+        break;
+
+      case '/changePassword':
+        return MaterialPageRoute(
+          builder: (_) => ChangePasswordPage(),
+        );
         break;
 
       case '/delivery':

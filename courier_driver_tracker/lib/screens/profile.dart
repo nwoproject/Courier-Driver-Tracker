@@ -22,15 +22,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final RouteLogging routeLogging = RouteLogging();
 
   final storage = new FlutterSecureStorage();
-  var userData = {'name': 'name', 'surname': 'surname'};
+  var userData = {'name': 'name', 'surname': 'surname', 'email': 'email'};
 
   Future<Null> readUserData() async {
     var name = await storage.read(key: 'name');
     var surname = await storage.read(key: 'surname');
+    var email = await storage.read(key: 'email');
     setState(() {
       return userData = {
         'name': name,
         'surname': surname,
+        'email': email,
       };
     });
   }
@@ -111,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextSpan(text: "Email:\n", style: labelStyle),
-          TextSpan(text: " u18305980@tuks.co.za \n\n\n", style: textStyle),
+          TextSpan(text: userData['email'] + "\n\n\n", style: textStyle),
           TextSpan(text: "Driver Score:\n", style: labelStyle),
           TextSpan(text: "0\n\n\n", style: textStyle),
           TextSpan(text: "Routes Completed:\n", style: labelStyle),
