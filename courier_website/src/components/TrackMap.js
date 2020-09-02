@@ -60,7 +60,7 @@ function TrackMap(props){
                 }
             });
         }, 10000);
-    });
+    },[]);
 
     return(
         <div>
