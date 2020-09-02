@@ -252,17 +252,6 @@ class AbnormalityService{
     }
   }
 
-//  bool makingDelivery(){
-//
-//    double distanceFromPolyline = calculateDistanceBetween(_currentPosition, deliveryPoint);
-//
-//    // checks if the distance of the courier is more than 20m away from route.
-//    if(distanceFromPolyline > _currentPosition.accuracy + 40){
-//      return true;
-//    }
-//
-//  }
-
   bool drivingWithoutDelivery(){
     return false;
   }
