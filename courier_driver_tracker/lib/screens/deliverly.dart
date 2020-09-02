@@ -57,9 +57,6 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-//  void homePage() async{
-//    Navigator.of(context).pop();
-//  }
 
   void checkForEmptyText() {
     other = textController.text;
@@ -95,9 +92,8 @@ class _FeedbackState extends State<Feedback> {
     position = await geolocatorService.getPosition();
     var token = await storage.read(key: 'token');
     var driverID = await storage.read(key: 'id');
+    var locationID = await storage.read(key: 'location');
     driverID = driverID.toString();
-    String lat = position.latitude.toString();
-    String long = position.longitude.toString();
     String time = position.timestamp.toString();
 
     String resp = "";
@@ -115,15 +111,9 @@ class _FeedbackState extends State<Feedback> {
     String bearerToken = String.fromEnvironment('BEARER_TOKEN',
         defaultValue: DotEnv().env['BEARER_TOKEN']);
 
-    print(lat);
-    print(long);
-    print(time);
-    Map data = {
-      "code": "104",
+   Map data = {
+      "id": driverID,
       "token": token,
-      "description": resp,
-      "latitude": lat,
-      "longitude": long,
       "timestamp": time
     };
 
@@ -132,16 +122,16 @@ class _FeedbackState extends State<Feedback> {
       'Authorization': 'Bearer $bearerToken'
     };
 
-    var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
+    var response = await http.put(
+        "https://drivertracker-api.herokuapp.com/routes/location/$locationID",
         headers: requestHeaders,
         body: data);
 
     String respCode = "";
 
     switch (response.statusCode) {
-      case 201:
-        respCode = "Abnormality was successfully logged";
+      case 204:
+        respCode = "Timestamp successfully stored.";
         responseCheck(respCode);
         break;
       case 400:
@@ -149,7 +139,11 @@ class _FeedbackState extends State<Feedback> {
         responseCheck(respCode);
         break;
       case 401:
-        respCode = "Invalid :driverid and token combination";
+        respCode = "Unauthorized (incorrect id and token combination).";
+        responseCheck(respCode);
+        break;
+      case 404:
+        respCode = "Location with that :locationid does not exist.";
         responseCheck(respCode);
         break;
       case 500:
