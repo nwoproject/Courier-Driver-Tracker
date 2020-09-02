@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -148,6 +150,22 @@ class ApiHandler
 
     var response = await http.put(
       "$apiUrl/api/drivers/$driverID/password",
+      headers: requestHeaders,
+      body: data
+    );
+
+    return response.statusCode;
+  }
+
+  Future<dynamic> forgotPassword(email) async
+  {
+
+    Map<String,dynamic> data = {
+      "email": EmailInputElement().toString() 
+    };
+
+    var response = await http.put(
+      "$apiUrl/api/drivers/forgotpassword",
       headers: requestHeaders,
       body: data
     );
