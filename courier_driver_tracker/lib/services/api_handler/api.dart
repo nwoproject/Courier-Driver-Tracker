@@ -11,88 +11,76 @@ import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_m
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 
-class ApiHandler
-{
+class ApiHandler {
   final storage = new FlutterSecureStorage();
 
   Map<String, String> requestHeaders = {
     'Accept': 'application/json',
-    'Authorization': 'Bearer '+ String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN'])
+    'Authorization': 'Bearer ' +
+        String.fromEnvironment('BEARER_TOKEN',
+            defaultValue: DotEnv().env['BEARER_TOKEN'])
   };
 
-  String apiUrl = String.fromEnvironment('API_URL', defaultValue: DotEnv().env['API_URL']);
+  String apiUrl =
+      String.fromEnvironment('API_URL', defaultValue: DotEnv().env['API_URL']);
 
   GeolocatorService geolocatorService = new GeolocatorService();
   Position position;
 
   ApiHandler();
 
-  Future<String> get localPath async 
-  {
+  Future<String> get localPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
   }
 
-  Future<File> getFile(String filename) async 
-  {
+  Future<File> getFile(String filename) async {
     final path = await localPath;
     return File('$path/$filename');
   }
 
-  Future<dynamic> callUncalulatedRoute() async 
-  {
-
+  Future<dynamic> callUncalulatedRoute() async {
     var driverID = await storage.read(key: 'id');
-    
-    var response = await http.get(
-      "$apiUrl/api/routes/$driverID",
-      headers: requestHeaders
-    );
+
+    var response =
+        await http.get("$apiUrl/api/routes/$driverID", headers: requestHeaders);
 
     return response.body;
   }
 
-  Future<File> initDriverRoute () async
-  { 
+  Future<File> initDriverRoute() async {
     var route = await callUncalulatedRoute();
     final file = await getFile("routes-uncalculated.txt");
     return file.writeAsString(route.toString());
   }
 
-  Future<List<Route>> getUncalculatedRoute() async
-  {
-    try
-    {
+  Future<List<Route>> getUncalculatedRoute() async {
+    try {
       final file = await getFile("routes-uncalculated.txt");
       String contents = await file.readAsString();
       var routes = json.decode(contents);
       List<Route> routeList = List<Route>();
-      for(var route in routes['active_routes'])
-      {
-        int k=0;
+      for (var route in routes['active_routes']) {
+        int k = 0;
         routeList.add(Route.fromJson(route));
-        for(var location in route['locations'])
-        {
+        for (var location in route['locations']) {
           routeList[k].addLocation(Location.fromJson(location));
         }
         k++;
         storage.write(key: 'num-routes', value: '$k');
       }
       return routeList;
-    }
-    catch(e)
-    {
+    } catch (e) {
       print(e.toString());
       return null;
     }
   }
 
-  Future<dynamic> callCalculateRoute(routeID) async
-  {
+  Future<dynamic> callCalculateRoute(routeID) async {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
-    Map<String,dynamic> data = {
+    Map<String, dynamic> data = {
       "id": driverID,
       "token": token,
       "route_id": routeID
@@ -104,58 +92,52 @@ class ApiHandler
     );
 
     return response;
-
   }
 
-  Future<File> initCalculatedRoute(routeID) async
-  {
-    print("Route ID: " + routeID.toString());
+  Future<File> initCalculatedRoute(routeID) async {
     var response = await callCalculateRoute(routeID);
-    if(response.statusCode == 200)
-    {
+    if (response.statusCode == 200) {
       var responseData = response.body;
       final file = await getFile("active-calculated-route.txt");
       return file.writeAsString(responseData.toString());
-    }
-    else
-    {
-      initCalculatedRouteDirectly(routeID);
-      print("Dev error: Failed to retrieve calculated route. [Code " + response.statusCode.toString() + "]");
+    } 
+    else {
       return null;
     }
   }
 
-  Future<dynamic> getActiveCalculatedRoute() async
-  {
-    try
-    {
+  Future<dynamic> getActiveCalculatedRoute() async {
+    try {
       final file = await getFile("active-calculated-route.txt");
       String contents = await file.readAsString();
       var route = json.decode(contents);
       return route;
-    }
-    catch(e)
-    {
+    } catch (e) {
       print(e.toString());
       return null;
     }
   }
 
-  Future<dynamic> updateDriverPassword(password) async
-  {
+  Future<dynamic> updateDriverPassword(password) async {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
-    Map<String,dynamic> data = {
-      "token" : token,
-      "password": password.toString() 
+    Map<String, dynamic> data = {
+      "token": token,
+      "password": password.toString()
     };
 
-    var response = await http.put(
-      "$apiUrl/api/drivers/$driverID/password",
-      headers: requestHeaders,
-      body: data
-    );
+    var response = await http.put("$apiUrl/api/drivers/$driverID/password",
+        headers: requestHeaders, body: data);
+
+    return response.statusCode;
+  }
+
+  Future<dynamic> forgotPassword(email) async {
+    Map<String, dynamic> data = {"email": email.toString()};
+
+    var response = await http.put("$apiUrl/api/drivers/forgotpassword",
+        headers: requestHeaders, body: data);
 
     return response.statusCode;
   }
@@ -166,17 +148,14 @@ class ApiHandler
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
-    Map<String,dynamic> data = {
-      "token" : token,
+    Map<String, dynamic> data = {
+      "token": token,
       "latitude": position.latitude.toString(),
       "longitude": position.longitude.toString()
     };
 
-    var response = await http.put(
-      "$apiUrl/api/location/$driverID",
-      headers: requestHeaders,
-      body: data
-    );
+    var response = await http.put("$apiUrl/api/location/$driverID",
+        headers: requestHeaders, body: data);
 
     return response.statusCode;
   }
@@ -187,17 +166,14 @@ class ApiHandler
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
-    Map<String,dynamic> data = {
-      "token" : token,
+    Map<String, dynamic> data = {
+      "token": token,
       "id": driverID,
       "timestamp": position.timestamp.toString()
     };
 
-    var response = await http.put(
-      "$apiUrl/api/routes/location/$locationID",
-      headers: requestHeaders,
-      body: data
-    );
+    var response = await http.put("$apiUrl/api/routes/location/$locationID",
+        headers: requestHeaders, body: data);
 
     return response.statusCode;
   }
@@ -208,20 +184,16 @@ class ApiHandler
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
-    Map<String,dynamic> data = {
-      "token" : token,
+    Map<String, dynamic> data = {
+      "token": token,
       "id": driverID,
       "timestamp": position.timestamp.toString()
     };
 
-    var response = await http.put(
-      "$apiUrl/api/routes/completed/$routeID",
-      headers: requestHeaders,
-      body: data
-    );
+    var response = await http.put("$apiUrl/api/routes/completed/$routeID",
+        headers: requestHeaders, body: data);
 
     return response.statusCode;
-
   }
 
   Future<String> getActiveRouteID(int currentRoute) async{

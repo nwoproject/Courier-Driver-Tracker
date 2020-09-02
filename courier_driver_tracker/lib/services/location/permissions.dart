@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:courier_driver_tracker/screens/login.dart';
 import 'package:courier_driver_tracker/screens/home.dart';
-import 'file:///D:/COS/COS301/CapstoneProject/Courier-Driver-Tracker/Courier-Driver-Tracker/courier_driver_tracker/lib/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 
 
 /*
