@@ -128,8 +128,6 @@ class _HomePageViewState extends State<HomePageView> {
             onTap: (index) {
               if (index == 0) {
                 Navigator.of(context).pushNamed("/delivery");
-              } else if (index == 1) {
-                Navigator.of(context).pushNamed("/home2");
               } else if (index == 2) {
                 Navigator.of(context).pushNamed("/profile");
               } else if (index == 3) {
