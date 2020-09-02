@@ -20,6 +20,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   final textStyle = TextStyle(
       fontSize: 20, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
 
+  int _totalDistance = 0;
+  int _totalDuration = 0;
+  String _durationString;
+
+  List<Widget> _deliveries = [];
+  List<Widget> _loadingDeliveries = [];
+
   ApiHandler _api = ApiHandler();
   FlutterSecureStorage storage = FlutterSecureStorage();
 
@@ -31,18 +38,115 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       - use json to populate the cards
       - store filename in storage
      */
-    _api.initDriverRoute();
+
     getRoutes();
 
     super.initState();
   }
 
   getRoutes() async{
+    await _api.initDriverRoute();
+
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
-    for(int i = 0; i < routes.length; i++){
-      print(routes[i].routeID);
-      _api.initCalculatedRoute(routes[i].routeID);
+    if(routes == null){
+      print("Dev: error while retrieving uncalculated routes");
+      return;
     }
+    // remove all unnecessary information from json object
+    Map<String, dynamic> deliveryRoutes = {
+      "routes" : []
+    };
+    for(int i = 0; i < routes.length; i++){
+      _api.initCalculatedRoute(routes[i].routeID);
+      var activeRoute = await _api.getActiveCalculatedRoute();
+
+
+      if(activeRoute == null){
+        setState(() {
+          _durationString = "";
+          _loadingDeliveries.add(Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: _deliveryCards("No Routes Available", "",
+                "Could not load route. Contact your manager for assistance." , ""),
+          ));
+
+          _deliveries = _loadingDeliveries;
+        });
+
+        print("Dev: error while retrieving active calculated route locally.");
+        return;
+      }
+
+      for(var route in activeRoute['routes']){
+        Map<String, dynamic> deliveryRoute = {
+          "legs" : []
+        };
+
+        int distance = 0;
+        int duration = 0;
+        int numDeliveries;
+
+        int j = 0;
+        for(var leg in route['legs']){
+          Map<String, dynamic> deliveryLeg = {
+            "steps" : []
+          };
+
+          deliveryLeg["distance"] = leg["distance"]["value"];
+          distance += leg["distance"]["value"];
+          _totalDistance += leg["distance"]["value"];
+          deliveryLeg["duration"] = leg["duration"]["value"];
+          duration += leg["duration"]["value"];
+          _totalDuration += leg["duration"]["value"];
+          deliveryLeg["end_address"] = leg["end_address"];
+          deliveryLeg["end_location"] = leg["end_location"];
+          deliveryLeg["start_address"] = leg["start_address"];
+          deliveryLeg["start_location"] = leg["start_location"];
+
+
+          int k = 0;
+          for(var step in leg['steps']){
+            Map<String, dynamic> deliveryStep = {};
+            deliveryStep["distance"] = step["distance"]["value"];
+            deliveryStep["duration"] = step["duration"]["value"];
+            deliveryStep["end_location"] = step["end_location"];
+            deliveryStep["start_location"] = step["start_location"];
+            deliveryStep["html_instructions"] = step["html_instructions"];
+            deliveryStep["polyline"] = step["polyline"];
+            deliveryLeg["steps"][k] = deliveryStep;
+            k++;
+          }
+          deliveryRoute["legs"][j] = deliveryLeg;
+          j++;
+          numDeliveries = j;
+        }
+        deliveryRoutes["routes"][i] = deliveryRoute;
+        int routeNum = i + 1;
+        distance = (distance/1000).ceil();
+        duration = (duration/60).ceil();
+
+        setState(() {
+          _loadingDeliveries.add(Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: _deliveryCards("Route $routeNum", "Distance: $distance",
+                "Time: " + getTimeString(duration), "Deliveries: $numDeliveries"),
+          ));
+          _deliveries = _loadingDeliveries;
+        });
+
+      }
+
+
+    }
+    RouteLogging logger = RouteLogging();
+    logger.writeToFile(deliveryRoutes.toString(), "deliveries");
+
+    setState(() {
+      _totalDistance = (_totalDistance/1000).ceil();
+      _totalDuration = (_totalDuration/60).ceil();
+
+      _durationString = getTimeString(_totalDuration);
+    });
   }
 
 
@@ -54,6 +158,23 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
     String content = await routeLogging.readFileContents("deliveryFile");
     return content;
+  }
+
+  String getTimeString(int time){
+    int hours = 0;
+    int minutes = time;
+
+    while(minutes > 60){
+      hours += 1;
+      minutes -= 60;
+    }
+
+    if(hours == 0){
+      return "$minutes min";
+    }
+    else{
+      return "$hours h $minutes min";
+    }
   }
 
   Widget _deliveryCards(String text, String distance, String time, String del) {
@@ -146,13 +267,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       child:
                           Icon(FontAwesomeIcons.road, color: Colors.grey[100]),
                     ),
-                    TextSpan(text: "  Total KM : 30km\n", style: textStyle),
+                    TextSpan(text: "  Total KM : $_totalDistance Km\n", style: textStyle),
                     WidgetSpan(
                       child:
                           Icon(FontAwesomeIcons.clock, color: Colors.grey[100]),
                     ),
                     TextSpan(
-                        text: "  Total time : 40Min\n\n", style: textStyle),
+                        text: "  Total time : $_durationString\n\n", style: textStyle),
                     TextSpan(
                         text: "Current Route: Not Selected", style: textStyle)
                   ])),
@@ -164,23 +285,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             flex: 6,
             child: ListView(
               padding: const EdgeInsets.all(5),
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: _deliveryCards("Route 1", "Distance: 15km",
-                      "Time: 20 Min", "Deliveries: 3"),
-                ), //mock data
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: _deliveryCards("Route 2", "Distance: 15km",
-                      "Time: 20 Min", "Deliveries: 3"),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: _deliveryCards("Route 3", "Distance: 15km",
-                      "Time: 20 Min", "Deliveries: 3"),
-                ),
-              ],
+              children: _deliveries
             ),
           ),
         ])));

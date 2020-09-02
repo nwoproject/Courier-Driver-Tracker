@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
@@ -46,6 +47,9 @@ class ApiHandler
       "$apiUrl/api/routes/$driverID",
       headers: requestHeaders
     );
+    print("API response:");
+    print(response.body);
+    print("\n");
 
     return response.body;
   }
@@ -61,8 +65,11 @@ class ApiHandler
   {
     try
     {
+      print("Getting Uncalculated routes from file:");
       final file = await getFile("routes-uncalculated.txt");
+      print("File contents:");
       String contents = await file.readAsString();
+      print(contents);
       var routes = json.decode(contents);
       List<Route> routeList = List<Route>();
       for(var route in routes['active_routes'])
@@ -111,12 +118,12 @@ class ApiHandler
     if(response.statusCode == 200)
     {
       var responseData = response.body;
-      print(response.body);
       final file = await getFile("active-calculated-route.txt");
       return file.writeAsString(responseData.toString());
     }
     else
     {
+      print("Dev error: Failed to retrieve calculated route. [Code " + response.statusCode.toString() + "]");
       return null;
     }
   }
@@ -157,9 +164,8 @@ class ApiHandler
   }
 
   // PUT /api/location/:driverid
-  Future<dynamic> updateDriverLocation() async
+  Future<dynamic> updateDriverLocation(LatLng position) async
   {
-    position = await geolocatorService.getPosition();
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
@@ -219,5 +225,16 @@ class ApiHandler
 
     return response.statusCode;
 
+  }
+
+  Future<String> getActiveRouteID(int currentRoute) async{
+    List<Route> routes = await getUncalculatedRoute();
+    if(currentRoute < routes.length -1){
+      return routes[currentRoute].routeID;
+    }
+    else{
+      print("Dev: error retrieving route id. Out of bounds.");
+      return "";
+    }
   }
 }
