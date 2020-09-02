@@ -1,3 +1,4 @@
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -47,9 +48,6 @@ class ApiHandler
       "$apiUrl/api/routes/$driverID",
       headers: requestHeaders
     );
-    print("API response:");
-    print(response.body);
-    print("\n");
 
     return response.body;
   }
@@ -65,11 +63,8 @@ class ApiHandler
   {
     try
     {
-      print("Getting Uncalculated routes from file:");
       final file = await getFile("routes-uncalculated.txt");
-      print("File contents:");
       String contents = await file.readAsString();
-      print(contents);
       var routes = json.decode(contents);
       List<Route> routeList = List<Route>();
       for(var route in routes['active_routes'])
@@ -114,6 +109,7 @@ class ApiHandler
 
   Future<File> initCalculatedRoute(routeID) async
   {
+    print("Route ID: " + routeID.toString());
     var response = await callCalculateRoute(routeID);
     if(response.statusCode == 200)
     {
@@ -123,6 +119,7 @@ class ApiHandler
     }
     else
     {
+      initCalculatedRouteDirectly(routeID);
       print("Dev error: Failed to retrieve calculated route. [Code " + response.statusCode.toString() + "]");
       return null;
     }
@@ -185,7 +182,7 @@ class ApiHandler
   }
 
   //TODO double check uct timestamp value in database
-  Future<dynamic> completeDelivery(locationID) async
+  Future<dynamic> completeDelivery(String locationID, Position position) async
   {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
@@ -206,7 +203,7 @@ class ApiHandler
   }
 
   //TODO double check uct timestamp value in database
-  Future<dynamic> completeRoute(routeID) async
+  Future<dynamic> completeRoute(String routeID, Position position) async
   {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
@@ -237,4 +234,71 @@ class ApiHandler
       return "";
     }
   }
+
+  //backup function to calculate route directly from google if api call method fails
+  Future<dynamic> initCalculatedRouteDirectly(routeID) async{
+
+    List<Route> routes = await getUncalculatedRoute();
+
+    if(routes == null){
+      print("Dev: failed loading uncalculated route. [initCalculatedRouteDirectly]");
+      return null;
+    }
+
+    Map<String, dynamic> jsonRoute = {
+      "routes" : []
+    };
+
+    const String STATUS_OK = "ok";
+    String key = String.fromEnvironment('APP_MAP_API_KEY',
+        defaultValue: DotEnv().env['APP_MAP_API_KEY']);
+    List<PolylineWayPoint> wayPoints = [];
+    for(int i = 0; i < routes.length; i++){
+
+      PointLatLng origin = PointLatLng(double.parse(routes[i].locations[0].latitude),
+          double.parse(routes[i].locations[0].longitude));
+      PointLatLng destination = PointLatLng(double.parse(routes[i].locations.last.latitude),
+          double.parse(routes[i].locations.last.longitude));
+
+      for(int j = 1; j < routes.length - 1; j++){
+        String lat = routes[i].locations[j].latitude;
+        String lng = routes[i].locations[j].longitude;
+        wayPoints.add(PolylineWayPoint(location: "$lat,$lng"));
+      }
+
+      var params = {
+        "origin": "${origin.latitude},${origin.longitude}",
+        "destination": "${destination.latitude},${destination.longitude}",
+        "mode": "DRIVING",
+        "avoidHighways": "false",
+        "avoidFerries": "false",
+        "avoidTolls": "false",
+        "key": key
+      };
+      if (wayPoints.isNotEmpty) {
+        List<String> wayPointsArray = wayPoints.map((point) => point.toString());
+        String wayPointsString = wayPointsArray.join('|');
+        wayPointsString = 'optimize:true|$wayPointsString';
+        params.addAll({"waypoints": wayPointsString});
+      }
+      Uri uri =
+      Uri.https("maps.googleapis.com", "maps/api/directions/json", params);
+
+      String url = uri.toString();
+      print('GOOGLE MAPS URL: ' + url);
+      var response = await http.get(url);
+      if (response?.statusCode == 200) {
+        var parsedJson = json.decode(response.body);
+        if (parsedJson["status"]?.toLowerCase() == STATUS_OK &&
+            parsedJson["routes"] != null &&
+            parsedJson["routes"].isNotEmpty) {
+          print(response.body);
+        } else {
+          print("Dev: Failed to get response from google api");
+        }
+      }
+    }
+
+  }
+
 }

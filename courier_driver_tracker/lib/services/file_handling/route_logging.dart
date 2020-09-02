@@ -8,8 +8,8 @@ import 'package:geolocator/geolocator.dart';
 
 class RouteLogging{
 
-  final String locationPath ="/Download/test.json";
-  final String deliveriesPath = "deliveries.json";
+  final String locationPath ="/tracking.json";
+  final String deliveriesPath = "/deliveries.json";
   String name = "";
   bool first = true;
   String time = "";
@@ -35,7 +35,9 @@ class RouteLogging{
   position = await geolocatorService.getPosition();
   driverID = await storage.read(key: 'id');
   driverID = driverID.toString();
-  time = position.timestamp.toString();
+  time = position.timestamp.year.toString() + "-"
+      + position.timestamp.month.toString() + "-"
+      + position.timestamp.day.toString();
 
   }
 
@@ -53,8 +55,8 @@ class RouteLogging{
   //Gets the directory path for the file
   Future<String> get localPath async {
 
-    final directory = await getExternalStorageDirectory();
-    final directoryFolder = Directory(directory.path + "/Download/" +"/CourierDriverTracker/");
+    final directory = await getApplicationDocumentsDirectory();
+    final directoryFolder = Directory(directory.path + "/RouteLogging/");
 
     if(await directoryFolder.exists()){
       return directoryFolder.path;
@@ -69,7 +71,8 @@ class RouteLogging{
   Future<File> get locationFile async {
     String fileName = getFileName();
     final path = await localPath;
-    print(name);
+    print("Directory used:");
+    print('$path/$deliveriesPath');
 
     return File(path + fileName);
   }
@@ -78,13 +81,16 @@ class RouteLogging{
 
     final path = await localPath;
 
-    return File(path + deliveriesPath);
+    print("Directory used:");
+    print('$path/$deliveriesPath');
+
+    return File('$path/$deliveriesPath');
   }
 
-  Future<String> readFileContents(String text) async {
+  Future<String> readFileContents(String fileType) async {
     try {
       File file;
-      if(text != "deliveries") {
+      if(fileType != "deliveries") {
         file = await deliveriesFile;
       }
       else {
@@ -107,6 +113,14 @@ class RouteLogging{
     }
     else if(fileType == "deliveriesFile"){
       file = await deliveriesFile;
+    }
+    else{
+      print("Dev: Incorrect file type given. [RouteLogging:writeToFile]");
+    }
+
+    if(file == null){
+      print("Dev: Failed to retrieve file to write deliveries to.");
+      return null;
     }
 
     // Write the file

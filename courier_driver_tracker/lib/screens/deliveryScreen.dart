@@ -38,7 +38,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       - use json to populate the cards
       - store filename in storage
      */
-
     getRoutes();
 
     super.initState();
@@ -56,6 +55,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     Map<String, dynamic> deliveryRoutes = {
       "routes" : []
     };
+    print("Number of routes: " +  routes.length.toString());
     for(int i = 0; i < routes.length; i++){
       await _api.initCalculatedRoute(routes[i].routeID);
       var activeRoute = await _api.getActiveCalculatedRoute();
@@ -104,7 +104,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           deliveryLeg["start_location"] = leg["start_location"];
 
 
-          int k = 0;
           for(var step in leg['steps']){
             Map<String, dynamic> deliveryStep = {};
             deliveryStep["distance"] = step["distance"]["value"];
@@ -113,39 +112,37 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             deliveryStep["start_location"] = step["start_location"];
             deliveryStep["html_instructions"] = step["html_instructions"];
             deliveryStep["polyline"] = step["polyline"];
-            deliveryLeg["steps"][k] = deliveryStep;
-            k++;
+            deliveryLeg["steps"].add(deliveryStep);
           }
-          deliveryRoute["legs"][j] = deliveryLeg;
+          deliveryRoute["legs"].add(deliveryLeg);
           j++;
           numDeliveries = j;
         }
-        deliveryRoutes["routes"][i] = deliveryRoute;
+        deliveryRoutes["routes"].add(deliveryRoute);
         int routeNum = i + 1;
         distance = (distance/1000).ceil();
         duration = (duration/60).ceil();
-
-        setState(() {
-          _loadingDeliveries.add(Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: _deliveryCards("Route $routeNum", "Distance: $distance",
-                "Time: " + getTimeString(duration), "Deliveries: $numDeliveries"),
-          ));
-          _deliveries = _loadingDeliveries;
-        });
-
+        print("Distance: " + distance.toString());
+        print("TotalDistance: " + _totalDistance.toString());
+        _loadingDeliveries.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _deliveryCards("Route $routeNum", "Distance: $distance Km",
+              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries"),
+        ));
       }
 
 
     }
     RouteLogging logger = RouteLogging();
-    logger.writeToFile(deliveryRoutes.toString(), "deliveries");
+    logger.writeToFile(deliveryRoutes.toString(), "deliveriesFile");
 
     setState(() {
       _totalDistance = (_totalDistance/1000).ceil();
       _totalDuration = (_totalDuration/60).ceil();
 
       _durationString = getTimeString(_totalDuration);
+      print(_loadingDeliveries.length);
+      _deliveries = _loadingDeliveries;
     });
   }
 
