@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -14,21 +15,156 @@ class _SettingsScreenState extends State<SettingsScreen> {
       fontSize: 25, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
   final textStyle = TextStyle(
       fontSize: 20, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+  final subtitle = TextStyle(
+      fontSize: 18, fontFamily: 'OpenSans-Regular', color: Colors.grey[500]);
   final RouteLogging routeLogging = RouteLogging();
+
+  final storage = new FlutterSecureStorage();
+  var userData = {'name': 'name', 'surname': 'surname'};
+
+  Future<Null> readUserData() async {
+    var name = await storage.read(key: 'name');
+    var surname = await storage.read(key: 'surname');
+    setState(() {
+      return userData = {
+        'name': name,
+        'surname': surname,
+      };
+    });
+  }
+
+  @override
+  void initState() {
+    readUserData();
+    super.initState();
+  }
+
+  void _logoutDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Are you sure you want to log out?"),
+            content:
+                Text("This App will no longer be able to track your driving."),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text('Accept'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).popAndPushNamed('/login');
+                },
+              ),
+            ],
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-        bottomNavigationBar: _buildBottomNavigationBar,
-        backgroundColor: Colors.grey[900],
-        body: Container(
-            child: Card(
-                color: Colors.grey[800],
-                elevation: 10,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                ))));
+    return Scaffold(
+      backgroundColor: Colors.grey[900],
+      body: Theme(
+        data: Theme.of(context).copyWith(
+          brightness: Brightness.dark,
+          primaryColor: Colors.grey,
+        ),
+        child: DefaultTextStyle(
+          style: TextStyle(
+            color: Colors.white,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              children: <Widget>[
+                const SizedBox(height: 30.0),
+                Row(
+                  children: <Widget>[
+                    Container(
+                      width: 60,
+                      height: 60,
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(userData['name'] + " " + userData['surname'],
+                              style: headingLabelStyle),
+                          Text(
+                            "Driver",
+                            style: TextStyle(
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20.0),
+                ListTile(
+                  title: Text(
+                    "Change Password",
+                    style: textStyle,
+                  ),
+                  trailing: Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Colors.grey.shade400,
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/changePassword');
+                  },
+                ),
+                ListTile(
+                  title: Text(
+                    "Profile Settings",
+                    style: textStyle,
+                  ),
+                  subtitle: Text(
+                    "Jane Doe",
+                    style: subtitle,
+                  ),
+                  trailing: Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Colors.grey.shade400,
+                  ),
+                  onTap: () {
+                    Navigator.of(context).popAndPushNamed('/profile');
+                  },
+                ),
+                SwitchListTile(
+                  title: Text(
+                    "Email Notifications",
+                    style: textStyle,
+                  ),
+                  subtitle: Text(
+                    "On",
+                    style: subtitle,
+                  ),
+                  value: true,
+                  onChanged: (val) {},
+                ),
+                ListTile(
+                  title: Text(
+                    "Logout",
+                    style: textStyle,
+                  ),
+                  onTap: () => _logoutDialog(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget get _buildBottomNavigationBar {
