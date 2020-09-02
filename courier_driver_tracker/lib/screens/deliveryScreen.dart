@@ -57,7 +57,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       "routes" : []
     };
     for(int i = 0; i < routes.length; i++){
-      _api.initCalculatedRoute(routes[i].routeID);
+      await _api.initCalculatedRoute(routes[i].routeID);
       var activeRoute = await _api.getActiveCalculatedRoute();
 
 

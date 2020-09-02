@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:courier_driver_tracker/services/abnormality/abnormality_service.dart';
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as routeModel;
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
 import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
@@ -445,7 +447,7 @@ class NavigationService {
 
   int getTotalDeliveries(){
     if(_deliveryRoutes == null){
-      return null;
+      return 0;
     }
     return _deliveryRoutes.getTotalDeliveries();
   }
@@ -590,9 +592,35 @@ class NavigationService {
   bool isAtDelivery(){
     if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last) < _position.accuracy + 10){
       atDelivery = true;
+      sendDeliveryAPICall();
     }
     return atDelivery;
   }
+
+  sendDeliveryAPICall() async{
+    ApiHandler api = ApiHandler();
+
+    List<routeModel.Route> routes = await api.getUncalculatedRoute();
+    for(int i = 0; i < routes.length; i++){
+      if(routes[i].routeID == await api.getActiveRouteID(_currentRoute)){
+        for(int j = 0; j < routes[i].locations.length; j++){
+          if(calculateDistanceBetween(currentPolyline.points.last,
+              LatLng(double.parse(routes[i].locations[j].latitude), double.parse(routes[i].locations[j].longitude))) < 1){
+            await api.completeDelivery(routes[i].locations[j].locationID);
+            if(_currentLeg == getTotalDeliveries() - 1){
+              sendCompletedRouteAPICall();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  sendCompletedRouteAPICall() async{
+    ApiHandler api = ApiHandler();
+    var id = await api.getActiveRouteID(_currentRoute);
+    api.completeRoute(id);
+}
 
 
 
