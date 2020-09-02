@@ -56,7 +56,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
    * Author: Jordan Nijs
    * Parameters: none
    * Returns: void
-   * Description: displays a toast when password is successfully updated.
+   * Description: displays a toast when email is sent.
 */
   String errorResponse = '';
 
