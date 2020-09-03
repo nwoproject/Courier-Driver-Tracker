@@ -9,12 +9,12 @@ import 'package:geolocator/geolocator.dart';
 
 class RouteLogging{
 
-  final String locationPath ="/Download/test.json";
   final String deliveriesPath = "deliveries.json";
   String name = "";
   bool first = true;
   String time = "";
   var driverID;
+  String contents;
 
   GeolocatorService geolocatorService = new GeolocatorService();
   Position position;
@@ -54,8 +54,8 @@ class RouteLogging{
   //Gets the directory path for the file
   Future<String> get localPath async {
 
-    final directory = await getExternalStorageDirectory();
-    final directoryFolder = Directory(directory.path + "/Download" +"/CourierDriverTracker/");
+    final directory = await getApplicationDocumentsDirectory();
+    final directoryFolder = Directory(directory.path  +"/CourierDriverTracker/");
 
     if(await directoryFolder.exists()){
       return directoryFolder.path;
@@ -66,6 +66,8 @@ class RouteLogging{
     }
 
   }
+
+
 
   Future<File> get locationFile async {
     String fileName = getFileName();
@@ -85,20 +87,25 @@ class RouteLogging{
   Future<String> readFileContents(String text) async {
     try {
       File file;
-      if(text != "deliveries") {
+      if(text != "locationFile") {
         file = await deliveriesFile;
       }
       else {
         file = await locationFile;
       }
       // Read the file
-      String contents = await file.readAsString();
+      contents = await file.readAsString();
 
       return contents;
     } catch (e) {
       // If encountering an error, return 0
       return "";
     }
+  }
+
+  String displayFileContents () {
+    readFileContents("locationFile");
+    return contents;
   }
 
   Future<File> writeToFile(String data, String fileType) async {
