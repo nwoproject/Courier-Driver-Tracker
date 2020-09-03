@@ -48,8 +48,5 @@ describe("SendReport",()=>{
     test("Render Send Report Screen",()=>{
         render(<SendReport />);
         expect(screen.getByText(/Full Reports/i)).toBeInTheDocument();
-        expect(screen.getByText(/^Abnormalities$/i)).toBeInTheDocument();
-        expect(screen.getByText(/^Deliveries$/i)).toBeInTheDocument();
-        expect(screen.getByText(/^Driver List$/i)).toBeInTheDocument();
     })
 });
