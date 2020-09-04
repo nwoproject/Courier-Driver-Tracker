@@ -1,6 +1,5 @@
-import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
-import 'package:courier_driver_tracker/services//file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
-
 
 class GMap extends StatefulWidget {
   @override
@@ -36,6 +34,10 @@ class MapSampleState extends State<GMap> {
 
   // Navigation
   int _route;
+  /*
+  TODO
+    - read filename from storage
+   */
   static String _routeFile = "route.json";
   NavigationService _navigatorService = NavigationService(jsonFile: _routeFile);
   String _directions = "LOADING...";

@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class RouteLogging{
 
-  final String deliveriesPath = "deliveries.json";
+  final String locationPath ="/tracking.json";
+  final String deliveriesPath = "/deliveries.json";
   String name = "";
   bool first = true;
   String time = "";
@@ -36,7 +36,9 @@ class RouteLogging{
   position = await geolocatorService.getPosition();
   driverID = await storage.read(key: 'id');
   driverID = driverID.toString();
-  time = position.timestamp.toString();
+  time = position.timestamp.year.toString() + "-"
+      + position.timestamp.month.toString() + "-"
+      + position.timestamp.day.toString();
 
   }
 
@@ -72,7 +74,6 @@ class RouteLogging{
   Future<File> get locationFile async {
     String fileName = getFileName();
     final path = await localPath;
-    print(name);
 
     return File(path + fileName);
   }
@@ -81,13 +82,16 @@ class RouteLogging{
 
     final path = await localPath;
 
-    return File(path + deliveriesPath);
+    print("Directory used:");
+    print('$path$deliveriesPath');
+
+    return File('$path$deliveriesPath');
   }
 
-  Future<String> readFileContents(String text) async {
+  Future<String> readFileContents(String fileType) async {
     try {
       File file;
-      if(text != "locationFile") {
+      if(fileType != "deliveries") {
         file = await deliveriesFile;
       }
       else {
@@ -115,6 +119,14 @@ class RouteLogging{
     }
     else if(fileType == "deliveriesFile"){
       file = await deliveriesFile;
+    }
+    else{
+      print("Dev: Incorrect file type given. [RouteLogging:writeToFile]");
+    }
+
+    if(file == null){
+      print("Dev: Failed to retrieve file to write deliveries to.");
+      return null;
     }
 
     // Write the file

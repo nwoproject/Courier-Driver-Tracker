@@ -1,6 +1,9 @@
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import "dart:ui";
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -16,16 +19,174 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       fontSize: 30, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
   final textStyle = TextStyle(
       fontSize: 20, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
-  final RouteLogging routeLogging = RouteLogging();
 
-  Future<String> getDeliveryDetails() async {
-    routeLogging.writeToFile("hello this is working", "deliveryFile");
+  int _totalDistance = 0;
+  int _totalDuration = 0;
+  String _durationString;
 
-    String content = await routeLogging.readFileContents("deliveryFile");
-    return content;
+  List<Widget> _deliveries = [];
+  List<Widget> _loadingDeliveries = [];
+
+  ApiHandler _api = ApiHandler();
+  FlutterSecureStorage storage = FlutterSecureStorage();
+
+  @override
+  void initState() {
+    /*
+    TODO
+      - use json to populate the cards
+     */
+    getRoutes();
+
+    super.initState();
   }
 
-  Widget _deliveryCards(String text, String distance, String time, String del) {
+  getRoutes() async{
+
+    // see if driver has routes still stored
+    List<delivery.Route> routes = await _api.getUncalculatedRoute();
+    int currentActiveRoute = -1;//int.parse(await storage.read(key: 'active_route'));
+
+    if(routes != null && currentActiveRoute == -1){
+      // notify abnormality about not completing a route
+      print("You have an unfinished route!!");
+      return;
+    }
+
+
+    // if not initialise his routes
+    await _api.initDriverRoute();
+    routes = await _api.getUncalculatedRoute();
+
+    // check to see if he has no routes
+    if(routes == null){
+      setState(() {
+        _durationString = "";
+        _loadingDeliveries.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _deliveryCards("No Routes Available", "",
+              "You have no routes for the day. Ensure to exit app completely." , "", -1),
+        ));
+
+        _deliveries = _loadingDeliveries;
+      });
+      print("Dev: Error while retrieving uncalculated routes");
+      return;
+    }
+
+    // he has routes
+    // remove all unnecessary information from json object
+    Map<String, dynamic> deliveryRoutes = {
+      "routes" : []
+    };
+    print("Number of routes: " +  routes.length.toString());
+    for(int i = 0; i < routes.length; i++){
+      await _api.initCalculatedRoute(routes[i].routeID);
+      var activeRoute = await _api.getActiveCalculatedRoute();
+
+      if(activeRoute == null){
+        setState(() {
+          _durationString = "";
+          _loadingDeliveries.add(Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: _deliveryCards("No Routes Available", "",
+                "Could not load route. Contact your manager for assistance." , "", -1),
+          ));
+
+          _deliveries = _loadingDeliveries;
+        });
+
+        print("Dev: error while retrieving active calculated route locally.");
+        return;
+      }
+
+      for(var route in activeRoute['routes']){
+        Map<String, dynamic> deliveryRoute = {
+          "legs" : []
+        };
+
+        int distance = 0;
+        int duration = 0;
+        int numDeliveries;
+
+        int j = 0;
+        for(var leg in route['legs']){
+          Map<String, dynamic> deliveryLeg = {
+            "steps" : []
+          };
+
+          deliveryLeg["distance"] = leg["distance"]["value"];
+          distance += leg["distance"]["value"];
+          _totalDistance += leg["distance"]["value"];
+          deliveryLeg["duration"] = leg["duration"]["value"];
+          duration += leg["duration"]["value"];
+          _totalDuration += leg["duration"]["value"];
+          deliveryLeg["end_address"] = leg["end_address"];
+          deliveryLeg["end_location"] = leg["end_location"];
+          deliveryLeg["start_address"] = leg["start_address"];
+          deliveryLeg["start_location"] = leg["start_location"];
+
+
+          for(var step in leg['steps']){
+            Map<String, dynamic> deliveryStep = {};
+            deliveryStep["distance"] = step["distance"]["value"];
+            deliveryStep["duration"] = step["duration"]["value"];
+            deliveryStep["end_location"] = step["end_location"];
+            deliveryStep["start_location"] = step["start_location"];
+            deliveryStep["html_instructions"] = step["html_instructions"];
+            deliveryStep["polyline"] = step["polyline"];
+            deliveryLeg["steps"].add(deliveryStep);
+          }
+          deliveryRoute["legs"].add(deliveryLeg);
+          j++;
+          numDeliveries = j;
+        }
+        deliveryRoutes["routes"].add(deliveryRoute);
+
+        // create delivery cards
+        int routeNum = i + 1;
+        distance = (distance/1000).ceil();
+        duration = (duration/60).ceil();
+        _loadingDeliveries.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _deliveryCards("Route $routeNum", "Distance: $distance Km",
+              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries", routeNum),
+        ));
+      }
+    }
+
+    //write deliveries to file
+    RouteLogging logger = RouteLogging();
+    logger.writeToFile(deliveryRoutes.toString(), "deliveriesFile");
+
+    // set info variables
+    setState(() {
+      _totalDistance = (_totalDistance/1000).ceil();
+      _totalDuration = (_totalDuration/60).ceil();
+
+      _durationString = getTimeString(_totalDuration);
+      _deliveries = _loadingDeliveries;
+    });
+  }
+
+  String getTimeString(int time){
+    int hours = 0;
+    int minutes = time;
+
+    while(minutes > 60){
+      hours += 1;
+      minutes -= 60;
+    }
+
+    if(hours == 0){
+      return "$minutes min";
+    }
+    else{
+      return "$hours h $minutes min";
+    }
+  }
+
+  Widget _deliveryCards(String text, String distance, String time, String del, int route) {
     return Card(
       color: Colors.grey[800],
       elevation: 10,
@@ -57,11 +218,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             ),
             trailing: Padding(
               padding: const EdgeInsets.only(top: 18.0),
-              child: Icon(
-                Icons.keyboard_arrow_right,
-                color: Colors.grey[100],
-                size: 30,
-              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.keyboard_arrow_right,
+                  color: Colors.grey[100],
+                  size: 30,
+                ),
+                  onPressed: (){
+                    storage.write(key: 'current_route', value: '$route');
+                  },
+              )
             ),
           ),
         ),
@@ -115,13 +281,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       child:
                           Icon(FontAwesomeIcons.road, color: Colors.grey[100]),
                     ),
-                    TextSpan(text: "  Total KM : 30km\n", style: textStyle),
+                    TextSpan(text: "  Total KM : $_totalDistance Km\n", style: textStyle),
                     WidgetSpan(
                       child:
                           Icon(FontAwesomeIcons.clock, color: Colors.grey[100]),
                     ),
                     TextSpan(
-                        text: "  Total time : 40Min\n\n", style: textStyle),
+                        text: "  Total time : $_durationString\n\n", style: textStyle),
                     TextSpan(
                         text: "Current Route: Not Selected", style: textStyle)
                   ])),
@@ -133,23 +299,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             flex: 6,
             child: ListView(
               padding: const EdgeInsets.all(5),
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: _deliveryCards("Route 1", "Distance: 15km",
-                      "Time: 20 Min", "Deliveries: 3"),
-                ), //mock data
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: _deliveryCards("Route 2", "Distance: 15km",
-                      "Time: 20 Min", "Deliveries: 3"),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: _deliveryCards("Route 3", "Distance: 15km",
-                      "Time: 20 Min", "Deliveries: 3"),
-                ),
-              ],
+              children: _deliveries
             ),
           ),
         ])));

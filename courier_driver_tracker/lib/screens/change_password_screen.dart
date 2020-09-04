@@ -5,23 +5,24 @@ import "dart:ui";
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-class LoginPage extends StatefulWidget {
+class ChangePasswordPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _ChangePasswordPageState createState() => _ChangePasswordPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
+class _ChangePasswordPageState extends State<ChangePasswordPage>
     with SingleTickerProviderStateMixin {
-  final storage = new FlutterSecureStorage();
   final loginResponse = List<Widget>();
 
-  TextEditingController email = new TextEditingController();
+  TextEditingController newPassword = new TextEditingController();
   TextEditingController password = new TextEditingController();
 
   final headingLabelStyle = TextStyle(
     color: Colors.white,
-    fontSize: 25,
+    fontSize: 20,
     fontFamily: 'OpenSans-Regular',
   );
   final hintLabelStyle = TextStyle(
@@ -54,107 +55,102 @@ class _LoginPageState extends State<LoginPage>
     });
   }
 
-  void userLogin() async {
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: void
+   * Description: displays a toast when password is successfully updated.
+*/
+  void showToast() {
+    Fluttertoast.showToast(
+        msg: 'Password updated',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 2,
+        backgroundColor: Colors.grey[800],
+        textColor: Colors.white);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: void
+   * Description: validates and creates API calls to update the users password.
+*/
+  void verify() async {
     setState(() {
       loginResponse.clear();
     });
 
-    if (email.text.isEmpty) {
-      createLoginResponse('Please enter your email address.');
-      return;
-    }
-
-    bool emailValid = RegExp(
-            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-        .hasMatch(email.text.trim());
-    if (!emailValid) {
-      createLoginResponse('Email is invalid.');
-      return;
-    }
-
     if (password.text.isEmpty) {
-      createLoginResponse('Please enter a password.');
+      createLoginResponse('Please enter your existing password.');
       return;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
-        defaultValue: DotEnv().env['BEARER_TOKEN']);
+    if (newPassword.text.isEmpty) {
+      createLoginResponse('Please enter a new password');
+      return;
+    }
 
-    await storage.deleteAll();
-    Map data = {"email": email.text.trim(), "password": password.text.trim()};
-    Map<String, String> requestHeaders = {
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $bearerToken'
-    };
+    if (newPassword.text.length < 7) {
+      createLoginResponse('New password is to short');
+      return;
+    }
 
-    var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/drivers/authenticate",
-        headers: requestHeaders,
-        body: data);
-    if (response.statusCode == 200) {
-      var responseData = json.decode(response.body);
-      await storage.write(key: 'id', value: responseData['id']);
-      await storage.write(key: 'token', value: responseData['token']);
-      await storage.write(key: 'name', value: responseData['name']);
-      await storage.write(key: 'surname', value: responseData['surname']);
-      await storage.write(key: 'loginstatus', value: 'true');
+    ApiHandler api = new ApiHandler();
+    var response = await api.updateDriverPassword(newPassword.text.toString());
 
-      Navigator.of(context)
-          .popAndPushNamed('/home', arguments: responseData['token']);
-      Navigator.of(context)
-          .pushNamed('/delivery', arguments: responseData['token']);
-    } else //invalid credentials
+    if (response != 204) //invalid credentials
     {
-      print(response.statusCode);
       String errorResponse = '';
-
-      switch (response.statusCode) {
-        case 401:
-          errorResponse = 'Incorrect Email or password!';
-          break;
+      switch (response) {
         case 404:
-          errorResponse = 'This email has not been registered!';
+          errorResponse = 'Invalid :driverid or token';
           break;
         case 500:
           errorResponse = 'Service is currently unavailable';
           break;
       }
-
       createLoginResponse(errorResponse);
+    }
+    if (response == 204) {
+      Navigator.of(context).pop();
+      showToast();
     }
   }
 
-  Widget _username() {
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: Widget
+   * Description: Creates the new password input box for user
+*/
+  Widget _newPassword() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Email',
+          'Enter your new password',
           style: headingLabelStyle,
         ),
         SizedBox(height: 20.0, width: 100.0),
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-            border: Border.all(color: Colors.grey[100], width: 4),
+            border:
+                Border(bottom: BorderSide(color: Colors.grey[100], width: 2)),
             color: Colors.transparent,
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: Offset(0, 3))
-            ],
           ),
           height: 60.0,
           child: TextField(
-            controller: email,
-            keyboardType: TextInputType.emailAddress,
+            controller: newPassword,
+            obscureText: true,
+            keyboardType: TextInputType.visiblePassword,
             style: TextStyle(
                 color: Colors.white,
                 fontFamily: "OpenSans-Regular",
@@ -162,9 +158,6 @@ class _LoginPageState extends State<LoginPage>
             decoration: InputDecoration(
               border: InputBorder.none,
               contentPadding: EdgeInsets.only(top: 9.0),
-              prefixIcon: Icon(Icons.email, color: Colors.grey[100], size: 30),
-              hintStyle: hintLabelStyle,
-              hintText: "Enter your Email",
             ),
           ),
         ),
@@ -172,33 +165,27 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: Widget
+   * Description: Creates the current password input box for user
+*/
   Widget _password() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Password',
+          'Verify your current password',
           style: headingLabelStyle,
         ),
         SizedBox(height: 10.0),
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-            border: Border.all(color: Colors.grey[100], width: 4),
+            border:
+                Border(bottom: BorderSide(color: Colors.grey[100], width: 2)),
             color: Colors.transparent,
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                spreadRadius: 5,
-                blurRadius: 7,
-                offset: Offset(0, 3),
-              ),
-            ],
           ),
           height: 60.0,
           child: TextField(
@@ -213,13 +200,6 @@ class _LoginPageState extends State<LoginPage>
             decoration: InputDecoration(
               border: InputBorder.none,
               contentPadding: EdgeInsets.only(top: 9.0),
-              prefixIcon: Icon(
-                Icons.lock,
-                color: Colors.grey[100],
-                size: 30,
-              ),
-              hintText: "Enter your Password",
-              hintStyle: hintLabelStyle,
             ),
           ),
         ),
@@ -231,8 +211,7 @@ class _LoginPageState extends State<LoginPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {Navigator.of(context)
-            .pushNamed('/forgotPassword')},
+        onPressed: () => {"implementation missing"},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
@@ -251,14 +230,14 @@ class _LoginPageState extends State<LoginPage>
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: () => {userLogin()},
+        onPressed: () => {verify()},
         padding: EdgeInsets.all(15.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30.0),
         ),
         color: Colors.white,
         child: Text(
-          "LOGIN",
+          "Submit",
           style: TextStyle(
               color: Colors.black,
               letterSpacing: 1.5,
@@ -273,18 +252,9 @@ class _LoginPageState extends State<LoginPage>
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      backgroundColor: Colors.grey[900],
       body: Stack(
         children: <Widget>[
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: AssetImage("assets/images/login.jpg"),
-              ),
-            ),
-          ),
           Container(
             height: double.infinity,
             child: SingleChildScrollView(
@@ -298,33 +268,27 @@ class _LoginPageState extends State<LoginPage>
                   children: loginResponse +
                       <Widget>[
                         Text(
-                          "Sign In",
+                          "Change Password",
                           style: TextStyle(
                             color: Colors.white,
                             fontFamily: 'OpenSans',
-                            fontSize: 35.0,
+                            fontSize: 30.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 30.0),
-                        _username(),
-                        SizedBox(height: 30.0),
-                        _password(),
-                        _forgetPassword(),
-                        _button(),
                         Container(
-                          padding: EdgeInsets.only(bottom: 0.0),
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 100.0),
-                            child: Text(
-                              "By CTRL-ALT-ELITE",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
+                          decoration: new BoxDecoration(),
+                          child: Column(
+                            children: <Widget>[
+                              SizedBox(height: 30.0),
+                              _password(),
+                              SizedBox(height: 30.0),
+                              _newPassword(),
+                              _forgetPassword(),
+                            ],
                           ),
                         ),
+                        _button(),
                       ]),
             ),
           ),

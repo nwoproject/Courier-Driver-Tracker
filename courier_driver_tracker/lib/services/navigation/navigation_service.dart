@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:courier_driver_tracker/services/abnormality/abnormality_service.dart';
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as routeModel;
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/material.dart';
@@ -87,22 +91,36 @@ class NavigationService {
    *
    */
   initialiseRoutes() async {
+    /*
+    RouteLogging logger = RouteLogging();
+    String jsonString = await logger.readFileContents("deliveries");
+    if(jsonString == null || jsonString.length == 0){
+      print("Dev: Error initialising routes from json file. [Navigation Service:initialiseRoutes]");
+      return;
+    }
+    Map<String, dynamic> json = jsonDecode(jsonString);
+    _deliveryRoutes = DeliveryRoute.fromJson(json);
+     */
     JsonHandler handler = JsonHandler();
     Map<String, dynamic> json = await handler.parseJson(jsonFile);
     _deliveryRoutes = DeliveryRoute.fromJson(json);
+
   }
 
   initialisePolyPointsAndMarkers(int route) async {
     if(_deliveryRoutes == null){
       await initialiseRoutes();
+      if(_deliveryRoutes == null){
+        return;
+      }
     }
     for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
       int delivery = leg + 1;
       Marker marker = Marker(
         markerId: MarkerId('$route-$leg'),
         position: LatLng(
-          _deliveryRoutes.routes[route].legs[leg].endLocation.lat,
-          _deliveryRoutes.routes[route].legs[leg].endLocation.lng,
+          _deliveryRoutes.routes[route].legs[leg].endLocation.latitude,
+          _deliveryRoutes.routes[route].legs[leg].endLocation.longitude,
         ),
         infoWindow: InfoWindow(
           title: 'Delivery $delivery',
@@ -185,6 +203,9 @@ class NavigationService {
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     LatLng positionOnPoly = calculatePointOnPolyline();
 
     // remove previous position from polyline
@@ -244,6 +265,9 @@ class NavigationService {
   }
 
   String updateDistanceETA(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     DateTime now = DateTime.now();
     int totalTime = _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
     for(int i = 0; i < _currentStep; i++){
@@ -264,6 +288,9 @@ class NavigationService {
   }
 
   String updateDeliveryTimeRemaining(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     int totalTime = _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
     for(int i = 0; i < _currentStep; i++){
       totalTime -= _deliveryRoutes.getStepDuration(_currentRoute, _currentLeg, i);
@@ -276,6 +303,9 @@ class NavigationService {
   }
 
   String updateDirections(){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     getDirectionIcon();
     directions = getDirection();
     return directions;
@@ -311,10 +341,7 @@ class NavigationService {
 
   String getDirectionIcon(){
     String path = "assets/images/";
-    if(_deliveryRoutes == null){
-      path += "navigation_marker";
-    }
-    else if(atDelivery){
+    if(_deliveryRoutes == null || atDelivery){
       path += "navigation_marker_white.png";
       directionIconPath = path;
       return directionIconPath;
@@ -445,7 +472,7 @@ class NavigationService {
 
   int getTotalDeliveries(){
     if(_deliveryRoutes == null){
-      return null;
+      return 0;
     }
     return _deliveryRoutes.getTotalDeliveries();
   }
@@ -463,18 +490,30 @@ class NavigationService {
   }
 
   LatLng getStepStartLatLng(int route, int leg, int step){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getStepStartLatLng(route, leg, step);
   }
 
   LatLng getStepEndLatLng(int route, int leg, int step){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getStepEndLatLng(route, leg, step);
   }
 
   LatLng getNorthEastBound(int route){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getNorthEastBound(route);
   }
 
   LatLng getSouthWestBound(int route){
+    if(_deliveryRoutes == null){
+      return null;
+    }
     return _deliveryRoutes.getSouthWestBound(route);
   }
 
@@ -590,9 +629,36 @@ class NavigationService {
   bool isAtDelivery(){
     if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last) < _position.accuracy + 10){
       atDelivery = true;
+      sendDeliveryAPICall();
     }
     return atDelivery;
   }
+
+  sendDeliveryAPICall() async{
+    ApiHandler api = ApiHandler();
+
+    List<routeModel.Route> routes = await api.getUncalculatedRoute();
+    if(routes == null){
+      return;
+    }
+    for(int i = 0; i < routes.length; i++){
+      for(int j = 0; j < routes[i].locations.length; j++){
+        if(calculateDistanceBetween(currentPolyline.points.last,
+            LatLng(double.parse(routes[i].locations[j].latitude), double.parse(routes[i].locations[j].longitude))) < 1){
+          await api.completeDelivery(routes[i].locations[j].locationID, _position);
+          if(_currentLeg == getTotalDeliveries() - 1){
+            sendCompletedRouteAPICall();
+          }
+        }
+      }
+    }
+  }
+
+  sendCompletedRouteAPICall() async{
+    ApiHandler api = ApiHandler();
+    var id = await api.getActiveRouteID(_currentRoute);
+    api.completeRoute(id, _position);
+}
 
 
 
@@ -622,6 +688,10 @@ class NavigationService {
     _position = currentPosition;
     _abnormalityService.setCurrentLocation(currentPosition);
     _notificationManager.setContext(context);
+    if(_deliveryRoutes == null){
+      initialiseRoutes();
+      return;
+    }
 
     // safety checks
     if(currentPolyline == null){
@@ -690,10 +760,6 @@ class NavigationService {
         - make abnormalities for when at destination
        */
       updateCurrentPolyline();
-
-
-
-
     }
 
     // General abnormalities
@@ -713,3 +779,20 @@ class NavigationService {
   }
 
 }
+
+/*
+TODO
+  - see if old route is still saved, meaning incomplete. create abnormality
+  - store current route, leg and step in secure storage for if they change route
+  - read in all of the above variables in case it is stored
+  - change icons on delivery page
+  - first check if files are empty before calling api
+  -navigation
+  - add leg calculation
+  - move to next leg
+  - update storage variables
+  - only call google api to create route
+  - edit ryans file-logger to store according to route as well
+  - when route is completed, delete file
+  - when all routes have been completed clear uncalculated and calculating
+ */
