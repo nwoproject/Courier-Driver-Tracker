@@ -91,6 +91,7 @@ class NavigationService {
    *
    */
   initialiseRoutes() async {
+    /*
     RouteLogging logger = RouteLogging();
     String jsonString = await logger.readFileContents("deliveries");
     if(jsonString == null || jsonString.length == 0){
@@ -99,6 +100,11 @@ class NavigationService {
     }
     Map<String, dynamic> json = jsonDecode(jsonString);
     _deliveryRoutes = DeliveryRoute.fromJson(json);
+     */
+    JsonHandler handler = JsonHandler();
+    Map<String, dynamic> json = await handler.parseJson(jsonFile);
+    _deliveryRoutes = DeliveryRoute.fromJson(json);
+
   }
 
   initialisePolyPointsAndMarkers(int route) async {
@@ -632,15 +638,16 @@ class NavigationService {
     ApiHandler api = ApiHandler();
 
     List<routeModel.Route> routes = await api.getUncalculatedRoute();
+    if(routes == null){
+      return;
+    }
     for(int i = 0; i < routes.length; i++){
-      if(routes[i].routeID == await api.getActiveRouteID(_currentRoute)){
-        for(int j = 0; j < routes[i].locations.length; j++){
-          if(calculateDistanceBetween(currentPolyline.points.last,
-              LatLng(double.parse(routes[i].locations[j].latitude), double.parse(routes[i].locations[j].longitude))) < 1){
-            await api.completeDelivery(routes[i].locations[j].locationID, _position);
-            if(_currentLeg == getTotalDeliveries() - 1){
-              sendCompletedRouteAPICall();
-            }
+      for(int j = 0; j < routes[i].locations.length; j++){
+        if(calculateDistanceBetween(currentPolyline.points.last,
+            LatLng(double.parse(routes[i].locations[j].latitude), double.parse(routes[i].locations[j].longitude))) < 1){
+          await api.completeDelivery(routes[i].locations[j].locationID, _position);
+          if(_currentLeg == getTotalDeliveries() - 1){
+            sendCompletedRouteAPICall();
           }
         }
       }
@@ -772,3 +779,20 @@ class NavigationService {
   }
 
 }
+
+/*
+TODO
+  - see if old route is still saved, meaning incomplete. create abnormality
+  - store current route, leg and step in secure storage for if they change route
+  - read in all of the above variables in case it is stored
+  - change icons on delivery page
+  - first check if files are empty before calling api
+  -navigation
+  - add leg calculation
+  - move to next leg
+  - update storage variables
+  - only call google api to create route
+  - edit ryans file-logger to store according to route as well
+  - when route is completed, delete file
+  - when all routes have been completed clear uncalculated and calculating
+ */

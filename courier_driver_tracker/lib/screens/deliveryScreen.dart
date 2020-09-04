@@ -34,9 +34,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   void initState() {
     /*
     TODO
-      - call api and write json to file / read from file
       - use json to populate the cards
-      - store filename in storage
      */
     getRoutes();
 
@@ -44,13 +42,39 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   getRoutes() async{
-    await _api.initDriverRoute();
 
+    // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
-    if(routes == null){
-      print("Dev: error while retrieving uncalculated routes");
+    int currentActiveRoute = -1;//int.parse(await storage.read(key: 'active_route'));
+
+    if(routes != null && currentActiveRoute == -1){
+      // notify abnormality about not completing a route
+      print("You have an unfinished route!!");
       return;
     }
+
+
+    // if not initialise his routes
+    await _api.initDriverRoute();
+    routes = await _api.getUncalculatedRoute();
+
+    // check to see if he has no routes
+    if(routes == null){
+      setState(() {
+        _durationString = "";
+        _loadingDeliveries.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _deliveryCards("No Routes Available", "",
+              "You have no routes for the day. Ensure to exit app completely." , "", -1),
+        ));
+
+        _deliveries = _loadingDeliveries;
+      });
+      print("Dev: Error while retrieving uncalculated routes");
+      return;
+    }
+
+    // he has routes
     // remove all unnecessary information from json object
     Map<String, dynamic> deliveryRoutes = {
       "routes" : []
@@ -60,14 +84,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       await _api.initCalculatedRoute(routes[i].routeID);
       var activeRoute = await _api.getActiveCalculatedRoute();
 
-
       if(activeRoute == null){
         setState(() {
           _durationString = "";
           _loadingDeliveries.add(Padding(
             padding: const EdgeInsets.all(2.0),
             child: _deliveryCards("No Routes Available", "",
-                "Could not load route. Contact your manager for assistance." , ""),
+                "Could not load route. Contact your manager for assistance." , "", -1),
           ));
 
           _deliveries = _loadingDeliveries;
@@ -119,42 +142,31 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           numDeliveries = j;
         }
         deliveryRoutes["routes"].add(deliveryRoute);
+
+        // create delivery cards
         int routeNum = i + 1;
         distance = (distance/1000).ceil();
         duration = (duration/60).ceil();
-        print("Distance: " + distance.toString());
-        print("TotalDistance: " + _totalDistance.toString());
         _loadingDeliveries.add(Padding(
           padding: const EdgeInsets.all(2.0),
           child: _deliveryCards("Route $routeNum", "Distance: $distance Km",
-              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries"),
+              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries", routeNum),
         ));
       }
-
-
     }
+
+    //write deliveries to file
     RouteLogging logger = RouteLogging();
     logger.writeToFile(deliveryRoutes.toString(), "deliveriesFile");
 
+    // set info variables
     setState(() {
       _totalDistance = (_totalDistance/1000).ceil();
       _totalDuration = (_totalDuration/60).ceil();
 
       _durationString = getTimeString(_totalDuration);
-      print(_loadingDeliveries.length);
       _deliveries = _loadingDeliveries;
     });
-  }
-
-
-  //logging tests
-  final RouteLogging routeLogging = RouteLogging();
-
-  Future<String> getDeliveryDetails() async {
-    routeLogging.writeToFile("hello this is working", "deliveryFile");
-
-    String content = await routeLogging.readFileContents("deliveryFile");
-    return content;
   }
 
   String getTimeString(int time){
@@ -174,7 +186,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     }
   }
 
-  Widget _deliveryCards(String text, String distance, String time, String del) {
+  Widget _deliveryCards(String text, String distance, String time, String del, int route) {
     return Card(
       color: Colors.grey[800],
       elevation: 10,
@@ -206,11 +218,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             ),
             trailing: Padding(
               padding: const EdgeInsets.only(top: 18.0),
-              child: Icon(
-                Icons.keyboard_arrow_right,
-                color: Colors.grey[100],
-                size: 30,
-              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.keyboard_arrow_right,
+                  color: Colors.grey[100],
+                  size: 30,
+                ),
+                  onPressed: (){
+                    storage.write(key: 'current_route', value: '$route');
+                  },
+              )
             ),
           ),
         ),

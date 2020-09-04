@@ -56,7 +56,7 @@ class RouteLogging{
   Future<String> get localPath async {
 
     final directory = await getApplicationDocumentsDirectory();
-    final directoryFolder = Directory(directory.path + "/RouteLogging/");
+    final directoryFolder = Directory(directory.path + "/RouteLogging");
 
     if(await directoryFolder.exists()){
       return directoryFolder.path;
@@ -71,8 +71,6 @@ class RouteLogging{
   Future<File> get locationFile async {
     String fileName = getFileName();
     final path = await localPath;
-    print("Directory used:");
-    print('$path/$deliveriesPath');
 
     return File(path + fileName);
   }
@@ -82,9 +80,9 @@ class RouteLogging{
     final path = await localPath;
 
     print("Directory used:");
-    print('$path/$deliveriesPath');
+    print('$path$deliveriesPath');
 
-    return File('$path/$deliveriesPath');
+    return File('$path$deliveriesPath');
   }
 
   Future<String> readFileContents(String fileType) async {

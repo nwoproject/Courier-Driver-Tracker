@@ -103,7 +103,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
     }
 
     ApiHandler api = new ApiHandler();
-    var response = await api.updateDriverPassword(newPassword.value.toString());
+    var response = await api.updateDriverPassword(newPassword.text.toString());
 
     if (response != 204) //invalid credentials
     {

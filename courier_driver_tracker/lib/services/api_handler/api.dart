@@ -1,3 +1,4 @@
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -44,6 +45,7 @@ class ApiHandler {
 
     var response =
         await http.get("$apiUrl/api/routes/$driverID", headers: requestHeaders);
+    print(response.body);
 
     return response.body;
   }
@@ -207,8 +209,20 @@ class ApiHandler {
     }
   }
 
+  Future<File> initDirectlyCalculatedRoute(routeID) async {
+    var response = await calculateRouteDirectly(routeID);
+    if (response.statusCode == 200) {
+      var responseData = response.body;
+      final file = await getFile("active-calculated-route.txt");
+      return file.writeAsString(responseData.toString());
+    }
+    else {
+      return null;
+    }
+  }
+
   //backup function to calculate route directly from google if api call method fails
-  Future<dynamic> initCalculatedRouteDirectly(routeID) async{
+  Future<dynamic> calculateRouteDirectly(routeID) async{
 
     List<Route> routes = await getUncalculatedRoute();
 
@@ -224,50 +238,66 @@ class ApiHandler {
     const String STATUS_OK = "ok";
     String key = String.fromEnvironment('APP_MAP_API_KEY',
         defaultValue: DotEnv().env['APP_MAP_API_KEY']);
-    List<PolylineWayPoint> wayPoints = [];
     for(int i = 0; i < routes.length; i++){
 
-      PointLatLng origin = PointLatLng(double.parse(routes[i].locations[0].latitude),
-          double.parse(routes[i].locations[0].longitude));
-      PointLatLng destination = PointLatLng(double.parse(routes[i].locations.last.latitude),
-          double.parse(routes[i].locations.last.longitude));
+      PointLatLng origin;
+      PointLatLng destination;
+      print("Total Deliveries: " + routes[i].locations.length.toString());
+      for(int j = -1; j <= routes[i].locations.length; j++){
 
-      for(int j = 1; j < routes.length - 1; j++){
-        String lat = routes[i].locations[j].latitude;
-        String lng = routes[i].locations[j].longitude;
-        wayPoints.add(PolylineWayPoint(location: "$lat,$lng"));
-      }
-
-      var params = {
-        "origin": "${origin.latitude},${origin.longitude}",
-        "destination": "${destination.latitude},${destination.longitude}",
-        "mode": "DRIVING",
-        "avoidHighways": "false",
-        "avoidFerries": "false",
-        "avoidTolls": "false",
-        "key": key
-      };
-      if (wayPoints.isNotEmpty) {
-        List<String> wayPointsArray = wayPoints.map((point) => point.toString());
-        String wayPointsString = wayPointsArray.join('|');
-        wayPointsString = 'optimize:true|$wayPointsString';
-        params.addAll({"waypoints": wayPointsString});
-      }
-      Uri uri =
-      Uri.https("maps.googleapis.com", "maps/api/directions/json", params);
-
-      String url = uri.toString();
-      print('GOOGLE MAPS URL: ' + url);
-      var response = await http.get(url);
-      if (response?.statusCode == 200) {
-        var parsedJson = json.decode(response.body);
-        if (parsedJson["status"]?.toLowerCase() == STATUS_OK &&
-            parsedJson["routes"] != null &&
-            parsedJson["routes"].isNotEmpty) {
-          print(response.body);
-        } else {
-          print("Dev: Failed to get response from google api");
+        print("Delivery: " + (j + 1).toString());
+        if(j == -1){
+          origin = PointLatLng(-25.7562, 28.2312);
+          destination = PointLatLng(double.parse(routes[i].locations[0].latitude),
+              double.parse(routes[i].locations[0].longitude));
         }
+        else if(j == routes[i].locations.length){
+          origin = PointLatLng(double.parse(routes[i].locations[0].latitude),
+              double.parse(routes[i].locations[0].longitude));
+          destination = PointLatLng(-25.7562, 28.2312);
+        }
+        else if(j == routes[i].locations.length - 1){
+          origin = PointLatLng(double.parse(routes[i].locations[j].latitude),
+              double.parse(routes[i].locations[j].longitude));
+          destination = PointLatLng(double.parse(routes[i].locations[0].latitude),
+              double.parse(routes[i].locations[0].longitude));
+        }
+        else{
+          origin = PointLatLng(double.parse(routes[i].locations[j].latitude),
+              double.parse(routes[i].locations[j].longitude));
+          destination = PointLatLng(double.parse(routes[i].locations[j + 1].latitude),
+              double.parse(routes[i].locations[j + 1].longitude));
+        }
+
+        var params = {
+          "origin": "${origin.latitude},${origin.longitude}",
+          "destination": "${destination.latitude},${destination.longitude}",
+          "mode": "DRIVING",
+          "avoidHighways": "false",
+          "avoidFerries": "false",
+          "avoidTolls": "false",
+          "key": key
+        };
+
+        Uri uri =
+        Uri.https("maps.googleapis.com", "maps/api/directions/json", params);
+
+        String url = uri.toString();
+        print('GOOGLE MAPS URL: ' + url);
+        var response = await http.get(url);
+        if (response?.statusCode == 200) {
+          var parsedJson = json.decode(response.body);
+          if (parsedJson["status"]?.toLowerCase() == STATUS_OK &&
+              parsedJson["routes"] != null &&
+              parsedJson["routes"].isNotEmpty) {
+
+            RouteLogging logger = RouteLogging();
+            logger.writeToFile(response.body, "deliveriesFile");
+          } else {
+            print("Dev: Failed to get response from google api");
+          }
+        }
+        //return response;
       }
     }
 

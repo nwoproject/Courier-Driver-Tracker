@@ -231,7 +231,8 @@ class _LoginPageState extends State<LoginPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {"implementation missing"},
+        onPressed: () => {Navigator.of(context)
+            .pushNamed('/forgotPassword')},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
