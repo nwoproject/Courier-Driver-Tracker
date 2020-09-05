@@ -9,6 +9,7 @@ import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -17,6 +18,7 @@ class NavigationService {
    * Author: Gian Geyser
    * Description: Navigation class.
    */
+
 
   DeliveryRoute _deliveryRoutes;
   int _currentRoute;
@@ -38,6 +40,7 @@ class NavigationService {
   bool nearDelivery = false;
 
   // info variables
+  FlutterSecureStorage _storage = FlutterSecureStorage();
   String directions;
   String deliveryTimeRemaining;
   int distance;
@@ -70,8 +73,6 @@ class NavigationService {
     _currentRoute = 0;
     _currentLeg = 0;
     _currentStep = 0;
-    initialiseRoutes();
-    initialisePolyPointsAndMarkers(_currentRoute);
     initialiseNotifications(context);
   }
 
@@ -91,7 +92,6 @@ class NavigationService {
    *
    */
   initialiseRoutes() async {
-    /*
     RouteLogging logger = RouteLogging();
     String jsonString = await logger.readFileContents("deliveries");
     if(jsonString == null || jsonString.length == 0){
@@ -100,20 +100,24 @@ class NavigationService {
     }
     Map<String, dynamic> json = jsonDecode(jsonString);
     _deliveryRoutes = DeliveryRoute.fromJson(json);
-     */
-    JsonHandler handler = JsonHandler();
-    Map<String, dynamic> json = await handler.parseJson(jsonFile);
-    _deliveryRoutes = DeliveryRoute.fromJson(json);
-
   }
 
   initialisePolyPointsAndMarkers(int route) async {
+    if(route == -1 || route == null){
+      return;
+    }
     if(_deliveryRoutes == null){
       await initialiseRoutes();
       if(_deliveryRoutes == null){
         return;
       }
     }
+
+    /*
+    TODO
+      - change the way legs work since they are no longer deliveries but routes.
+     */
+
     for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
       int delivery = leg + 1;
       Marker marker = Marker(
@@ -163,8 +167,10 @@ class NavigationService {
   }
 
   initialiseBounds(){
-    northEast = getNorthEastBound(_currentRoute);
-    southWest = getSouthWestBound(_currentRoute);
+    if(_currentRoute != null || _currentRoute == -1){
+      northEast = getNorthEastBound(_currentRoute);
+      southWest = getSouthWestBound(_currentRoute);
+    }
   }
 
   initialiseInfoVariables(){
@@ -189,6 +195,23 @@ class NavigationService {
       radius: 100.0,
     );
     circles.add(deliveryCircle);
+  }
+
+  clearAllSetVariables(){
+    polylines = {};
+    currentPolyline = null;
+    markers = {};
+    circles = {};
+    northEast = null;
+    southWest = null;
+    directions = null;
+    deliveryTimeRemaining = null;
+    distance = null;
+    eta = null;
+    distanceETA = null;
+    delivery = null;
+    deliveryAddress = null;
+    directionIconPath = null;
   }
 
 
@@ -311,6 +334,28 @@ class NavigationService {
     return directions;
   }
 
+  updateCurrentDeliveryRoutes() async{
+    // store and switch
+
+    String currentRoute = await _storage.read(key: 'current_route');
+
+    if(currentRoute != null && currentRoute != '$_currentRoute' && currentRoute != '-1'){
+      _storage.write(key: 'route$_currentRoute', value: '$_currentLeg-$_currentStep');
+      String savedRouteInfo = await _storage.read(key: 'route$currentRoute');
+      List<String> routeInfo = savedRouteInfo.split("-");
+      _currentRoute = int.parse(currentRoute);
+      _currentLeg = int.parse(routeInfo[0]);
+      _currentStep = int.parse(routeInfo[1]);
+
+      clearAllSetVariables();
+      initialisePolyPointsAndMarkers(_currentRoute);
+      initialiseBounds();
+      initialiseInfoVariables();
+    }
+
+  }
+
+
 
   //__________________________________________________________________________________________________
   //                            Setters
@@ -318,6 +363,10 @@ class NavigationService {
 
   setCurrentPolyline(){
     currentPolyline = polylines["$_currentRoute-$_currentLeg"];
+  }
+
+  setCurrentRoute() async{
+    _currentRoute = int.parse(await _storage.read(key: 'current_route') != null ? await _storage.read(key: 'current_route') : -1);
   }
 
 
@@ -665,6 +714,7 @@ class NavigationService {
 
 
 
+
   //__________________________________________________________________________________________________
   //                            Main Function
   //__________________________________________________________________________________________________
@@ -685,13 +735,18 @@ class NavigationService {
     - update the info vars for map
      */
 
-    _position = currentPosition;
-    _abnormalityService.setCurrentLocation(currentPosition);
-    _notificationManager.setContext(context);
     if(_deliveryRoutes == null){
       initialiseRoutes();
       return;
     }
+    updateCurrentDeliveryRoutes();
+    if(_currentRoute == -1){
+      return;
+    }
+
+    _position = currentPosition;
+    _abnormalityService.setCurrentLocation(currentPosition);
+    _notificationManager.setContext(context);
 
     // safety checks
     if(currentPolyline == null){
@@ -787,12 +842,15 @@ TODO
   - read in all of the above variables in case it is stored
   - change icons on delivery page
   - first check if files are empty before calling api
+    - edit ryans file-logger to store according to route as well
+  */
+  /*
+ TODO
   -navigation
   - add leg calculation
   - move to next leg
   - update storage variables
   - only call google api to create route
-  - edit ryans file-logger to store according to route as well
   - when route is completed, delete file
   - when all routes have been completed clear uncalculated and calculating
  */

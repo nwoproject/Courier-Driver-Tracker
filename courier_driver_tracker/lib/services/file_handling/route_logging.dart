@@ -9,7 +9,7 @@ import 'package:geolocator/geolocator.dart';
 class RouteLogging{
 
   final String locationPath ="/tracking.json";
-  final String deliveriesPath = "/deliveries.json";
+  final String deliveriesPath = "deliveries.json";
   String name = "";
   bool first = true;
   String time = "";
@@ -44,11 +44,14 @@ class RouteLogging{
 
   String getFileName(){
     getFileNameData();
+    if(driverID == null){
+      print("Dev: Driver ID not set. [RouteLogging]");
+      return null;
+    }
     if (first == true) {
       name = (driverID + "_" + time + ".txt");
       first = false;
     }
-    print(name);
     return name;
   }
 
@@ -73,6 +76,10 @@ class RouteLogging{
 
   Future<File> get locationFile async {
     String fileName = getFileName();
+    if(fileName == null){
+      print("Dev: could not retrieve filename[RouteLogging]");
+      return null;
+    }
     final path = await localPath;
 
     return File(path + fileName);
@@ -103,6 +110,7 @@ class RouteLogging{
       return contents;
     } catch (e) {
       // If encountering an error, return 0
+      print(e);
       return "";
     }
   }

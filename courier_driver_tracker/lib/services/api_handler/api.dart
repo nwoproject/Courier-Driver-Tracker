@@ -45,8 +45,6 @@ class ApiHandler {
 
     var response =
         await http.get("$apiUrl/api/routes/$driverID", headers: requestHeaders);
-    print(response.body);
-
     return response.body;
   }
 
@@ -242,10 +240,7 @@ class ApiHandler {
 
       PointLatLng origin;
       PointLatLng destination;
-      print("Total Deliveries: " + routes[i].locations.length.toString());
       for(int j = -1; j <= routes[i].locations.length; j++){
-
-        print("Delivery: " + (j + 1).toString());
         if(j == -1){
           origin = PointLatLng(-25.7562, 28.2312);
           destination = PointLatLng(double.parse(routes[i].locations[0].latitude),
@@ -300,7 +295,6 @@ class ApiHandler {
         //return response;
       }
     }
-
   }
 
 }

@@ -45,14 +45,20 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
-    int currentActiveRoute = -1;//int.parse(await storage.read(key: 'active_route'));
+    String currentRoute = await storage.read(key: 'current_route');
+    int currentActiveRoute;
+    if(currentRoute == null){
+      currentActiveRoute = -1;
+    }
+    else{
+      currentActiveRoute = int.parse(currentRoute);
+    }
 
     if(routes != null && currentActiveRoute == -1){
       // notify abnormality about not completing a route
       print("You have an unfinished route!!");
       return;
     }
-
 
     // if not initialise his routes
     await _api.initDriverRoute();
@@ -150,13 +156,17 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         _loadingDeliveries.add(Padding(
           padding: const EdgeInsets.all(2.0),
           child: _deliveryCards("Route $routeNum", "Distance: $distance Km",
-              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries", routeNum),
+              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries", i),
         ));
+      }
+      if(storage.read(key: 'route$i') == null){
+        storage.write(key: 'route$i', value: '0-0');
       }
     }
 
     //write deliveries to file
     RouteLogging logger = RouteLogging();
+    print("Trying to write to deliveries.");
     logger.writeToFile(deliveryRoutes.toString(), "deliveriesFile");
 
     // set info variables
@@ -224,8 +234,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   color: Colors.grey[100],
                   size: 30,
                 ),
-                  onPressed: (){
-                    storage.write(key: 'current_route', value: '$route');
+                  onPressed: () async{
+                    await storage.write(key: 'current_route', value: '$route');
+                    Navigator.of(context).pop();
                   },
               )
             ),

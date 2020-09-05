@@ -3,6 +3,7 @@ import 'package:courier_driver_tracker/services/file_handling/route_logging.dart
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -98,9 +99,12 @@ class MapSampleState extends State<GMap> {
     }
   }
 
-  getCurrentRoute(){
-    String currentRoute = String.fromEnvironment('CURRENT_ROUTE', defaultValue: DotEnv().env['CURRENT_ROUTE']);
-    _route = int.parse(currentRoute);
+  getCurrentRoute() async {
+    FlutterSecureStorage storage = FlutterSecureStorage();
+    String currentRoute = await storage.read(key: 'current_route');
+    if(_route == -1 && currentRoute != null){
+      _route = int.parse(currentRoute);
+    }
   }
 
   /*
@@ -248,20 +252,38 @@ class MapSampleState extends State<GMap> {
     if(_navigatorService.directions != null){
       _directions = _navigatorService.directions;
     }
+    else{
+      _directions = "LOADING...";
+    }
     if(_navigatorService.deliveryTimeRemaining != null){
       _stepTimeRemaining = _navigatorService.deliveryTimeRemaining;
+    }
+    else{
+      _stepTimeRemaining = "LOADING...";
     }
     if(_navigatorService.distanceETA != null){
       _distanceETA = _navigatorService.distanceETA;
     }
+    else{
+      _distanceETA = "";
+    }
     if(_navigatorService.delivery != null){
       _delivery = _navigatorService.delivery;
+    }
+    else{
+      _delivery = "LOADING...";
     }
     if(_navigatorService.deliveryAddress != null){
       _deliveryAddress = _navigatorService.deliveryAddress;
     }
+    else{
+      _deliveryAddress = "";
+    }
     if(_navigatorService.directionIconPath != null){
       _directionIconPath = _navigatorService.directionIconPath;
+    }
+    else{
+      _directionIconPath = "assets/images/navigation_marker_white.png";
     }
     circles = _navigatorService.circles;
     atDelivery = _navigatorService.atDelivery;
