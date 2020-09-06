@@ -1,10 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -211,7 +207,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {"implementation missing"},
+        onPressed: () => {Navigator.of(context).pushNamed('/forgotPassword')},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
