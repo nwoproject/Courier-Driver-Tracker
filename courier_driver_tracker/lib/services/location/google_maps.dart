@@ -315,8 +315,6 @@ class MapSampleState extends State<GMap> {
     if(_currentPosition != null) {
       _navigatorService.navigate(_currentPosition, context);
       _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
-      String output = _routeLogging.displayFileContents();
-      print(output);
 
       setInformationVariables();
       if(lockedOnPosition){

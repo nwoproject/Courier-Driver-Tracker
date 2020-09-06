@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:courier_driver_tracker/services/abnormality/abnormality_service.dart';
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as routeModel;
-import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
@@ -92,8 +91,15 @@ class NavigationService {
    *
    */
   initialiseRoutes() async {
+    String initialised = await _storage.read(key: 'route_initialised');
+
+    if(initialised != "true"){
+      return;
+    }
+
     RouteLogging logger = RouteLogging();
     String jsonString = await logger.readFileContents("deliveries");
+    print("Contents in navigation: " + jsonString);
     if(jsonString == null || jsonString.length == 0){
       print("Dev: Error initialising routes from json file. [Navigation Service:initialiseRoutes]");
       return;
@@ -736,6 +742,7 @@ class NavigationService {
      */
 
     if(_deliveryRoutes == null){
+      print("Trying to set routes");
       initialiseRoutes();
       return;
     }
@@ -743,6 +750,15 @@ class NavigationService {
     if(_currentRoute == -1){
       return;
     }
+    if(polylines == null || polylines.length == 0 ||
+        markers == null || markers.length == 0){
+      initialisePolyPointsAndMarkers(_currentRoute);
+    }
+    /*
+    TODO
+      -  initialise all variables.
+     */
+
 
     _position = currentPosition;
     _abnormalityService.setCurrentLocation(currentPosition);
@@ -750,7 +766,11 @@ class NavigationService {
 
     // safety checks
     if(currentPolyline == null){
+      print("Setting current polyline for route $_currentRoute.");
+
       setCurrentPolyline();
+
+      return;
       // uncomment when not using replacement functions from abnormality service
       //_abnormalityService.getSpeedLimit(currentPolyline.points);
     }
@@ -758,6 +778,7 @@ class NavigationService {
         distanceETA == null || delivery == null || deliveryAddress == null
         || directionIconPath == null){
       initialiseInfoVariables();
+      return;
     }
 
     if(currentPolyline.points.length < 4){
