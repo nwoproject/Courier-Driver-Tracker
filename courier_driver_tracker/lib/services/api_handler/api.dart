@@ -11,6 +11,8 @@ import 'dart:convert';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 
 class ApiHandler {
   final storage = new FlutterSecureStorage();
@@ -154,6 +156,26 @@ class ApiHandler {
       "token": token,
       "latitude": position.latitude.toString(),
       "longitude": position.longitude.toString()
+    };
+
+    var response = await http.put("$apiUrl/api/location/$driverID",
+        headers: requestHeaders, body: data);
+
+    return response.statusCode;
+  }
+
+    Future<dynamic> updateDriverLocationNoCoords() async
+  {
+    var driverID = await storage.read(key: 'id');
+    var token = await storage.read(key: 'token');
+    position = await geolocatorService.getPosition();
+    String lat = position.latitude.toString();
+    String long = position.longitude.toString();
+    
+    Map<String, dynamic> data = {
+      "token": token,
+      "latitude": lat,
+      "longitude": long
     };
 
     var response = await http.put("$apiUrl/api/location/$driverID",
