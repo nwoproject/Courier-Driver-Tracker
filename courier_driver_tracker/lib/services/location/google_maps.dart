@@ -7,7 +7,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 
@@ -35,10 +34,6 @@ class MapSampleState extends State<GMap> {
 
   // Navigation
   int _route;
-  /*
-  TODO
-    - read filename from storage
-   */
   static String _routeFile = "route.json";
   NavigationService _navigatorService = NavigationService(jsonFile: _routeFile);
   String _directions = "LOADING...";
@@ -300,8 +295,13 @@ class MapSampleState extends State<GMap> {
       - make new function to replace polylines.
      */
     await _navigatorService.initialisePolyPointsAndMarkers(_route);
-    polylines = _navigatorService.polylines;
     markers = _navigatorService.markers;
+  }
+
+  _updatePolyline(){
+    if(_navigatorService.currentPolyline != null){
+      polylines = { "$_route" : _navigatorService.currentPolyline};
+    }
   }
 
   @override
@@ -315,6 +315,10 @@ class MapSampleState extends State<GMap> {
     if(_currentPosition != null) {
       _navigatorService.navigate(_currentPosition, context);
       _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
+
+      if(polylines == null || polylines.length == 0){
+        _updatePolyline();
+      }
 
       setInformationVariables();
       if(lockedOnPosition){

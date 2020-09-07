@@ -169,6 +169,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             deliveryStep["start_location"] = step["start_location"];
             deliveryStep["html_instructions"] = step["html_instructions"];
             deliveryStep["polyline"] = step["polyline"];
+            deliveryStep["maneuver"] = step["maneuver"];
 
             // add step to leg steps
             deliveryLeg["steps"].add(deliveryStep);

@@ -119,11 +119,6 @@ class NavigationService {
       }
     }
 
-    /*
-    TODO
-      - change the way legs work since they are no longer deliveries but routes.
-     */
-
     for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
       int delivery = leg + 1;
       Marker marker = Marker(
@@ -249,7 +244,7 @@ class NavigationService {
     int newLength = 0;
     for(int i = 0; i < currentPolyline.points.length - _lengthRemainingAtNextDelivery - 1; i ++){
       int dist1 = calculateDistanceBetween(currentPolyline.points[i+1], LatLng(_position.latitude, _position.longitude));
-      int dist2 = calculateDistanceBetween(currentPolyline.points[i], LatLng(_position.latitude, _position.longitude));
+      int dist2 = calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i+1]);
       if(dist2 > dist1){
         newLength = i + 1;
       }
