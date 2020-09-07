@@ -68,4 +68,8 @@ class DeliveryRoute{
   LatLng getSouthWestBound(int deliveryRoute){
     return routes[deliveryRoute].getSouthWestBound();
   }
+
+  LatLng getNextDeliveryLocation(int route, int leg){
+    return routes[route].getNextDeliveryLocation(leg);
+  }
 }

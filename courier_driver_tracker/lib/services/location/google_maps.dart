@@ -210,20 +210,20 @@ class MapSampleState extends State<GMap> {
     final bool northEastLatitudeCheck = screenBounds.northeast.latitude >=
             markerBounds.northeast.latitude + 0.005 &&
         screenBounds.northeast.latitude <=
-            markerBounds.northeast.latitude + 0.04;
+            markerBounds.northeast.latitude + 0.05;
     final bool northEastLongitudeCheck = screenBounds.northeast.longitude >=
             markerBounds.northeast.longitude + 0.005 &&
         screenBounds.northeast.longitude <=
-            markerBounds.northeast.longitude + 0.04;
+            markerBounds.northeast.longitude + 0.05;
 
     final bool southWestLatitudeCheck = screenBounds.southwest.latitude <=
             markerBounds.southwest.latitude - 0.015 &&
         screenBounds.southwest.latitude >=
-            markerBounds.southwest.latitude - 0.04;
+            markerBounds.southwest.latitude - 0.05;
     final bool southWestLongitudeCheck = screenBounds.southwest.longitude <=
             markerBounds.southwest.longitude - 0.005 &&
         screenBounds.southwest.longitude >=
-            markerBounds.southwest.longitude - 0.04;
+            markerBounds.southwest.longitude - 0.05;
 
     return !(northEastLatitudeCheck &&
         northEastLongitudeCheck &&
