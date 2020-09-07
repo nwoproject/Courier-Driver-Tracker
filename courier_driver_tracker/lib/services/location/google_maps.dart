@@ -538,6 +538,22 @@ class MapSampleState extends State<GMap> {
                           ),
                         ),
                       ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 200.0),
+                          child: Container(
+                            decoration: myBoxDecoration(),
+                            child: RaisedButton(
+                              child: Text("FINISH DELIVERY"),
+                              onPressed: (){
+                                
+                              },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       // Show zoom buttons
                     ],
                   ),

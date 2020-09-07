@@ -189,7 +189,7 @@ class NavigationService {
   initialiseDeliveryCircle(){
     Circle deliveryCircle = Circle(
       circleId: CircleId("$_currentRoute-$_currentLeg"),
-      center: currentPolyline.points.last,
+      center: currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery],
       fillColor: Color(0x2082fa9e),
       strokeColor: Colors.green[400],
       strokeWidth: 2,
@@ -230,27 +230,21 @@ class NavigationService {
     if(_deliveryRoutes == null || _lengthRemainingAtNextDelivery == null){
       return null;
     }
-    print("Updating polyline");
+
     LatLng positionOnPoly = calculatePointOnPolyline();
-    print("Point on polyline: " + positionOnPoly.toString());
 
     // remove previous position from polyline
     currentPolyline.points.removeAt(0);
-    print("Length of Poly: " + currentPolyline.points.length.toString());
-    print("Points until delivery: " + (currentPolyline.points.length - _lengthRemainingAtNextDelivery).toString());
-
 
     // determine where on polyline the driver is
     int newLength = 0;
-    for(int i = 0; i < currentPolyline.points.length - _lengthRemainingAtNextDelivery - 1; i ++){
+    for(int i = 0; i < currentPolyline.points.length - _lengthRemainingAtNextDelivery; i ++){
       int dist1 = calculateDistanceBetween(currentPolyline.points[i+1], LatLng(_position.latitude, _position.longitude));
       int dist2 = calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i+1]);
       if(dist2 > dist1){
         newLength = i + 1;
       }
     }
-
-    print("Points to remove: $newLength");
 
     // remove any previous points
     newLength = currentPolyline.points.length - newLength;
@@ -682,6 +676,8 @@ class NavigationService {
 
     int dist = calculateDistanceBetween(currentPolyline.points[0],
         currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery]);
+
+    print("Distance away from delivery: $dist");
     if(dist < 50){
       nearDelivery = true;
       isAtDelivery();
@@ -705,7 +701,7 @@ class NavigationService {
   }
 
   bool isAtDelivery(){
-    if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last) < _position.accuracy + 10){
+    if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery]) < _position.accuracy + 10){
       atDelivery = true;
       sendDeliveryAPICall();
     }
@@ -777,14 +773,12 @@ class NavigationService {
       initialisePolyPointsAndMarkers(_currentRoute);
     }
 
-    print("setting current location");
     _position = currentPosition;
     _abnormalityService.setCurrentLocation(currentPosition);
     _notificationManager.setContext(context);
 
     // safety checks
     if(currentPolyline == null){
-      print("Setting current polyline for route $_currentRoute.");
       setCurrentPolyline();
       return;
       // uncomment when not using replacement functions from abnormality service
@@ -793,7 +787,6 @@ class NavigationService {
     if( directions == null || distance == null ||
         distanceETA == null || delivery == null || deliveryAddress == null
         || directionIconPath == null){
-      print("initialising info variables");
       print(distance);
       initialiseInfoVariables();
       return;
@@ -807,30 +800,13 @@ class NavigationService {
       }
     }
 
-    print("Checking near delivery");
     if(currentPolyline.points.length - _lengthRemainingAtNextDelivery < 4){
       isNearDelivery();
     }
 
-    /*
-    // Print all leg points
-    print(currentPolyline.polylineId);
-    for(int i = 0; i < _deliveryRoutes.routes.length; i++){
-      print("Route $i");
-      for(int j = 0; j < _deliveryRoutes.routes[i].legs.length; j++){
-        print("Leg $j");
-        for(int k = 0; k < _deliveryRoutes.routes[i].legs[j].steps.length; k++){
-          print("Step $k");
-        }
-      }
-    }
-
-     */
-
     // if the driver is not at a delivery point
     if(!nearDelivery){
       // check if on the route
-      print("Not near the delivery.");
       bool onRoute = false;
       for(int i = 0; i < currentPolyline.points.length - 1; i++){
         if(!_abnormalityService.offRoute(currentPolyline.points[i], currentPolyline.points[i+1])){
@@ -840,11 +816,9 @@ class NavigationService {
       }
 
       if(onRoute){
-        print("On route and updating polyline");
         updateCurrentPolyline();
       }
       else{
-        print("off route");
         // making sure only one notification gets sent.
         if(!_abnormalityService.getStillOffRoute()){
           _notificationManager.report = "offRoute";
@@ -853,7 +827,6 @@ class NavigationService {
         //start marking the route he followed.
       }
 
-      print("Checking all abnormalities");
       if(_abnormalityService.stoppingTooLong()){
         _notificationManager.report = "long";
         _notificationManager.showNotifications(_abnormalityHeaders["stopping_too_long"], _abnormalityMessages["stopping_too_long"]);
@@ -884,7 +857,6 @@ class NavigationService {
       updateCurrentPolyline();
     }
 
-    print("Checking rest of abnormality");
     // General abnormalities
     if(_abnormalityService.suddenStop()){
       _notificationManager.report = "sudden";
