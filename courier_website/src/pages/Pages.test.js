@@ -38,10 +38,7 @@ describe("AlwaysOnTracking",()=>{
 describe("ManageDrivers",()=>{
     test("Render Manage Drivers",()=>{
         render(<ManagerDrivers />);
-        expect(screen.getByText(/Driver ID/)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Enter Driver ID/)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Driver Name/)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Driver Surname/)).toBeInTheDocument();
+        expect(screen.getByText(/Manage Drivers/)).toBeInTheDocument();
     });
 });
 
