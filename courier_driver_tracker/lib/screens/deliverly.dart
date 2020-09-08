@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 
-class UserFeedbackLongCompany extends StatelessWidget {
+class UserFeedbackAfterDelivery extends StatelessWidget {
   static const String _title = 'Delivery response';
 
   @override

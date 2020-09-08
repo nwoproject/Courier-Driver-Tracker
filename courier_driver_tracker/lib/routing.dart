@@ -1,4 +1,4 @@
-import 'package:courier_driver_tracker/screens/deliveryScreen.dart';
+import 'package:courier_driver_tracker/screens/deliverly.dart';
 import 'package:courier_driver_tracker/screens/forgot_passsword_screen.dart';
 import 'package:courier_driver_tracker/screens/delivery_screen.dart';
 import 'package:flutter/material.dart';
@@ -87,6 +87,12 @@ class Router {
         );
         break;
 
+      case '/reportDelivery':
+        return MaterialPageRoute(
+          builder: (_) => UserFeedbackAfterDelivery(),
+        );
+        break;
+
       case '/changePassword':
         return MaterialPageRoute(
           builder: (_) => ChangePasswordPage(),
@@ -103,6 +109,7 @@ class Router {
         return MaterialPageRoute(
           builder: (_) => DeliveryScreen(),
         );
+        break;
 
       default: //If page is not found, redirect to loginpage
         return MaterialPageRoute(

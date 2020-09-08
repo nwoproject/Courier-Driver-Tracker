@@ -199,12 +199,6 @@ class NavigationService {
   }
 
   clearAllSetVariables(){
-    polylines = {};
-    currentPolyline = null;
-    markers = {};
-    circles = {};
-    northEast = null;
-    southWest = null;
     directions = null;
     deliveryTimeRemaining = null;
     distance = null;
@@ -656,8 +650,10 @@ class NavigationService {
   int calculateNextDeliveryPoint(){
     LatLng delivery = getNextDeliveryLocation();
 
+
     for(int i = 0; i < currentPolyline.points.length; i++){
-      if(calculateDistanceBetween(delivery, currentPolyline.points[i]) < 1){
+      print(calculateDistanceBetween(delivery, currentPolyline.points[i]));
+      if(calculateDistanceBetween(delivery, currentPolyline.points[i]) < 2){
         _lengthRemainingAtNextDelivery = currentPolyline.points.length - i;
         return _lengthRemainingAtNextDelivery;
       }
@@ -671,13 +667,9 @@ class NavigationService {
   //__________________________________________________________________________________________________
 
   bool isNearDelivery(){
-    print("Current length: " + currentPolyline.points.length.toString());
-    print("Length remaining: " + _lengthRemainingAtNextDelivery.toString());
-
     int dist = calculateDistanceBetween(currentPolyline.points[0],
         currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery]);
 
-    print("Distance away from delivery: $dist");
     if(dist < 50){
       nearDelivery = true;
       isAtDelivery();
@@ -694,9 +686,7 @@ class NavigationService {
       initialiseDeliveryCircle();
     }
     else{
-      if(circles.length > 0){
-        circles.removeAll(circles);
-      }
+      circles = {};
     }
   }
 
@@ -732,12 +722,19 @@ class NavigationService {
     ApiHandler api = ApiHandler();
     var id = await api.getActiveRouteID(_currentRoute);
     api.completeRoute(id, _position);
-}
+  }
 
-
-
-
-
+  moveToNextDelivery(){
+    _currentLeg += 1;
+    _currentStep = 0;
+    nearDelivery = false;
+    atDelivery = false;
+    showDeliveryRadiusOnMap();
+    markers.remove(markers.first);
+    calculateNextDeliveryPoint();
+    clearAllSetVariables();
+    initialiseInfoVariables();
+  }
 
 
   //__________________________________________________________________________________________________
@@ -787,7 +784,6 @@ class NavigationService {
     if( directions == null || distance == null ||
         distanceETA == null || delivery == null || deliveryAddress == null
         || directionIconPath == null){
-      print(distance);
       initialiseInfoVariables();
       return;
     }

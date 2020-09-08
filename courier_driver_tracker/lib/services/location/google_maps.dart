@@ -543,17 +543,27 @@ class MapSampleState extends State<GMap> {
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 200.0),
                           child: Container(
-                            decoration: myBoxDecoration(),
-                            child: RaisedButton(
-                              child: Text("FINISH DELIVERY"),
-                              onPressed: (){
-                                
-                              },
+                            child: atDelivery ? RaisedButton(
+                              padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 40.0),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  side: BorderSide(color: Colors.green,
+                                  width: 3.0)
                               ),
+                              child: Text("FINISH DELIVERY",
+                              style: TextStyle(
+                                fontSize: 30.0,
+                                color: Colors.white
+                              ),),
+                              color: Colors.green,
+                              onPressed: (){
+                                Navigator.of(context).pushNamed("/reportDelivery");
+                                _navigatorService.moveToNextDelivery();
+                              },
+                              ) : Container(),
                             ),
                           ),
                         ),
-                      ),
                       // Show zoom buttons
                     ],
                   ),
