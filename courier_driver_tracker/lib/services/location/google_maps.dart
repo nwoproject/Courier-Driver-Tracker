@@ -1,17 +1,14 @@
-import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
-import 'package:courier_driver_tracker/services/navigation/navigator_service.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
-
-import 'deliveries.dart';
 
 class GMap extends StatefulWidget {
   @override
@@ -23,6 +20,7 @@ class MapSampleState extends State<GMap> {
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
   Set<Marker> markers = {};
+  Set<Circle>  circles = {};
   List<LatLng> polylineCoordinates = [];
   Map<String, Polyline> polylines = {};
   bool lockedOnPosition = true;
@@ -31,31 +29,20 @@ class MapSampleState extends State<GMap> {
   GeolocatorService _geolocatorService = GeolocatorService();
   Position _currentPosition;
 
-  // Deliveries
-  List<Position> deliveries = [
-    new Position(latitude: -25.7815, longitude: 28.2759),
-    new Position(latitude: -25.7597, longitude: 28.2436),
-    new Position(latitude: -25.7545, longitude: 28.2314),
-    new Position(latitude: -25.7608, longitude: 28.2310),
-    new Position(latitude: -25.7713, longitude: 28.2334)
-  ];
-  //String _currentDelivery = 'Loading';
-  Deliveries polyDeliveries;
-  List<Delivery> deliveryList;
-
   // Storage
   RouteLogging _routeLogging = RouteLogging();
 
   // Navigation
   int _route;
   static String _routeFile = "route.json";
-  NavigatorService _navigatorService = NavigatorService(jsonFile: _routeFile);
+  NavigationService _navigatorService = NavigationService(jsonFile: _routeFile);
   String _directions = "LOADING...";
   String _stepTimeRemaining = "LOADING...";
   String _distanceETA = "";
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
   String _directionIconPath = "assets/images/navigation_marker_white.png";
+  bool atDelivery = false;
 
   @override
   void initState() {
@@ -102,12 +89,17 @@ class MapSampleState extends State<GMap> {
    */
   getCurrentLocation() async {
     _currentPosition = await _geolocatorService.getPosition();
-    moveToCurrentLocation();
+    if(_currentPosition != null){
+      moveToCurrentLocation();
+    }
   }
 
-  getCurrentRoute(){
-    String currentRoute = String.fromEnvironment('CURRENT_ROUTE', defaultValue: DotEnv().env['CURRENT_ROUTE']);
-    _route = int.parse(currentRoute);
+  getCurrentRoute() async {
+    FlutterSecureStorage storage = FlutterSecureStorage();
+    String currentRoute = await storage.read(key: 'current_route');
+    if(_route == -1 && currentRoute != null){
+      _route = int.parse(currentRoute);
+    }
   }
 
   /*
@@ -143,44 +135,16 @@ class MapSampleState extends State<GMap> {
    */
   showEntireRoute() {
     // Define two position variables
-    Position _northeastCoordinates;
-    Position _southwestCoordinates;
+    LatLng northEast = _navigatorService.northEast;
+    LatLng southWest = _navigatorService.southWest;
 
-    // Calculating to check that
-    // southwest coordinate <= northeast coordinate
-    // Determines the screen bounds
-    double minLat = deliveries[0].latitude;
-    double minLong = deliveries[0].longitude;
-    double maxLat = deliveries[0].latitude;
-    double maxLong = deliveries[0].longitude;
-
-    for (int del = 0; del < deliveries.length; del++) {
-      if (minLat > deliveries[del].latitude) {
-        minLat = deliveries[del].latitude;
-      }
-      if (minLong > deliveries[del].longitude) {
-        minLong = deliveries[del].longitude;
-      }
-      if (maxLat < deliveries[del].latitude) {
-        maxLat = deliveries[del].latitude;
-      }
-      if (maxLong < deliveries[del].longitude) {
-        maxLong = deliveries[del].longitude;
-      }
+    if(northEast == null || southWest == null){
+      return;
     }
 
-    _southwestCoordinates = new Position(latitude: minLat, longitude: minLong);
-    _northeastCoordinates = new Position(latitude: maxLat, longitude: maxLong);
-
     LatLngBounds routeBounds = new LatLngBounds(
-      northeast: LatLng(
-        _northeastCoordinates.latitude,
-        _northeastCoordinates.longitude,
-      ),
-      southwest: LatLng(
-        _southwestCoordinates.latitude,
-        _southwestCoordinates.longitude,
-      ),
+      northeast: northEast,
+      southwest: southWest,
     );
 
     // Center of route
@@ -241,20 +205,20 @@ class MapSampleState extends State<GMap> {
     final bool northEastLatitudeCheck = screenBounds.northeast.latitude >=
             markerBounds.northeast.latitude + 0.005 &&
         screenBounds.northeast.latitude <=
-            markerBounds.northeast.latitude + 0.04;
+            markerBounds.northeast.latitude + 0.05;
     final bool northEastLongitudeCheck = screenBounds.northeast.longitude >=
             markerBounds.northeast.longitude + 0.005 &&
         screenBounds.northeast.longitude <=
-            markerBounds.northeast.longitude + 0.04;
+            markerBounds.northeast.longitude + 0.05;
 
     final bool southWestLatitudeCheck = screenBounds.southwest.latitude <=
             markerBounds.southwest.latitude - 0.015 &&
         screenBounds.southwest.latitude >=
-            markerBounds.southwest.latitude - 0.04;
+            markerBounds.southwest.latitude - 0.05;
     final bool southWestLongitudeCheck = screenBounds.southwest.longitude <=
             markerBounds.southwest.longitude - 0.005 &&
         screenBounds.southwest.longitude >=
-            markerBounds.southwest.longitude - 0.04;
+            markerBounds.southwest.longitude - 0.05;
 
     return !(northEastLatitudeCheck &&
         northEastLongitudeCheck &&
@@ -279,38 +243,45 @@ class MapSampleState extends State<GMap> {
         southWestLongitudeCheck;
   }
 
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Gets the address of the delivery using coordinates.
-   */
-  getNextDelivery(Position position) async {
-    //String address = await _geolocatorService.getAddress(position);
-    setState(() {
-      //_currentDelivery = address;
-    });
-  }
-
   setInformationVariables(){
     if(_navigatorService.directions != null){
       _directions = _navigatorService.directions;
     }
-    if(_navigatorService.stepTimeRemaining != null){
-      _stepTimeRemaining = _navigatorService.stepTimeRemaining;
+    else{
+      _directions = "LOADING...";
+    }
+    if(_navigatorService.deliveryTimeRemaining != null){
+      _stepTimeRemaining = _navigatorService.deliveryTimeRemaining;
+    }
+    else{
+      _stepTimeRemaining = "LOADING...";
     }
     if(_navigatorService.distanceETA != null){
       _distanceETA = _navigatorService.distanceETA;
     }
+    else{
+      _distanceETA = "";
+    }
     if(_navigatorService.delivery != null){
       _delivery = _navigatorService.delivery;
+    }
+    else{
+      _delivery = "LOADING...";
     }
     if(_navigatorService.deliveryAddress != null){
       _deliveryAddress = _navigatorService.deliveryAddress;
     }
+    else{
+      _deliveryAddress = "";
+    }
     if(_navigatorService.directionIconPath != null){
       _directionIconPath = _navigatorService.directionIconPath;
     }
+    else{
+      _directionIconPath = "assets/images/navigation_marker_white.png";
+    }
+    circles = _navigatorService.circles;
+    atDelivery = _navigatorService.atDelivery;
   }
 
   /*
@@ -323,41 +294,33 @@ class MapSampleState extends State<GMap> {
     /*TODO
       - make new function to replace polylines.
      */
-    await _navigatorService.setInitialPolyPointsAndMarkers(_route);
-    polylines = _navigatorService.polylines;
+    await _navigatorService.initialisePolyPointsAndMarkers(_route);
     markers = _navigatorService.markers;
+  }
+
+  _updatePolyline(){
+    if(_navigatorService.currentPolyline != null){
+      polylines = { "$_route" : _navigatorService.currentPolyline};
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // Stream of Position objects of current location.
     _currentPosition = Provider.of<Position>(context);
-    _navigatorService.setNotificationContext(context);
     var html = """<h3 style='color:white;'>$_directions</h3>""";
     double fontSize = MediaQuery.of(context).size.height * 0.027;
 
     // Calls abnormality service
-    if (_currentPosition != null) {
-      _navigatorService.navigate(_currentPosition);
-      _routeLogging.writeToFile(
-          _geolocatorService.convertPositionToString(_currentPosition) + "\n",
-          "locationFile");
+    if(_currentPosition != null) {
+      _navigatorService.navigate(_currentPosition, context);
+      _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
+
+      if(polylines == null || polylines.length == 0){
+        _updatePolyline();
+      }
+
       setInformationVariables();
-      if(_directions.length == 0 || _directions == "LOADING..."){
-        setInformationVariables();
-      }
-      if(_delivery.length == 0 || _directions == "LOADING..."){
-        setInformationVariables();
-      }
-      if(_stepTimeRemaining.length == 0 || _directions == "LOADING..."){
-        setInformationVariables();
-      }
-      if(_distanceETA.length == 0){
-        setInformationVariables();
-      }
-      if(_deliveryAddress.length == 0){
-        setInformationVariables();
-      }
       if(lockedOnPosition){
         moveToCurrentLocation();
       }
@@ -387,7 +350,7 @@ class MapSampleState extends State<GMap> {
             padding: const EdgeInsets.all(5),
             children: <Widget>[
               _deliveryCards("Menlyn Park Shopping Centre",
-                  "01-25-2020 12:00"), //mock data
+                  "01-25-2020 12:00"),
               _deliveryCards(
                   "Aroma Gourmet Coffee Roastery", "01-25-2020 13:00"),
               _deliveryCards("University of Pretoria", "01-25-2020 13:45"),
@@ -410,7 +373,7 @@ class MapSampleState extends State<GMap> {
                     padding: const EdgeInsets.only(
                         top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(_stepTimeRemaining,
+                      child: Text(atDelivery ? "Arrived" : _stepTimeRemaining,
                           style: TextStyle(
                               color: Colors.green,
                               fontFamily: "OpenSans-Regular",
@@ -422,7 +385,7 @@ class MapSampleState extends State<GMap> {
                     padding: const EdgeInsets.only(
                         top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(_distanceETA,
+                      child: Text(atDelivery ? "at Destination" :_distanceETA,
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "OpenSans-Regular",
@@ -485,6 +448,7 @@ class MapSampleState extends State<GMap> {
                           initialCameraPosition: _initialLocation,
                           markers: markers != null ? Set<Marker>.from(markers) : null,
                           polylines: Set<Polyline>.of(polylines.values),
+                          circles: circles != null ? Set<Circle>.from(circles) : null,
                           myLocationEnabled: true,
                           myLocationButtonEnabled: false,
                           mapType: MapType.normal,
@@ -538,6 +502,7 @@ class MapSampleState extends State<GMap> {
                                     _currentPosition != null
                                         ? moveToCurrentLocation()
                                         : getCurrentLocation();
+                                    lockedOnPosition = true;
                                   },
                                 ),
                               ),
@@ -565,6 +530,7 @@ class MapSampleState extends State<GMap> {
                                     _currentPosition != null
                                         ? showEntireRoute()
                                         : getCurrentLocation();
+                                    lockedOnPosition = false;
                                   },
                                 ),
                               ),
@@ -572,6 +538,32 @@ class MapSampleState extends State<GMap> {
                           ),
                         ),
                       ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 200.0),
+                          child: Container(
+                            child: atDelivery ? RaisedButton(
+                              padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 40.0),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  side: BorderSide(color: Colors.green,
+                                  width: 3.0)
+                              ),
+                              child: Text("FINISH DELIVERY",
+                              style: TextStyle(
+                                fontSize: 30.0,
+                                color: Colors.white
+                              ),),
+                              color: Colors.green,
+                              onPressed: (){
+                                Navigator.of(context).pushNamed("/reportDelivery");
+                                _navigatorService.moveToNextDelivery();
+                              },
+                              ) : Container(),
+                            ),
+                          ),
+                        ),
                       // Show zoom buttons
                     ],
                   ),

@@ -3,103 +3,102 @@
     {
       "bounds" : {
         "northeast" : {
-          "lat" : -25.8152412,
-          "lng" : 28.2481484
+          "lat" : -25.7562112,
+          "lng" : 28.2312139
         },
         "southwest" : {
-          "lat" : -25.817051,
-          "lng" : 28.2421992
+          "lat" : -25.7604642,
+          "lng" : 28.2243126
         }
       },
-      "copyrights" : "Map data ©2020 AfriGIS (Pty) Ltd",
       "legs" : [
         {
-          "distance" : 851,
-          "duration" : 129,
-          "end_address" : "454 Cliff Ave, Waterkloof Ridge, Pretoria, 0181, South Africa",
+          "distance" : 1065,
+          "duration" : 303,
+          "end_address" : "14 Marais St, Bailey`s Muckleneuk, Pretoria, 0181, South Africa",
           "end_location" : {
-            "lat" : -25.8159141,
-            "lng" : 28.2426476
+            "lat" : -25.7604642,
+            "lng" : 28.2243457
           },
-          "start_address" : "Cnr &, Koedoesnek Ave & Grysbok St, Waterkloof Ridge, Pretoria, 0181, South Africa",
+          "start_address" : "Visitors Reception, Roper St, Elandspoort 357-Jr, Pretoria, 0132, South Africa",
           "start_location" : {
-            "lat" : -25.8152806,
-            "lng" : 28.2481484
+            "lat" : -25.7562112,
+            "lng" : 28.2312139
           },
           "steps" : [
             {
-              "distance" : 214,
-              "duration" : 21,
+              "distance" : 5,
+              "duration" : 1,
               "end_location" : {
-                "lat" : -25.817051,
-                "lng" : 28.247318
+                "lat" : -25.7562362,
+                "lng" : 28.2311772
               },
-              "html_instructions" : "Head \u003cb\u003esouthwest\u003c/b\u003e on \u003cb\u003eKoedoesnek Ave\u003c/b\u003e toward \u003cb\u003eRidgeview Rd\u003c/b\u003e",
+              "html_instructions" : "Head \u003cb\u003esouthwest\u003c/b\u003e",
               "polyline" : {
-                "points" : "n`q|C}elkDhC~@PF\\NHBjC~@PH"
+                "points" : "hoe|Ca|hkD@??@@??@?@@?"
               },
               "start_location" : {
-                "lat" : -25.8152806,
-                "lng" : 28.2481484
+                "lat" : -25.7562112,
+                "lng" : 28.2312139
               }
             },
             {
-              "distance" : 525,
-              "duration" : 72,
+              "distance" : 334,
+              "duration" : 94,
               "end_location" : {
-                "lat" : -25.815241,
-                "lng" : 28.2424824
+                "lat" : -25.7591878,
+                "lng" : 28.2307116
               },
-              "html_instructions" : "Turn \u003cb\u003eright\u003c/b\u003e onto \u003cb\u003eCliff Ave\u003c/b\u003e",
+              "html_instructions" : "Exit the roundabout onto \u003cb\u003eRoper St\u003c/b\u003e",
+              "polyline" : {
+                "points" : "noe|C{{hkD?@DBFFNBTBRDt@Af@Bx@?\\?d@BdAJ`AJd@FzBZ"
+              },
+              "start_location" : {
+                "lat" : -25.7562362,
+                "lng" : 28.2311772
+              }
+            },
+            {
+              "distance" : 692,
+              "duration" : 197,
+              "end_location" : {
+                "lat" : -25.7601556,
+                "lng" : 28.2243126
+              },
+              "html_instructions" : "Turn \u003cb\u003eright\u003c/b\u003e onto \u003cb\u003eJustice Mahomed Private Rd\u003c/b\u003e\u003cdiv style=\"font-size:0.9em\"\u003eRestricted usage road\u003c/div\u003e",
               "maneuver" : "turn-right",
               "polyline" : {
-                "points" : "pkq|Cw`lkDK\\Mb@Md@{HxXEd@"
+                "points" : "|af|C}xhkDG\\GfACh@?h@Bh@F\\LXJPdAbA|@lA?@Zl@Rf@Nl@Ln@JhBBh@Cn@?TGd@CVWnAGXIn@?Z?j@?@@jAD`A"
               },
               "start_location" : {
-                "lat" : -25.817051,
-                "lng" : 28.247318
+                "lat" : -25.7591878,
+                "lng" : 28.2307116
               }
             },
             {
-              "distance" : 64,
-              "duration" : 24,
+              "distance" : 34,
+              "duration" : 11,
               "end_location" : {
-                "lat" : -25.8157501,
-                "lng" : 28.2421992
+                "lat" : -25.7604642,
+                "lng" : 28.2243457
               },
-              "html_instructions" : "At the roundabout, take the \u003cb\u003e1st\u003c/b\u003e exit onto \u003cb\u003eKierieklapper St\u003c/b\u003e",
-              "maneuver" : "roundabout-left",
-              "polyline" : {
-                "points" : "f`q|CobkkD@@d@ZRFFB`@L"
-              },
-              "start_location" : {
-                "lat" : -25.815241,
-                "lng" : 28.2424824
-              }
-            },
-            {
-              "distance" : 48,
-              "duration" : 12,
-              "end_location" : {
-                "lat" : -25.8159141,
-                "lng" : 28.2426476
-              },
-              "html_instructions" : "Turn \u003cb\u003eleft\u003c/b\u003e onto \u003cb\u003eSolomon Mahlangu Dr\u003c/b\u003e/\u003cwbr/\u003e\u003cb\u003eM10\u003c/b\u003e\u003cdiv style=\"font-size:0.9em\"\u003eDestination will be on the left\u003c/div\u003e",
+              "html_instructions" : "Turn \u003cb\u003eleft\u003c/b\u003e\u003cdiv style=\"font-size:0.9em\"\u003eRestricted usage road\u003c/div\u003e",
               "maneuver" : "turn-left",
               "polyline" : {
-                "points" : "lcq|Cw`kkDRs@Je@"
+                "points" : "~gf|C}pgkDz@G"
               },
               "start_location" : {
-                "lat" : -25.8157501,
-                "lng" : 28.2421992
+                "lat" : -25.7601556,
+                "lng" : 28.2243126
               }
             }
           ]
         }
       ],
       "overview_polyline" : {
-        "points" : "n`q|C}elkDbEzA|ChAY`AiI~YEd@@@x@b@h@P^yA"
+        "points" : "hoe|Ca|hkDBBFFFFNBh@Ht@Af@BvA?jBNfBRzBZG\\KpB?h@Bh@F\\LXpAtA|@nAn@tA\\|ANrCCdAK|@_@hBIjA?l@FlCz@G"
       }
     }
-  ]
+  ],
+  "status" : "OK"
 }
