@@ -8,12 +8,17 @@ import 'package:geolocator/geolocator.dart';
 
 class RouteLogging{
 
-  final String locationPath ="/tracking.json";
-  final String deliveriesPath = "/deliveries.json";
+  final String locationPath ="tracking.json";
+  final String deliveriesPath = "deliveries.json";
   String name = "";
   bool first = true;
   String time = "";
-  var driverID;
+  String driverID;
+  String contents;
+
+  RouteLogging(){
+    getFileNameData();
+  }
 
   GeolocatorService geolocatorService = new GeolocatorService();
   Position position;
@@ -31,23 +36,24 @@ class RouteLogging{
     return false;
   }
 
-  Future getFileNameData() async{
+  getFileNameData() async{
   position = await geolocatorService.getPosition();
   driverID = await storage.read(key: 'id');
-  driverID = driverID.toString();
   time = position.timestamp.year.toString() + "-"
       + position.timestamp.month.toString() + "-"
       + position.timestamp.day.toString();
-
   }
 
   String getFileName(){
     getFileNameData();
+    if(driverID == null){
+      print("Dev: Driver ID not set. [RouteLogging]");
+      return null;
+    }
     if (first == true) {
       name = (driverID + "_" + time + ".txt");
       first = false;
     }
-    print(name);
     return name;
   }
 
@@ -56,7 +62,7 @@ class RouteLogging{
   Future<String> get localPath async {
 
     final directory = await getApplicationDocumentsDirectory();
-    final directoryFolder = Directory(directory.path + "/RouteLogging");
+    final directoryFolder = Directory(directory.path  +"/CourierDriverTracker/");
 
     if(await directoryFolder.exists()){
       return directoryFolder.path;
@@ -68,8 +74,14 @@ class RouteLogging{
 
   }
 
+
+
   Future<File> get locationFile async {
     String fileName = getFileName();
+    if(fileName == null){
+      print("Dev: could not retrieve filename[RouteLogging]");
+      return null;
+    }
     final path = await localPath;
 
     return File(path + fileName);
@@ -79,38 +91,44 @@ class RouteLogging{
 
     final path = await localPath;
 
-    print("Directory used:");
-    print('$path$deliveriesPath');
-
     return File('$path$deliveriesPath');
   }
 
   Future<String> readFileContents(String fileType) async {
     try {
       File file;
-      if(fileType != "deliveries") {
+      if(fileType == "deliveries") {
         file = await deliveriesFile;
       }
       else {
         file = await locationFile;
       }
       // Read the file
-      String contents = await file.readAsString();
+      contents = await file.readAsString();
 
       return contents;
     } catch (e) {
       // If encountering an error, return 0
-      return "";
+      print(e);
+      contents = "";
+      return contents;
     }
+  }
+
+  String displayFileContents () {
+    readFileContents("deliveries");
+    return contents;
   }
 
   Future<File> writeToFile(String data, String fileType) async {
     File file;
     if(fileType == "locationFile") {
       file = await locationFile;
+      return file.writeAsString(data, mode: FileMode.append);
     }
     else if(fileType == "deliveriesFile"){
       file = await deliveriesFile;
+      return file.writeAsString(data, mode: FileMode.write);
     }
     else{
       print("Dev: Incorrect file type given. [RouteLogging:writeToFile]");
@@ -118,10 +136,18 @@ class RouteLogging{
 
     if(file == null){
       print("Dev: Failed to retrieve file to write deliveries to.");
-      return null;
-    }
 
-    // Write the file
-    return file.writeAsString(data, mode: FileMode.append);
+    }
+    return null;
   }
+
+  writeToExternal() async {
+    String fileContents = await readFileContents('deliveries');
+    final directory = await getExternalStorageDirectory();
+    File file = File(directory.path + "/Download/routes.json");
+
+    file.writeAsString(fileContents);
+  }
+
+
 }

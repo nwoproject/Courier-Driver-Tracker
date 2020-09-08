@@ -25,8 +25,10 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(Duration(milliseconds: 5000), (){});
     FlutterSecureStorage storage = new FlutterSecureStorage();
     String loggedIn = await storage.read(key: 'loginstatus');
+    String id = await storage.read(key: 'id');
+    storage.write(key: 'route_initialised', value: 'false');
 
-    if(loggedIn == "true"){
+    if(loggedIn == "true" && id != null){
       return true;
     }
     else{

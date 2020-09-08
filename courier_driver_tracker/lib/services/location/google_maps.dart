@@ -3,10 +3,10 @@ import 'package:courier_driver_tracker/services/file_handling/route_logging.dart
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 
@@ -34,10 +34,6 @@ class MapSampleState extends State<GMap> {
 
   // Navigation
   int _route;
-  /*
-  TODO
-    - read filename from storage
-   */
   static String _routeFile = "route.json";
   NavigationService _navigatorService = NavigationService(jsonFile: _routeFile);
   String _directions = "LOADING...";
@@ -98,9 +94,12 @@ class MapSampleState extends State<GMap> {
     }
   }
 
-  getCurrentRoute(){
-    String currentRoute = String.fromEnvironment('CURRENT_ROUTE', defaultValue: DotEnv().env['CURRENT_ROUTE']);
-    _route = int.parse(currentRoute);
+  getCurrentRoute() async {
+    FlutterSecureStorage storage = FlutterSecureStorage();
+    String currentRoute = await storage.read(key: 'current_route');
+    if(_route == -1 && currentRoute != null){
+      _route = int.parse(currentRoute);
+    }
   }
 
   /*
@@ -206,20 +205,20 @@ class MapSampleState extends State<GMap> {
     final bool northEastLatitudeCheck = screenBounds.northeast.latitude >=
             markerBounds.northeast.latitude + 0.005 &&
         screenBounds.northeast.latitude <=
-            markerBounds.northeast.latitude + 0.04;
+            markerBounds.northeast.latitude + 0.05;
     final bool northEastLongitudeCheck = screenBounds.northeast.longitude >=
             markerBounds.northeast.longitude + 0.005 &&
         screenBounds.northeast.longitude <=
-            markerBounds.northeast.longitude + 0.04;
+            markerBounds.northeast.longitude + 0.05;
 
     final bool southWestLatitudeCheck = screenBounds.southwest.latitude <=
             markerBounds.southwest.latitude - 0.015 &&
         screenBounds.southwest.latitude >=
-            markerBounds.southwest.latitude - 0.04;
+            markerBounds.southwest.latitude - 0.05;
     final bool southWestLongitudeCheck = screenBounds.southwest.longitude <=
             markerBounds.southwest.longitude - 0.005 &&
         screenBounds.southwest.longitude >=
-            markerBounds.southwest.longitude - 0.04;
+            markerBounds.southwest.longitude - 0.05;
 
     return !(northEastLatitudeCheck &&
         northEastLongitudeCheck &&
@@ -248,20 +247,38 @@ class MapSampleState extends State<GMap> {
     if(_navigatorService.directions != null){
       _directions = _navigatorService.directions;
     }
+    else{
+      _directions = "LOADING...";
+    }
     if(_navigatorService.deliveryTimeRemaining != null){
       _stepTimeRemaining = _navigatorService.deliveryTimeRemaining;
+    }
+    else{
+      _stepTimeRemaining = "LOADING...";
     }
     if(_navigatorService.distanceETA != null){
       _distanceETA = _navigatorService.distanceETA;
     }
+    else{
+      _distanceETA = "";
+    }
     if(_navigatorService.delivery != null){
       _delivery = _navigatorService.delivery;
+    }
+    else{
+      _delivery = "LOADING...";
     }
     if(_navigatorService.deliveryAddress != null){
       _deliveryAddress = _navigatorService.deliveryAddress;
     }
+    else{
+      _deliveryAddress = "";
+    }
     if(_navigatorService.directionIconPath != null){
       _directionIconPath = _navigatorService.directionIconPath;
+    }
+    else{
+      _directionIconPath = "assets/images/navigation_marker_white.png";
     }
     circles = _navigatorService.circles;
     atDelivery = _navigatorService.atDelivery;
@@ -278,8 +295,13 @@ class MapSampleState extends State<GMap> {
       - make new function to replace polylines.
      */
     await _navigatorService.initialisePolyPointsAndMarkers(_route);
-    polylines = _navigatorService.polylines;
     markers = _navigatorService.markers;
+  }
+
+  _updatePolyline(){
+    if(_navigatorService.currentPolyline != null){
+      polylines = { "$_route" : _navigatorService.currentPolyline};
+    }
   }
 
   @override
@@ -291,8 +313,13 @@ class MapSampleState extends State<GMap> {
 
     // Calls abnormality service
     if(_currentPosition != null) {
-      //_routeLogging.writeToFile(_currentPosition.toJson().toString(), "locationFile");
       _navigatorService.navigate(_currentPosition, context);
+      _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
+
+      if(polylines == null || polylines.length == 0){
+        _updatePolyline();
+      }
+
       setInformationVariables();
       if(lockedOnPosition){
         moveToCurrentLocation();
@@ -511,6 +538,32 @@ class MapSampleState extends State<GMap> {
                           ),
                         ),
                       ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 200.0),
+                          child: Container(
+                            child: atDelivery ? RaisedButton(
+                              padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 40.0),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  side: BorderSide(color: Colors.green,
+                                  width: 3.0)
+                              ),
+                              child: Text("FINISH DELIVERY",
+                              style: TextStyle(
+                                fontSize: 30.0,
+                                color: Colors.white
+                              ),),
+                              color: Colors.green,
+                              onPressed: (){
+                                Navigator.of(context).pushNamed("/reportDelivery");
+                                _navigatorService.moveToNextDelivery();
+                              },
+                              ) : Container(),
+                            ),
+                          ),
+                        ),
                       // Show zoom buttons
                     ],
                   ),

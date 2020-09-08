@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
@@ -42,17 +44,21 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   getRoutes() async{
-
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
-    int currentActiveRoute = -1;//int.parse(await storage.read(key: 'active_route'));
+    String currentRoute = await storage.read(key: 'current_route');
+    int currentActiveRoute;
+    if(currentRoute == null){
+      currentActiveRoute = -1;
+    }
+    else{
+      currentActiveRoute = int.parse(currentRoute);
+    }
 
     if(routes != null && currentActiveRoute == -1){
       // notify abnormality about not completing a route
       print("You have an unfinished route!!");
-      return;
     }
-
 
     // if not initialise his routes
     await _api.initDriverRoute();
@@ -60,6 +66,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
     // check to see if he has no routes
     if(routes == null){
+      //write deliveries to file
+
+
       setState(() {
         _durationString = "";
         _loadingDeliveries.add(Padding(
@@ -79,7 +88,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     Map<String, dynamic> deliveryRoutes = {
       "routes" : []
     };
-    print("Number of routes: " +  routes.length.toString());
     for(int i = 0; i < routes.length; i++){
       await _api.initCalculatedRoute(routes[i].routeID);
       var activeRoute = await _api.getActiveCalculatedRoute();
@@ -100,9 +108,27 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         return;
       }
 
+      // create every route
       for(var route in activeRoute['routes']){
+
+        // temp route
         Map<String, dynamic> deliveryRoute = {
           "legs" : []
+        };
+        // setting bounds
+        deliveryRoute["bounds"] = {
+          "northeast" : {
+            "lat" : route["bounds"]["northeast"]["lat"],
+            "lng" : route["bounds"]["northeast"]["lng"]
+          },
+          "southwest" : {
+            "lat" : route["bounds"]["southwest"]["lat"],
+            "lng" : route["bounds"]["southwest"]["lng"]
+          }
+        };
+        // setting overview polyline
+        deliveryRoute["overview_polyline"] = {
+          "points" :  route["overview_polyline"]["points"]
         };
 
         int distance = 0;
@@ -110,11 +136,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         int numDeliveries;
 
         int j = 0;
+        // creating legs for each route
         for(var leg in route['legs']){
+
+          // temp leg
           Map<String, dynamic> deliveryLeg = {
             "steps" : []
           };
 
+
+          // setting leg information variables
           deliveryLeg["distance"] = leg["distance"]["value"];
           distance += leg["distance"]["value"];
           _totalDistance += leg["distance"]["value"];
@@ -126,21 +157,30 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           deliveryLeg["start_address"] = leg["start_address"];
           deliveryLeg["start_location"] = leg["start_location"];
 
-
+          // creating steps for each leg
           for(var step in leg['steps']){
+            // temp step
             Map<String, dynamic> deliveryStep = {};
+
+            // setting step information
             deliveryStep["distance"] = step["distance"]["value"];
             deliveryStep["duration"] = step["duration"]["value"];
             deliveryStep["end_location"] = step["end_location"];
             deliveryStep["start_location"] = step["start_location"];
             deliveryStep["html_instructions"] = step["html_instructions"];
             deliveryStep["polyline"] = step["polyline"];
+            deliveryStep["maneuver"] = step["maneuver"];
+
+            // add step to leg steps
             deliveryLeg["steps"].add(deliveryStep);
           }
+          // add leg to routes
           deliveryRoute["legs"].add(deliveryLeg);
+
           j++;
           numDeliveries = j;
         }
+        // add route to delivery routes
         deliveryRoutes["routes"].add(deliveryRoute);
 
         // create delivery cards
@@ -150,15 +190,19 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         _loadingDeliveries.add(Padding(
           padding: const EdgeInsets.all(2.0),
           child: _deliveryCards("Route $routeNum", "Distance: $distance Km",
-              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries", routeNum),
+              "Time: " + getTimeString(duration), "Deliveries: $numDeliveries", i),
         ));
+      }
+      if(storage.read(key: 'route$i') == null){
+        storage.write(key: 'route$i', value: '0-0');
       }
     }
 
+
     //write deliveries to file
     RouteLogging logger = RouteLogging();
-    logger.writeToFile(deliveryRoutes.toString(), "deliveriesFile");
-
+    logger.writeToFile(jsonEncode(deliveryRoutes), "deliveriesFile");
+    storage.write(key: 'route_initialised', value: 'true');
     // set info variables
     setState(() {
       _totalDistance = (_totalDistance/1000).ceil();
@@ -224,8 +268,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                   color: Colors.grey[100],
                   size: 30,
                 ),
-                  onPressed: (){
-                    storage.write(key: 'current_route', value: '$route');
+                  onPressed: () async{
+                    await storage.write(key: 'current_route', value: '$route');
+                    Navigator.of(context).pop();
                   },
               )
             ),
