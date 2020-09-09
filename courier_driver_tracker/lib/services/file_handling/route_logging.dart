@@ -117,11 +117,33 @@ class RouteLogging{
     return contents;
   }
 
+  Future<File> clearFile(String fileType) async
+  {
+    File file;
+    if (fileType == "locationFile") {
+      file = await locationFile;
+      return file.writeAsString("");
+    }
+    else if (fileType == "deliveriesFile") {
+      file = await deliveriesFile;
+      return file.writeAsString("");
+    }
+    else{
+      print("Dev: Incorrect file type given. [RouteLogging:writeToFile]");
+    }
+
+    if(file == null){
+      print("Dev: Failed to retrieve file to write deliveries to.");
+
+    }
+    return null;
+  }
+
   Future<File> writeToFile(String data, String fileType) async {
     File file;
     if(fileType == "locationFile") {
       file = await locationFile;
-      return file.writeAsString(data, mode: FileMode.write);
+      return file.writeAsString(data, mode: FileMode.append);
     }
     else if(fileType == "deliveriesFile"){
       file = await deliveriesFile;
