@@ -1,3 +1,4 @@
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   @override
@@ -34,6 +36,7 @@ class _HomePageViewState extends State<HomePageView> {
   final storage = new FlutterSecureStorage();
   var userData = {'name': 'name', 'surname': 'surname'};
   int _currentIndex = 1;
+  ApiHandler api = new ApiHandler();
 
   Future<Null> readUserData() async {
     var name = await storage.read(key: 'name');
@@ -58,6 +61,10 @@ class _HomePageViewState extends State<HomePageView> {
       var methodChannel = MethodChannel("com.ctrlaltelite.messages");
       String data = await methodChannel.invokeMethod("startService");
       print(data);
+      const seconds = const Duration(seconds: 45);
+      Timer.periodic(seconds, (Timer t) => 
+        api.updateDriverLocationNoCoords()
+      );
     }
   }
 
@@ -128,11 +135,11 @@ class _HomePageViewState extends State<HomePageView> {
             onTap: (index) {
               if (index == 0) {
                 Navigator.of(context).pushNamed("/delivery");
-              } else if (index == 1) {
-                Navigator.of(context).pushNamed("/home2");
-              } else if (index == 2) {
+              }
+              else if (index == 2) {
                 Navigator.of(context).pushNamed("/profile");
-              } else if (index == 3) {
+              }
+              else if (index == 3) {
                 Navigator.of(context).pushNamed("/settings");
               }
             }));

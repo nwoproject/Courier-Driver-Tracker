@@ -97,9 +97,12 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'token', value: responseData['token']);
       await storage.write(key: 'name', value: responseData['name']);
       await storage.write(key: 'surname', value: responseData['surname']);
+      await storage.write(key: 'loginstatus', value: 'true');
 
       Navigator.of(context)
-          .pushNamed('/home', arguments: responseData['token']);
+          .popAndPushNamed('/home', arguments: responseData['token']);
+      Navigator.of(context)
+          .pushNamed('/delivery', arguments: responseData['token']);
     } else //invalid credentials
     {
       print(response.statusCode);
@@ -228,7 +231,8 @@ class _LoginPageState extends State<LoginPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {"implementation missing"},
+        onPressed: () => {Navigator.of(context)
+            .pushNamed('/forgotPassword')},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
