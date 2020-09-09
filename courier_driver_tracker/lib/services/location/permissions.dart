@@ -6,8 +6,6 @@ import 'package:location/location.dart';
 import 'package:courier_driver_tracker/screens/login.dart';
 import 'package:courier_driver_tracker/screens/home.dart';
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
-import 'package:android_intent/android_intent.dart';
-
 
 /*
    * Author: Gian Geyser
@@ -19,7 +17,6 @@ Future<bool> isLocationServiceEnabled() async {
   return await Geolocator().isLocationServiceEnabled();
 }
 
-
 /*
    * Author: Gian Geyser
    * Parameters: none
@@ -29,12 +26,10 @@ Future<bool> isLocationServiceEnabled() async {
 Future<bool> isLocationPermissionGranted() async {
   final GeolocationStatus geoPermission = await Geolocator()
       .checkGeolocationPermissionStatus(
-      locationPermission: GeolocationPermission.locationAlways
-      );
-  if(geoPermission == GeolocationStatus.granted){
+          locationPermission: GeolocationPermission.locationAlways);
+  if (geoPermission == GeolocationStatus.granted) {
     return true;
-  }
-  else{
+  } else {
     return false;
   }
 }
@@ -48,11 +43,15 @@ Future<bool> isLocationPermissionGranted() async {
 Future<bool> requestLocationService() async {
   final Location location = Location();
   bool _serviceEnabled;
+  print("error checking");
   _serviceEnabled = await location.serviceEnabled();
   if (!_serviceEnabled) {
+    print("requesting");
     _serviceEnabled = await location.requestService();
+    print("requested");
     print(_serviceEnabled);
   }
+  print("returning");
   return _serviceEnabled;
 }
 
@@ -65,14 +64,12 @@ Future<bool> requestLocationService() async {
 Future<bool> requestLocationPermission() async {
   final Geolocator geolocator = Geolocator();
   await geolocator.getCurrentPosition();
-  GeolocationStatus geoPermission = await geolocator
-      .checkGeolocationPermissionStatus(
-      locationPermission: GeolocationPermission.locationAlways
-  );
-  if(geoPermission == GeolocationStatus.granted){
+  GeolocationStatus geoPermission =
+      await geolocator.checkGeolocationPermissionStatus(
+          locationPermission: GeolocationPermission.locationAlways);
+  if (geoPermission == GeolocationStatus.granted) {
     return true;
-  }
-  else{
+  } else {
     return false;
   }
 }
@@ -93,30 +90,40 @@ Future<void> showMyDialog(BuildContext context) async {
             children: <Widget>[
               RichText(
                 text: TextSpan(
-                  text: 'Courier Tracker is an application that makes use of your devices ',
+                  text:
+                      'Courier Tracker is an application that makes use of your devices ',
                   style: TextStyle(
                     fontSize: 14.0,
                     color: Colors.grey[800],
                   ),
                   children: <TextSpan>[
-                    TextSpan(text: 'Location Services', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: 'Location Services',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(text: '. Make sure your Location Services is '),
-                    TextSpan(text: 'Enabled.', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: 'Enabled.',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
               SizedBox(height: 10.0),
               RichText(
                 text: TextSpan(
-                  text: 'Courier Tracker also runs in the background and requires the location permission ',
+                  text:
+                      'Courier Tracker also runs in the background and requires the location permission ',
                   style: TextStyle(
                     fontSize: 14.0,
                     color: Colors.grey[800],
                   ),
                   children: <TextSpan>[
-                    TextSpan(text: 'Always', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: 'Always',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(text: ' to be '),
-                    TextSpan(text: 'Enabled.', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: 'Enabled.',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -151,7 +158,7 @@ class _PermissionsState extends State<Permissions> {
   static bool writePermissionGiven = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     checkPermissionsAndServices();
   }
@@ -167,84 +174,63 @@ class _PermissionsState extends State<Permissions> {
     });
   }
 
-  request() async {
+  locationRequest() async {
     bool loggedIn = false;
-    if(!servicesEnabled){
+    if (!servicesEnabled) {
       bool success = false;
       print("getting Service");
       success = await requestLocationService();
       print(success);
-      if(success){
+      if (success) {
         setState(() {
           servicesEnabled = true;
         });
       }
     }
-    if(!locationPermissionGiven){
-
-      if (Theme.of(context).platform == TargetPlatform.android) {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Can't get gurrent location"),
-                content:const Text('Please make sure you enable GPS and try again'),
-                actions: <Widget>[
-                  FlatButton(child: Text('Ok'),
-                      onPressed: () {
-                        final AndroidIntent intent = AndroidIntent(
-                            action: 'android.settings.LOCATION_SOURCE_SETTINGS');
-                        intent.launch();
-                        Navigator.of(context, rootNavigator: true).pop();
-                      })],
-              );
-            });
-      }
-
-      bool success = await isLocationPermissionGranted();
-      while(!success){
-        success = await isLocationPermissionGranted();
-      }
-
-
-      if(success){
+    if (!locationPermissionGiven) {
+      bool success = await requestLocationPermission();
+      if (success) {
         setState(() {
           locationPermissionGiven = true;
         });
       }
     }
-    if(!writePermissionGiven){
-      bool success = await RouteLogging.getPermissions();
-      if(success){
-        setState(() {
-          locationPermissionGiven = true;
-        });
-      }
-    }
-    if(servicesEnabled && locationPermissionGiven){
-      if(loggedIn){
+    if (servicesEnabled && locationPermissionGiven && writePermissionGiven) {
+      if (loggedIn) {
         _navigateToHome();
-      }
-      else{
+      } else {
         _navigateToLogin();
       }
     }
   }
 
-  void _navigateToLogin(){
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (BuildContext context) => LoginPage()
-        )
-    );
+  writeRequest() async {
+    bool loggedIn = false;
+    if (!writePermissionGiven) {
+      bool success = await RouteLogging.getPermissions();
+      if (success) {
+        setState(() {
+          writePermissionGiven = true;
+        });
+      }
+    }
+    if (servicesEnabled && locationPermissionGiven && writePermissionGiven) {
+      if (loggedIn) {
+        _navigateToHome();
+      } else {
+        _navigateToLogin();
+      }
+    }
   }
 
-  void _navigateToHome(){
+  void _navigateToLogin() {
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (BuildContext context) => HomePage()
-        )
-    );
+        MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
+  }
+
+  void _navigateToHome() {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
   }
 
   @override
@@ -252,227 +238,235 @@ class _PermissionsState extends State<Permissions> {
     return Container(
       color: Colors.black,
       child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+            Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 30.0, left: 25.0),
+            child: Text(
+              "SETUP",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30.0,
+              ),
+            ),
+          ),
+          Divider(
+            height: 60.0,
+            color: Colors.white,
+            thickness: 2.0,
+            indent: 10.0,
+            endIndent: 10.0,
+          ),
+          Expanded(
+            flex: 1,
+            child: ListView(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 30.0, left: 25.0),
-                  child: Text(
-                    "SETUP",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30.0,
-                    ),
+                Card(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListTile(
+                            title: Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    "Location Services",
+                                    style: TextStyle(
+                                      fontSize: 20.0,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  Divider(
+                                    height: 20.0,
+                                    thickness: 3.0,
+                                    color: servicesEnabled
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            subtitle: RichText(
+                              text: TextSpan(
+                                text:
+                                    'This application uses the devices\' GPS to track the current location. Enable the ',
+                                style: TextStyle(
+                                  fontSize: 14.0,
+                                  color: Colors.grey[800],
+                                ),
+                                children: <TextSpan>[
+                                  TextSpan(
+                                      text: 'location services',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  TextSpan(text: ' to use the application.'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: OutlineButton(
+                            child: Text(
+                              servicesEnabled ? "ENABLED" : "ENABLE",
+                              style: TextStyle(
+                                color: servicesEnabled
+                                    ? Colors.green
+                                    : Colors.blue,
+                              ),
+                            ),
+                            onPressed: locationRequest,
+                          ),
+                        ),
+                      ]),
+                ),
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          title: Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Location Permission",
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Divider(
+                                  height: 20.0,
+                                  thickness: 3.0,
+                                  color: locationPermissionGiven
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ],
+                            ),
+                          ),
+                          subtitle: RichText(
+                            text: TextSpan(
+                              text:
+                                  'This application runs as a background service. Please select ',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey[800],
+                              ),
+                              children: <TextSpan>[
+                                TextSpan(
+                                    text: 'Always',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                TextSpan(
+                                    text:
+                                        ' when asked for location permissions to use the application.'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: OutlineButton(
+                          highlightedBorderColor: Colors.green,
+                          splashColor: Colors.green,
+                          child: Text(
+                            locationPermissionGiven ? "ENABLED" : "ENABLE",
+                            style: TextStyle(
+                              color: locationPermissionGiven
+                                  ? Colors.green
+                                  : Colors.blue,
+                            ),
+                          ),
+                          onPressed: locationRequest,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Divider(
-                  height: 60.0,
-                  color: Colors.white,
-                  thickness: 2.0,
-                  indent: 10.0,
-                  endIndent: 10.0,
-                ),
-                Expanded(
-                  flex: 1,
-                  child: ListView(
-                        children: <Widget>[
-                          Card(
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          title: Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
                             child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ListTile(
-                                      title: Padding(
-                                        padding: const EdgeInsets.only(bottom: 10.0),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              "Location Services",
-                                              style: TextStyle(
-                                                fontSize: 20.0,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            Divider(
-                                              height: 20.0,
-                                              thickness: 3.0,
-                                              color: servicesEnabled ?
-                                                  Colors.green:
-                                                  Colors.red,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      subtitle: RichText(
-                                        text: TextSpan(
-                                          text: 'This application uses the devices\' GPS to track the current location. Enable the ',
-                                          style: TextStyle(
-                                            fontSize: 14.0,
-                                            color: Colors.grey[800],
-                                          ),
-                                          children: <TextSpan>[
-                                            TextSpan(text: 'location services', style: TextStyle(fontWeight: FontWeight.bold)),
-                                            TextSpan(text: ' to use the application.'),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: OutlineButton(
-                                      child: Text(
-                                        servicesEnabled ?
-                                        "ENABLED" :
-                                        "ENABLE",
-                                        style: TextStyle(
-                                          color: servicesEnabled ?
-                                          Colors.green :
-                                          Colors.blue,
-                                        ),
-                                      ),
-                                      onPressed: request,
-                                    ),
-                                  ),
-                                ]),
-                          ),
-                          Card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ListTile(
-                                    title: Padding(
-                                      padding: const EdgeInsets.only(bottom: 10.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            "Location Permission",
-                                            style: TextStyle(
-                                              fontSize: 20.0,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          Divider(
-                                            height: 20.0,
-                                            thickness: 3.0,
-                                            color: locationPermissionGiven ?
-                                            Colors.green:
-                                            Colors.red,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    subtitle: RichText(
-                                      text: TextSpan(
-                                        text: 'This application runs as a background service. Please select ',
-                                        style: TextStyle(
-                                          fontSize: 14.0,
-                                          color: Colors.grey[800],
-                                        ),
-                                        children: <TextSpan>[
-                                          TextSpan(text: 'Always', style: TextStyle(fontWeight: FontWeight.bold)),
-                                          TextSpan(text: ' when asked for location permissions to use the application.'),
-                                        ],
-                                      ),
-                                    ),
+                                Text(
+                                  "Storage Permission",
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                    color: Colors.black,
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: OutlineButton(
-                                    highlightedBorderColor: Colors.green,
-                                    splashColor: Colors.green,
-                                    child: Text(
-                                      locationPermissionGiven ?
-                                      "ENABLED" :
-                                      "ENABLE",
-                                      style: TextStyle(
-                                        color: locationPermissionGiven ?
-                                        Colors.green :
-                                        Colors.blue,
-                                      ),
-                                    ),
-                                    onPressed: request,
-                                  ),
+                                Divider(
+                                  height: 20.0,
+                                  thickness: 3.0,
+                                  color: writePermissionGiven
+                                      ? Colors.green
+                                      : Colors.red,
                                 ),
                               ],
                             ),
                           ),
-                          Card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ListTile(
-                                    title: Padding(
-                                      padding: const EdgeInsets.only(bottom: 10.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            "Location Permission",
-                                            style: TextStyle(
-                                              fontSize: 20.0,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          Divider(
-                                            height: 20.0,
-                                            thickness: 3.0,
-                                            color: writePermissionGiven ?
-                                            Colors.green:
-                                            Colors.red,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    subtitle: RichText(
-                                      text: TextSpan(
-                                        text: 'This application runs as a background service. Please select ',
-                                        style: TextStyle(
-                                          fontSize: 14.0,
-                                          color: Colors.grey[800],
-                                        ),
-                                        children: <TextSpan>[
-                                          TextSpan(text: 'Always', style: TextStyle(fontWeight: FontWeight.bold)),
-                                          TextSpan(text: ' when asked for location permissions to use the application.'),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: OutlineButton(
-                                    highlightedBorderColor: Colors.green,
-                                    splashColor: Colors.green,
-                                    child: Text(
-                                      writePermissionGiven ?
-                                      "ENABLED" :
-                                      "ENABLE",
-                                      style: TextStyle(
-                                        color: writePermissionGiven ?
-                                        Colors.green :
-                                        Colors.blue,
-                                      ),
-                                    ),
-                                    onPressed: request,
-                                  ),
-                                ),
+                          subtitle: RichText(
+                            text: TextSpan(
+                              text:
+                                  'This application will need to utilize your storage. Please select ',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey[800],
+                              ),
+                              children: <TextSpan>[
+                                TextSpan(
+                                    text: 'Allow',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                TextSpan(
+                                    text:
+                                        ' when asked for storage permissions.'),
                               ],
                             ),
-                          )
-                        ],
+                          ),
+                        ),
                       ),
-                ),
-              ]
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: OutlineButton(
+                          highlightedBorderColor: Colors.green,
+                          splashColor: Colors.green,
+                          child: Text(
+                            writePermissionGiven ? "ENABLED" : "ENABLE",
+                            style: TextStyle(
+                              color: writePermissionGiven
+                                  ? Colors.green
+                                  : Colors.blue,
+                            ),
+                          ),
+                          onPressed: writeRequest,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
+        ]),
       ),
     );
   }

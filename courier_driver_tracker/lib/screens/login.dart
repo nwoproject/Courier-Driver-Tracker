@@ -98,6 +98,8 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'name', value: responseData['name']);
       await storage.write(key: 'surname', value: responseData['surname']);
       await storage.write(key: 'loginstatus', value: 'true');
+      await storage.write(key: 'email', value: email.text);
+      print("EMAIL HERE" + email.text);
 
       Navigator.of(context)
           .popAndPushNamed('/home', arguments: responseData['token']);
@@ -105,7 +107,6 @@ class _LoginPageState extends State<LoginPage>
           .pushNamed('/delivery', arguments: responseData['token']);
     } else //invalid credentials
     {
-      print(response.statusCode);
       String errorResponse = '';
 
       switch (response.statusCode) {
@@ -231,8 +232,7 @@ class _LoginPageState extends State<LoginPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {Navigator.of(context)
-            .pushNamed('/forgotPassword')},
+        onPressed: () => {Navigator.of(context).pushNamed('/forgotPassword')},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
