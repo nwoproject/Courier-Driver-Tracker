@@ -57,9 +57,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               FlatButton(
                 child: Text('Accept'),
                 onPressed: () {
+<<<<<<< Updated upstream
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                   Navigator.of(context).popAndPushNamed('/login');
+=======
+                  Navigator.popUntil(context, ModalRoute.withName('/login'));
+>>>>>>> Stashed changes
                 },
               ),
             ],
