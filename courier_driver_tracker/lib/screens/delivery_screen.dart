@@ -25,6 +25,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   int _totalDistance = 0;
   int _totalDuration = 0;
   String _durationString;
+  String _selectedRoute = "LOADING...";
 
   List<Widget> _deliveries = [];
   List<Widget> _loadingDeliveries = [];
@@ -34,12 +35,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   @override
   void initState() {
-    /*
-    TODO
-      - use json to populate the cards
-     */
     getRoutes();
-
     super.initState();
   }
 
@@ -47,11 +43,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     String currentRoute = await storage.read(key: 'current_route');
+
     int currentActiveRoute;
     if(currentRoute == null){
       currentActiveRoute = -1;
     }
     else{
+      _selectedRoute = currentRoute;
       currentActiveRoute = int.parse(currentRoute);
     }
 
@@ -334,7 +332,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     TextSpan(
                         text: "  Total time : $_durationString\n\n", style: textStyle),
                     TextSpan(
-                        text: "Current Route: Not Selected", style: textStyle)
+                        text: "Current Route: $_selectedRoute", style: textStyle)
                   ])),
                 ),
               ),

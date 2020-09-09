@@ -6,6 +6,7 @@ import 'package:location/location.dart';
 import 'package:courier_driver_tracker/screens/login.dart';
 import 'package:courier_driver_tracker/screens/home.dart';
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
+import 'package:android_intent/android_intent.dart';
 
 
 /*
@@ -47,15 +48,11 @@ Future<bool> isLocationPermissionGranted() async {
 Future<bool> requestLocationService() async {
   final Location location = Location();
   bool _serviceEnabled;
-  print("error checking");
   _serviceEnabled = await location.serviceEnabled();
   if (!_serviceEnabled) {
-    print("requesting");
     _serviceEnabled = await location.requestService();
-    print("requested");
     print(_serviceEnabled);
   }
-  print("returning");
   return _serviceEnabled;
 }
 
@@ -184,7 +181,32 @@ class _PermissionsState extends State<Permissions> {
       }
     }
     if(!locationPermissionGiven){
-      bool success = await requestLocationPermission();
+
+      if (Theme.of(context).platform == TargetPlatform.android) {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text("Can't get gurrent location"),
+                content:const Text('Please make sure you enable GPS and try again'),
+                actions: <Widget>[
+                  FlatButton(child: Text('Ok'),
+                      onPressed: () {
+                        final AndroidIntent intent = AndroidIntent(
+                            action: 'android.settings.LOCATION_SOURCE_SETTINGS');
+                        intent.launch();
+                        Navigator.of(context, rootNavigator: true).pop();
+                      })],
+              );
+            });
+      }
+
+      bool success = await isLocationPermissionGranted();
+      while(!success){
+        success = await isLocationPermissionGranted();
+      }
+
+
       if(success){
         setState(() {
           locationPermissionGiven = true;

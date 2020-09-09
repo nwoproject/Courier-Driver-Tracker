@@ -70,7 +70,7 @@ class NavigationService {
 
 
   NavigationService({this.jsonFile, BuildContext context}) {
-    _currentRoute = 0;
+    _currentRoute = -1;
     _currentLeg = 0;
     _currentStep = 0;
     initialiseNotifications(context);
@@ -93,7 +93,7 @@ class NavigationService {
    */
   initialiseRoutes() async {
     String initialised = await _storage.read(key: 'route_initialised');
-
+    print("Route inistialised: $initialised");
     if(initialised != "true"){
       return;
     }
@@ -109,6 +109,7 @@ class NavigationService {
   }
 
   initialisePolyPointsAndMarkers(int route) async {
+    print("Navigation - initialising poly and markers");
     if(route == -1 || route == null){
       return;
     }
@@ -118,6 +119,8 @@ class NavigationService {
         return;
       }
     }
+
+    print("Initialising for route $route");
 
     for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
       int delivery = leg + 1;
@@ -331,13 +334,12 @@ class NavigationService {
 
   updateCurrentDeliveryRoutes() async{
     // store and switch
-
     String currentRoute = await _storage.read(key: 'current_route');
 
     if(currentRoute != null && currentRoute != '$_currentRoute' && currentRoute != '-1'){
       _storage.write(key: 'route$_currentRoute', value: '$_currentLeg-$_currentStep');
       String savedRouteInfo = await _storage.read(key: 'route$currentRoute');
-      List<String> routeInfo = savedRouteInfo.split("-");
+      List<String> routeInfo = savedRouteInfo != null ? savedRouteInfo.split("-") : ["0", "0"];
       _currentRoute = int.parse(currentRoute);
       _currentLeg = int.parse(routeInfo[0]);
       _currentStep = int.parse(routeInfo[1]);
@@ -568,6 +570,10 @@ class NavigationService {
     return _deliveryRoutes.getNextDeliveryLocation(_currentRoute, _currentLeg);
   }
 
+  Future<int> getChosenRoute() async{
+    return int.parse(await _storage.read(key: 'current_route'));
+  }
+
 
   //__________________________________________________________________________________________________
   //                            Calculation functions
@@ -652,7 +658,6 @@ class NavigationService {
 
 
     for(int i = 0; i < currentPolyline.points.length; i++){
-      print(calculateDistanceBetween(delivery, currentPolyline.points[i]));
       if(calculateDistanceBetween(delivery, currentPolyline.points[i]) < 2){
         _lengthRemainingAtNextDelivery = currentPolyline.points.length - i;
         return _lengthRemainingAtNextDelivery;
@@ -746,7 +751,7 @@ class NavigationService {
    * Returns: int
    * Description: Navigation function that implements all the required steps for navigation.
    */
-  navigate(Position currentPosition, BuildContext context) {
+  navigate(Position currentPosition, BuildContext context) async {
     /*
     - set current location
     - find the current point
@@ -756,15 +761,25 @@ class NavigationService {
     - update current polyline
     - update the info vars for map
      */
-
     if(_deliveryRoutes == null){
       initialiseRoutes();
       return;
     }
-    // updateCurrentDeliveryRoutes();
+
+    updateCurrentDeliveryRoutes();
+
     if(_currentRoute == -1){
-      return;
+      String currentRoute = await _storage.read(key: 'current_route');
+      if(currentRoute == null){
+        return;
+      }
+      int route = int.parse(currentRoute);
+      if(route == null || route == -1){
+        return;
+      }
+      _currentRoute = route;
     }
+
     if(polylines == null || polylines.length == 0 ||
         markers == null || markers.length == 0){
       initialisePolyPointsAndMarkers(_currentRoute);
@@ -804,12 +819,15 @@ class NavigationService {
     if(!nearDelivery){
       // check if on the route
       bool onRoute = false;
-      for(int i = 0; i < currentPolyline.points.length - 1; i++){
-        if(!_abnormalityService.offRoute(currentPolyline.points[i], currentPolyline.points[i+1])){
-          onRoute = true;
-          break;
-        }
+      /*
+      TODO
+        - change implementation of offRoute
+       */
+
+      if(!_abnormalityService.offRoute(currentPolyline)){
+        onRoute = true;
       }
+      print("Still on route: $onRoute");
 
       if(onRoute){
         updateCurrentPolyline();
@@ -835,7 +853,7 @@ class NavigationService {
      */
       if(_abnormalityService.drivingTooSlowTemp()){
         _notificationManager.report = "slow";
-        //_notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
+        //_notificationManager.showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
       }
       //update info
       updateDistanceETA();
@@ -877,16 +895,10 @@ TODO
   - store current route, leg and step in secure storage for if they change route
   - read in all of the above variables in case it is stored
   - change icons on delivery page
-  - first check if files are empty before calling api
-    - edit ryans file-logger to store according to route as well
   */
   /*
  TODO
   -navigation
-  - add leg calculation
-  - move to next leg
   - update storage variables
-  - only call google api to create route
-  - when route is completed, delete file
-  - when all routes have been completed clear uncalculated and calculating
+  - when routes are completed, delete file clear uncalculated and calculating
  */
