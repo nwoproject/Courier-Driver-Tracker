@@ -43,6 +43,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
   }
 
+  String get email {
+    if (userData['email'] == null) {
+      return "Did not recieve email";
+    } else {
+      return userData['email'];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -113,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextSpan(text: "Email:\n", style: labelStyle),
-          TextSpan(text: userData['email'] + "\n\n\n", style: textStyle),
+          TextSpan(text: email + "\n\n\n", style: textStyle),
           TextSpan(text: "Driver Score:\n", style: labelStyle),
           TextSpan(text: "0\n\n\n", style: textStyle),
           TextSpan(text: "Routes Completed:\n", style: labelStyle),
