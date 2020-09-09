@@ -117,7 +117,7 @@ class RouteLogging{
     return contents;
   }
 
-  Future<File> clearFile(String fileType) async
+  Future<File> clearFileContents(String fileType) async
   {
     File file;
     if (fileType == "locationFile") {
