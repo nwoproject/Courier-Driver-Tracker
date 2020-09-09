@@ -117,6 +117,36 @@ class RouteLogging{
     return contents;
   }
 
+  Future<File> deleteFile(String fileType) async {
+    File file;
+    if (fileType == "locationFile") {
+      try {
+        file = await locationFile;
+        await file.delete();
+      }catch (e) {
+        print(e);
+      }
+
+    }
+    else if (fileType == "deliveriesFile") {
+      try {
+        file = await deliveriesFile;
+        await file.delete();
+      }catch (e) {
+        print(e);
+      }
+    }
+    else{
+      print("Dev: Incorrect file type given. [RouteLogging:writeToFile]");
+    }
+
+    if(file == null){
+      print("Dev: File does not exist.");
+
+    }
+    return null;
+  }
+
   Future<File> clearFileContents(String fileType) async
   {
     File file;
@@ -133,7 +163,7 @@ class RouteLogging{
     }
 
     if(file == null){
-      print("Dev: Failed to retrieve file to write deliveries to.");
+      print("Dev: File does not exist.");
 
     }
     return null;
