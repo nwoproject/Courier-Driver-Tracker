@@ -833,10 +833,10 @@ class NavigationService {
        For more information about this see the AbnormalityService class as well
        as the
      */
-      if(_abnormalityService.drivingTooSlowTemp()){
-        _notificationManager.report = "slow";
-        //_notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
-      }
+//      if(_abnormalityService.drivingTooSlowTemp()){
+//        _notificationManager.report = "slow";
+//        //_notificationManager..showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
+//      }
       //update info
       updateDistanceETA();
       updateDeliveryTimeRemaining();
