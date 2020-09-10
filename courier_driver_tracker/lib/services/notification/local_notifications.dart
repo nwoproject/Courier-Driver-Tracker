@@ -70,10 +70,10 @@ class LocalNotifications {
       await  Navigator.of(_notificationContext)
           .pushNamed('/reportSpeed');
     }
-    if (report == "slow") {
-      await  Navigator.of(_notificationContext)
-          .pushNamed('/reportSpeed');
-    }
+//    if (report == "slow") {
+//      await  Navigator.of(_notificationContext)
+//          .pushNamed('/reportSpeed');
+//    }
     if (report == "offRoute") {
       await  Navigator.of(_notificationContext)
           .pushNamed('/reportOff');
