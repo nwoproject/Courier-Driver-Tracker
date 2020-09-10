@@ -835,14 +835,12 @@ class NavigationService {
       else{
         // making sure only one notification gets sent.
         if(!_abnormalityService.getStillOffRoute()){
-          _notificationManager.report = "offRoute";
           _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
         }
         //start marking the route he followed.
       }
 
       if(_abnormalityService.stoppingTooLong()){
-        _notificationManager.report = "long";
         _notificationManager.showNotifications(_abnormalityHeaders["stopping_too_long"], _abnormalityMessages["stopping_too_long"]);
       }
 
@@ -873,7 +871,6 @@ class NavigationService {
 
     // General abnormalities
     if(_abnormalityService.suddenStop()){
-      _notificationManager.report = "sudden";
       _notificationManager.showNotifications(_abnormalityHeaders["sudden_stop"], _abnormalityMessages["sudden_stop"]);
     }
     /*
@@ -882,7 +879,6 @@ class NavigationService {
     as the
     */
     if(_abnormalityService.isSpeedingTemp()){
-      _notificationManager.report = "speeding";
       _notificationManager..showNotifications(_abnormalityHeaders["speeding"], _abnormalityMessages["speeding"]);
     }
   }
