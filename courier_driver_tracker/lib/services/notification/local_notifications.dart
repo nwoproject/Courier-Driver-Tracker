@@ -31,6 +31,22 @@ class LocalNotifications {
       return;
     }
     await _notification(header, message);
+
+    switch(header.toString()) {
+      case "Going Off Route!": {report = "offRoute"; }
+      break;
+      case "Sudden Stop!": {report = "sudden"; }
+      break;
+      case "You Stopped Moving!": {report = "long"; }
+      break;
+      case "You Are Speeding!": {report = "speeding"; }
+      break;
+//      case "offroute" {report = "offRoute"; }
+//      break;
+      default: {print("Invalid option");}
+      break;
+    }
+
   }
 
   Future<void> _notification(String header, String message) async {
@@ -47,6 +63,7 @@ class LocalNotifications {
     NotificationDetails(androidNotificationDetails, iosNotificationDetails);
     await flutterLocalNotificationsPlugin.show(
         0, header, message, notificationDetails);
+
   }
 
   setContext(BuildContext context){
