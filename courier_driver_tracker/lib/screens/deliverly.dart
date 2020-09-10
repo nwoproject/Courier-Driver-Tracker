@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
@@ -5,6 +7,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class UserFeedbackAfterDelivery extends StatelessWidget {
   static const String _title = 'Delivery response';
@@ -88,13 +94,54 @@ class _FeedbackState extends State<Feedback> {
         textColor: Colors.white);
   }
 
+  double calculateDistanceBetween(LatLng currentPosition, LatLng lastPosition){
+    double p = 0.017453292519943295;
+    double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
+        cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
+            (1 - cos((currentPosition.longitude - lastPosition.longitude) * p))/2;
+    return 12742 * asin(sqrt(a)) * 1000;
+  }
+
+
   void report() async {
+
+    ApiHandler _api = ApiHandler();
+
+
+
     position = await geolocatorService.getPosition();
     var token = await storage.read(key: 'token');
     var driverID = await storage.read(key: 'id');
-    var locationID = await storage.read(key: 'location');
+    var routeId = await storage.read(key: "RouteID");
+
+    List<delivery.Route> routes = await _api.getUncalculatedRoute();
+    List<delivery.Location> location;
+
+    var currPos = LatLng(position.latitude, position.longitude);
+
+
+    for (int i = 0; i < routes.length; i++) {
+      if (routes[i].routeID == routeId)
+        {
+          location = routes[i].locations;
+        }
+    }
+
+    double distance = 855555555;
+    var tempLocID;
+
+    for (int k = 0; k < location.length; k++) {
+      var tempDistance = calculateDistanceBetween(currPos, LatLng(double.parse(location[k].latitude), double.parse(location[k].longitude)));
+      if (tempDistance < distance)
+        {
+          distance = tempDistance;
+          tempLocID = location[k].locationID;
+        }
+    }
+
     driverID = driverID.toString();
     String time = position.timestamp.toString();
+
 
     String resp = "";
 
@@ -123,7 +170,7 @@ class _FeedbackState extends State<Feedback> {
     };
 
     var response = await http.put(
-        "https://drivertracker-api.herokuapp.com/routes/location/$locationID",
+        "https://drivertracker-api.herokuapp.com/routes/location/$tempLocID",
         headers: requestHeaders,
         body: data);
 

@@ -698,7 +698,7 @@ class NavigationService {
   bool isAtDelivery(){
     if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery]) < _position.accuracy + 10){
       atDelivery = true;
-      sendDeliveryAPICall();
+      //sendDeliveryAPICall();
     }
     return atDelivery;
   }
