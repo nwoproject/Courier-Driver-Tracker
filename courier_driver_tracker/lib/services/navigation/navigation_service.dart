@@ -619,14 +619,21 @@ class NavigationService {
     }
   }
 
-  String getDeliveryAddress(int route, int leg){
+  String getDeliveryAddress(int leg){
     if(_deliveryRoutes == null){
       return "";
     }
     else{
-      String address = _deliveryRoutes.getDeliveryAddress(route, leg);
+      String address = _deliveryRoutes.getDeliveryAddress(_currentRoute, leg);
       return address;
     }
+  }
+
+  int getNumberOfDeliveries(){
+    if(_deliveryRoutes == null){
+      return 0;
+    }
+    return _deliveryRoutes.routes[_currentRoute].legs.length;
   }
 
   LatLng getStepStartLatLng(int route, int leg, int step){
