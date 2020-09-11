@@ -319,9 +319,7 @@ class MapSampleState extends State<GMap> {
       _navigatorService.navigate(_currentPosition, context);
       _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
 
-      if(polylines == null || polylines.length == 0){
-        _updatePolyline();
-      }
+      _updatePolyline();
 
       setInformationVariables();
       if(lockedOnPosition){

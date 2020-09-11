@@ -130,6 +130,7 @@ class NavigationService {
           snippet: _deliveryRoutes.routes[route].legs[leg].endAddress,
         ),
         icon: BitmapDescriptor.defaultMarker,
+
       );
       markers.add(marker);
 
@@ -152,7 +153,7 @@ class NavigationService {
       // Initializing Polyline
       Polyline polyline = Polyline(
           polylineId: id,
-          color: Colors.purple,
+          color: Colors.deepPurple[200],
           points: polylineCoordinates,
           width: 10
       );
@@ -406,10 +407,12 @@ class NavigationService {
       if(_lengthRemainingAtNextDelivery == null){
         calculateNextDeliveryPoint();
       }
-        int lengthRemaining = polylines["$_currentRoute"].points.length - _lengthRemainingAtNextDelivery;
-      if(lengthRemaining == null){
+
+      if(_lengthRemainingAtNextDelivery == null){
         throw "Delivery point not found";
       }
+
+      int lengthRemaining = polylines["$_currentRoute"].points.length - _lengthRemainingAtNextDelivery;
 
       List<LatLng> currentPoints = [];
       polylines["current"] = null;
@@ -419,16 +422,19 @@ class NavigationService {
         lengthRemaining -= 1;
       }
 
+      currentPolyline = null;
       currentPolyline = Polyline(
         polylineId: PolylineId("current"),
         points: currentPoints,
-        color: Colors.red,
+        color: Colors.deepPurple[400],
         width: 8,
+        zIndex: 1000
       );
 
       polylines["current"] = currentPolyline;
+      print("Leg: $_currentLeg");
+      print("Current Length: " + currentPolyline.points.length.toString());
     }catch(error){
-
       print("Failed to set current polyline.[$error]");
       return;
     }
@@ -620,7 +626,7 @@ class NavigationService {
   }
 
   String getDeliveryAddress(int leg){
-    if(_deliveryRoutes == null){
+    if(_deliveryRoutes == null || _currentRoute == -1){
       return "";
     }
     else{
@@ -630,7 +636,7 @@ class NavigationService {
   }
 
   int getNumberOfDeliveries(){
-    if(_deliveryRoutes == null){
+    if(_deliveryRoutes == null || _currentRoute == -1){
       return 0;
     }
     return _deliveryRoutes.routes[_currentRoute].legs.length;
@@ -839,6 +845,8 @@ class NavigationService {
     showDeliveryRadiusOnMap();
     markers.remove(markers.first);
     calculateNextDeliveryPoint();
+    currentPolyline = null;
+    setCurrentPolyline();
     clearAllSetVariables();
     initialiseInfoVariables();
   }
