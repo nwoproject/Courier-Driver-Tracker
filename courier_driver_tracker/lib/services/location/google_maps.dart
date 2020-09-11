@@ -20,10 +20,13 @@ class MapSampleState extends State<GMap> {
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
   Set<Marker> markers = {};
-  Set<Circle>  circles = {};
+  Set<Circle> circles = {};
   List<LatLng> polylineCoordinates = [];
   Map<String, Polyline> polylines = {};
   bool lockedOnPosition = true;
+
+  List<Widget> _deliveries = [];
+  List<Widget> _deliveries1 = [];
 
   //Location service
   GeolocatorService _geolocatorService = GeolocatorService();
@@ -63,7 +66,7 @@ class MapSampleState extends State<GMap> {
     fontFamily: 'OpenSans-Regular',
   );
 
-  Widget _deliveryCards(String text, String date) {
+  Widget _deliveryCards(String text) {
     return Card(
       elevation: 10,
       child: Padding(
@@ -72,9 +75,6 @@ class MapSampleState extends State<GMap> {
           title: Text(
             text,
             style: headingLabelStyle,
-          ),
-          subtitle: Text(
-            date,
           ),
         ),
       ),
@@ -89,7 +89,7 @@ class MapSampleState extends State<GMap> {
    */
   getCurrentLocation() async {
     _currentPosition = await _geolocatorService.getPosition();
-    if(_currentPosition != null){
+    if (_currentPosition != null) {
       moveToCurrentLocation();
     }
   }
@@ -97,7 +97,7 @@ class MapSampleState extends State<GMap> {
   getCurrentRoute() async {
     FlutterSecureStorage storage = FlutterSecureStorage();
     String currentRoute = await storage.read(key: 'current_route');
-    if(_route == -1 && currentRoute != null){
+    if (_route == -1 && currentRoute != null) {
       _route = int.parse(currentRoute);
     }
   }
@@ -110,7 +110,8 @@ class MapSampleState extends State<GMap> {
    */
   moveToCurrentLocation() {
     // Move camera to the specified latitude & longitude
-    mapController.animateCamera(
+    mapController
+        .animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(
@@ -122,7 +123,8 @@ class MapSampleState extends State<GMap> {
           bearing: _currentPosition.heading,
         ),
       ),
-    ).catchError((e) {
+    )
+        .catchError((e) {
       print("Failed to move camera: " + e.toString());
     });
   }
@@ -138,7 +140,7 @@ class MapSampleState extends State<GMap> {
     LatLng northEast = _navigatorService.northEast;
     LatLng southWest = _navigatorService.southWest;
 
-    if(northEast == null || southWest == null){
+    if (northEast == null || southWest == null) {
       return;
     }
 
@@ -243,41 +245,35 @@ class MapSampleState extends State<GMap> {
         southWestLongitudeCheck;
   }
 
-  setInformationVariables(){
-    if(_navigatorService.directions != null){
+  setInformationVariables() {
+    if (_navigatorService.directions != null) {
       _directions = _navigatorService.directions;
-    }
-    else{
+    } else {
       _directions = "LOADING...";
     }
-    if(_navigatorService.deliveryTimeRemaining != null){
+    if (_navigatorService.deliveryTimeRemaining != null) {
       _stepTimeRemaining = _navigatorService.deliveryTimeRemaining;
-    }
-    else{
+    } else {
       _stepTimeRemaining = "LOADING...";
     }
-    if(_navigatorService.distanceETA != null){
+    if (_navigatorService.distanceETA != null) {
       _distanceETA = _navigatorService.distanceETA;
-    }
-    else{
+    } else {
       _distanceETA = "";
     }
-    if(_navigatorService.delivery != null){
+    if (_navigatorService.delivery != null) {
       _delivery = _navigatorService.delivery;
-    }
-    else{
+    } else {
       _delivery = "LOADING...";
     }
-    if(_navigatorService.deliveryAddress != null){
+    if (_navigatorService.deliveryAddress != null) {
       _deliveryAddress = _navigatorService.deliveryAddress;
-    }
-    else{
+    } else {
       _deliveryAddress = "";
     }
-    if(_navigatorService.directionIconPath != null){
+    if (_navigatorService.directionIconPath != null) {
       _directionIconPath = _navigatorService.directionIconPath;
-    }
-    else{
+    } else {
       _directionIconPath = "assets/images/navigation_marker_white.png";
     }
     circles = _navigatorService.circles;
@@ -298,12 +294,30 @@ class MapSampleState extends State<GMap> {
     markers = _navigatorService.markers;
   }
 
-  _updatePolyline(){
+  _updatePolyline() {
     _route = _navigatorService.getRoute();
-    if(_route != null && _route >= 0 && _navigatorService.currentPolyline != null
-        && _navigatorService.polylines["$_route"] != null){
-      polylines = { "current" : _navigatorService.currentPolyline,
-                    "$_route" : _navigatorService.polylines["$_route"]};
+    if (_route != null &&
+        _route >= 0 &&
+        _navigatorService.currentPolyline != null &&
+        _navigatorService.polylines["$_route"] != null) {
+      polylines = {
+        "current": _navigatorService.currentPolyline,
+        "$_route": _navigatorService.polylines["$_route"]
+      };
+    }
+  }
+
+  setDeliveries() {
+    int number = _navigatorService.getNumberOfDeliveries();
+
+    print("number of deliveries" + number.toString());
+
+    for (int x = 0; x < number; x++) {
+      setState(() {
+        _deliveries1
+            .add(_deliveryCards(_navigatorService.getDeliveryAddress(x)));
+        _deliveries = _deliveries1;
+      });
     }
   }
 
@@ -315,16 +329,18 @@ class MapSampleState extends State<GMap> {
     double fontSize = MediaQuery.of(context).size.height * 0.027;
 
     // Calls abnormality service
-    if(_currentPosition != null) {
+    if (_currentPosition != null) {
       _navigatorService.navigate(_currentPosition, context);
-      _routeLogging.writeToFile(_currentPosition.toString() + "\n", "locationFile");
+      _routeLogging.writeToFile(
+          _currentPosition.toString() + "\n", "locationFile");
+      setDeliveries();
 
-      if(polylines == null || polylines.length == 0){
+      if (polylines == null || polylines.length == 0) {
         _updatePolyline();
       }
 
       setInformationVariables();
-      if(lockedOnPosition){
+      if (lockedOnPosition) {
         moveToCurrentLocation();
       }
     }
@@ -345,27 +361,16 @@ class MapSampleState extends State<GMap> {
 
     // Google Map View
     return SlidingUpPanel(
-      color: Color.fromARGB(255, 58, 52, 64),
+      color: Colors.white,
       panel: Center(
         child: Container(
           padding: EdgeInsets.all(10),
-          child: ListView(
-            padding: const EdgeInsets.all(5),
-            children: <Widget>[
-              _deliveryCards("Menlyn Park Shopping Centre",
-                  "01-25-2020 12:00"),
-              _deliveryCards(
-                  "Aroma Gourmet Coffee Roastery", "01-25-2020 13:00"),
-              _deliveryCards("University of Pretoria", "01-25-2020 13:45"),
-              _deliveryCards(
-                  "Pretoria High School for boys", "01-25-2020 14:00"),
-            ],
-          ),
+          child:
+              ListView(padding: const EdgeInsets.all(5), children: _deliveries),
         ),
       ),
       collapsed: Container(
-        decoration:
-        BoxDecoration(color: Colors.white, borderRadius: radius),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: radius),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -373,8 +378,8 @@ class MapSampleState extends State<GMap> {
               Column(
                 children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.only(
-                        top: 10.0, left: 10.0, right: 10),
+                    padding:
+                        const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
                       child: Text(atDelivery ? "Arrived" : _stepTimeRemaining,
                           style: TextStyle(
@@ -385,10 +390,10 @@ class MapSampleState extends State<GMap> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                        top: 10.0, left: 10.0, right: 10),
+                    padding:
+                        const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(atDelivery ? "at Destination" :_distanceETA,
+                      child: Text(atDelivery ? "at Destination" : _distanceETA,
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "OpenSans-Regular",
@@ -438,7 +443,8 @@ class MapSampleState extends State<GMap> {
       ),
       body: Column(
         children: <Widget>[
-          Expanded(child: Container(
+          Expanded(
+              child: Container(
             child: Column(
               // Google map container with buttons stacked on top
               children: <Widget>[
@@ -449,9 +455,13 @@ class MapSampleState extends State<GMap> {
                       Container(
                         child: GoogleMap(
                           initialCameraPosition: _initialLocation,
-                          markers: markers != null ? Set<Marker>.from(markers) : null,
+                          markers: markers != null
+                              ? Set<Marker>.from(markers)
+                              : null,
                           polylines: Set<Polyline>.of(polylines.values),
-                          circles: circles != null ? Set<Circle>.from(circles) : null,
+                          circles: circles != null
+                              ? Set<Circle>.from(circles)
+                              : null,
                           myLocationEnabled: true,
                           myLocationButtonEnabled: false,
                           mapType: MapType.normal,
@@ -477,8 +487,10 @@ class MapSampleState extends State<GMap> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
                                   ListTile(
-                                    leading: Image(image: AssetImage(_directionIconPath),
-                                    height: 40,),
+                                    leading: Image(
+                                      image: AssetImage(_directionIconPath),
+                                      height: 40,
+                                    ),
                                     title: new HtmlWidget(html),
                                   )
                                 ],
@@ -488,7 +500,8 @@ class MapSampleState extends State<GMap> {
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 110.0, right: 10.0),
+                          padding:
+                              const EdgeInsets.only(top: 110.0, right: 10.0),
                           child: Container(
                             decoration: myBoxDecoration(),
                             child: ClipOval(
@@ -516,7 +529,8 @@ class MapSampleState extends State<GMap> {
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 180.0, right: 10.0),
+                          padding:
+                              const EdgeInsets.only(top: 180.0, right: 10.0),
                           child: Container(
                             decoration: myBoxDecoration(),
                             child: ClipOval(
@@ -546,35 +560,38 @@ class MapSampleState extends State<GMap> {
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 200.0),
                           child: Container(
-                            child: atDelivery ? RaisedButton(
-                              padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 40.0),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  side: BorderSide(color: Colors.green,
-                                  width: 3.0)
-                              ),
-                              child: Text("FINISH DELIVERY",
-                              style: TextStyle(
-                                fontSize: 30.0,
-                                color: Colors.white
-                              ),),
-                              color: Colors.green,
-                              onPressed: (){
-                                Navigator.of(context).pushNamed("/reportDelivery");
-                                _navigatorService.moveToNextDelivery();
-                              },
-                              ) : Container(),
-                            ),
+                            child: atDelivery
+                                ? RaisedButton(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 12.0, horizontal: 40.0),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        side: BorderSide(
+                                            color: Colors.green, width: 3.0)),
+                                    child: Text(
+                                      "FINISH DELIVERY",
+                                      style: TextStyle(
+                                          fontSize: 30.0, color: Colors.white),
+                                    ),
+                                    color: Colors.green,
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pushNamed("/reportDelivery");
+                                      _navigatorService.moveToNextDelivery();
+                                    },
+                                  )
+                                : Container(),
                           ),
                         ),
+                      ),
                       // Show zoom buttons
                     ],
                   ),
                 ),
               ],
             ),
-          )
-          ),
+          )),
         ],
       ),
       borderRadius: radius,
