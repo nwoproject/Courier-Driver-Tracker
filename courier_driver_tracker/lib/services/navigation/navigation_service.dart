@@ -180,7 +180,7 @@ class NavigationService {
     deliveryTimeRemaining = getTimeToDelivery();
     String distance = updateDistanceRemaining();
     distanceETA = "$distance . $eta";
-    deliveryAddress = getDeliveryAddress();
+    deliveryAddress = getCurrentDeliveryAddress();
     directionIconPath = getDirectionIcon();
   }
 
@@ -599,14 +599,15 @@ class NavigationService {
     return getTotalDeliveries() - _currentRoute -1;
   }
 
-  int getTotalDeliveries(){
-    if(_deliveryRoutes == null){
+  int getTotalDeliveries() {
+    if (_deliveryRoutes == null) {
       return 0;
     }
     return _deliveryRoutes.getTotalDeliveries();
   }
 
-  String getDeliveryAddress(){
+
+  String getCurrentDeliveryAddress(){
     if(_deliveryRoutes == null){
       return "";
     }
@@ -614,6 +615,16 @@ class NavigationService {
       String address = _deliveryRoutes.getDeliveryAddress(_currentRoute, _currentLeg);
       List<String> temp = address.split(",");
       address = temp[0];
+      return address;
+    }
+  }
+
+  String getDeliveryAddress(int route, int leg){
+    if(_deliveryRoutes == null){
+      return "";
+    }
+    else{
+      String address = _deliveryRoutes.getDeliveryAddress(route, leg);
       return address;
     }
   }
@@ -850,6 +861,16 @@ class NavigationService {
       return;
     }
 
+    if(_notificationManager == null){
+
+      _notificationManager = LocalNotifications();
+      _notificationManager.initializing(context);
+    }
+    if(!_notificationManager.initialised){
+      print("Here");
+      _notificationManager.initializing(context);
+    }
+
     updateCurrentDeliveryRoutes();
 
     if(_currentRoute == -1){
@@ -914,6 +935,7 @@ class NavigationService {
       else{
         // making sure only one notification gets sent.
         if(!_abnormalityService.getStillOffRoute()){
+          currentPolyline.points.removeAt(0);
           _notificationManager.showNotifications(_abnormalityHeaders["offroute"], _abnormalityMessages["offroute"]);
         }
         //start marking the route he followed.

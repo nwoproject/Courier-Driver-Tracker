@@ -151,7 +151,7 @@ class AbnormalityService{
       double distanceFromPolyline = calculateDistanceBetween(LatLng(_currentPosition.latitude, _currentPosition.longitude), LatLng(_currentPosition.latitude, shouldBeAt));
 
       // checks if the distance of the courier is more than 40m away from route.
-      if(distanceFromPolyline < _currentPosition.accuracy + 40){
+      if(distanceFromPolyline < _currentPosition.accuracy + 20){
         if(_wentOffRoute){
           _wentOffRoute = false;
           _stillOffRoute = false;

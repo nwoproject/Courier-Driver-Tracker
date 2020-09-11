@@ -26,9 +26,9 @@ class LocalNotifications {
   }
 
   void showNotifications(String header, String message) async {
-    if(!initialised){
+    while(!initialised){
+      await Future.delayed(Duration(seconds: 5));
       print("Dev: Notification initialisation failed.");
-      return;
     }
     await _notification(header, message);
 
