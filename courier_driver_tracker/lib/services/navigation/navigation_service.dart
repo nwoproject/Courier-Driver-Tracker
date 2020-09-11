@@ -69,11 +69,10 @@ class NavigationService {
   };
 
 
-  NavigationService({this.jsonFile, BuildContext context}) {
+  NavigationService() {
     _currentRoute = -1;
     _currentLeg = 0;
     _currentStep = 0;
-    initialiseNotifications(context);
   }
 
 
@@ -93,7 +92,6 @@ class NavigationService {
    */
   initialiseRoutes() async {
     String initialised = await _storage.read(key: 'route_initialised');
-    print("Route inistialised: $initialised");
     if(initialised != "true"){
       return;
     }
@@ -109,7 +107,6 @@ class NavigationService {
   }
 
   initialisePolyPointsAndMarkers(int route) async {
-    print("Navigation - initialising poly and markers");
     if(route == -1 || route == null){
       return;
     }
@@ -119,8 +116,6 @@ class NavigationService {
         return;
       }
     }
-
-    print("Initialising for route $route");
 
     for(int leg = 0; leg < _deliveryRoutes.routes[route].legs.length; leg++){
       int delivery = leg + 1;
@@ -139,7 +134,7 @@ class NavigationService {
       markers.add(marker);
 
       List<LatLng> polylineCoordinates = [];
-      String polyId = "$route-$leg";
+      String polyId = "$route";
 
       // get polyline points from DeliveryRoute in navigator service
       List<PointLatLng> result = decodeEncodedPolyline(_deliveryRoutes.routes[route].overviewPolyline.points);
@@ -178,7 +173,7 @@ class NavigationService {
   }
 
   initialiseInfoVariables(){
-    eta = getDeliveryArrivalTime();
+    getDeliveryArrivalTime();
     int del = _currentLeg + 1;
     delivery = "Delivery $del";
     directions = getDirection();
@@ -192,7 +187,7 @@ class NavigationService {
   initialiseDeliveryCircle(){
     Circle deliveryCircle = Circle(
       circleId: CircleId("$_currentRoute-$_currentLeg"),
-      center: currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery],
+      center: polylines["$_currentRoute"].points[0],
       fillColor: Color(0x2082fa9e),
       strokeColor: Colors.green[400],
       strokeWidth: 2,
@@ -224,65 +219,96 @@ class NavigationService {
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline(){
-    if(_deliveryRoutes == null || _lengthRemainingAtNextDelivery == null){
+
+    /*
+    TODO
+      - fix to work with new current polyline
+     */
+
+    try{
+      if(_deliveryRoutes == null || currentPolyline == null){
+        throw "Route error";
+      }
+      LatLng positionOnPoly = calculatePointOnPolyline();
+
+      // remove previous position from polyline
+      currentPolyline.points.removeAt(0);
+
+      // determine where on polyline the driver is
+      int newLength = 0;
+      for(int i = 0; i < currentPolyline.points.length - 1; i ++){
+        int dist1 = calculateDistanceBetween(currentPolyline.points[i+1], LatLng(_position.latitude, _position.longitude));
+        int dist2 = calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i+1]);
+        if(dist2 > dist1){
+          newLength = i + 1;
+        }
+      }
+
+      // remove any previous points
+      newLength = currentPolyline.points.length - newLength;
+
+
+      while(currentPolyline.points.length > 0 && currentPolyline.points.length > newLength){
+        if(_currentStep + 1 <= _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1
+            && calculateDistanceBetween(currentPolyline.points[0], getStepStartLatLng(_currentRoute, _currentLeg, _currentStep + 1)) < 20){
+          _currentStep += 1;
+        }
+        else if(_currentStep - 1 >= 0 && _currentStep + 1 <= _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1 &&
+            (calculateDistanceBetween(currentPolyline.points[0], getStepEndLatLng(_currentRoute, _currentLeg, _currentStep - 1)) < 20)){
+          _currentStep += 1;
+        }
+        currentPolyline.points.removeAt(0);
+      }
+      // re-add current position
+      currentPolyline.points.insert(0, positionOnPoly);
+
+    }
+    catch(error){
+      print("Failed to update current polyline.[$error]");
       return null;
     }
-
-    LatLng positionOnPoly = calculatePointOnPolyline();
-
-    // remove previous position from polyline
-    currentPolyline.points.removeAt(0);
-
-    // determine where on polyline the driver is
-    int newLength = 0;
-    for(int i = 0; i < currentPolyline.points.length - _lengthRemainingAtNextDelivery; i ++){
-      int dist1 = calculateDistanceBetween(currentPolyline.points[i+1], LatLng(_position.latitude, _position.longitude));
-      int dist2 = calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i+1]);
-      if(dist2 > dist1){
-        newLength = i + 1;
-      }
-    }
-
-    // remove any previous points
-    newLength = currentPolyline.points.length - newLength;
-    while(currentPolyline.points.length > 0 && currentPolyline.points.length > newLength){
-      if(_currentStep + 1 <= _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1
-          && calculateDistanceBetween(currentPolyline.points[1], getStepStartLatLng(_currentRoute, _currentLeg, _currentStep + 1)) < 1){
-        _currentStep += 1;
-      }
-      else if(_currentStep - 1 >= 0 && _currentStep + 1 <= _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1 &&
-          (calculateDistanceBetween(currentPolyline.points[0], getStepEndLatLng(_currentRoute, _currentLeg, _currentStep - 1)) < 1)){
-        _currentStep += 1;
-      }
-      currentPolyline.points.removeAt(0);
-    }
-
-    // re-add current position
-    currentPolyline.points.insert(0, positionOnPoly);
   }
 
   String updateDistanceRemaining(){
-    int totalDistance = 0;
-
-    for(int i = 0; i < currentPolyline.points.length - 1; i++){
-      totalDistance += calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i + 1]);
-    }
-
-    if(totalDistance > 1000){
-      int km = 0;
-      int  m = (totalDistance/100).round() * 100;
-      while(m > 1000){
-        m -= 1000;
-        km += 1;
+    try{
+      if(polylines == null){
+        throw "No route set";
       }
-      m = (m/100).round();
+      if(currentPolyline == null){
+        throw "No current route set";
+      }
+
+      // get total distance left to travel
+      int totalDistance = 0;
+      for(int i = 0; i < currentPolyline.points.length - 1; i++){
+        totalDistance += calculateDistanceBetween(currentPolyline.points[i], currentPolyline.points[i + 1]);
+      }
+      for(int i = 0; i < polylines["$_currentRoute"].points.length - 1; i++){
+        totalDistance += calculateDistanceBetween(polylines["$_currentRoute"].points[i], polylines["$_currentRoute"].points[i + 1]);
+      }
+
+      // format distance to km
+      if(totalDistance > 1000){
+        int km = 0;
+        int  m = (totalDistance/100).round() * 100;
+        while(m > 1000){
+          m -= 1000;
+          km += 1;
+        }
+        m = (m/100).round();
+        totalDistance = (totalDistance/10).round() * 10;
+        distance = totalDistance;
+        return "$km,$m km";
+      }
+
       totalDistance = (totalDistance/10).round() * 10;
       distance = totalDistance;
-      return "$km,$m km";
+      return "$totalDistance m";
+
+    }catch(error){
+      print("Failed to update distance-eta.[$error]");
+      return "N/A";
     }
-    totalDistance = (totalDistance/10).round() * 10;
-    distance = totalDistance;
-    return "$totalDistance m";
   }
 
   String updateDistanceETA(){
@@ -296,14 +322,27 @@ class NavigationService {
     }
 
     totalTime = (totalTime/60).ceil();
-    now.add(Duration(minutes: totalTime));
-
+    now = now.add(Duration(minutes: totalTime));
     String distance = updateDistanceRemaining();
-
     int hours = now.hour;
+    String hourString;
     int minutes = now.minute;
+    String minuteString;
 
-    distanceETA = "$distance . $hours:$minutes";
+    if(hours < 10){
+      hourString = "0$hours";
+    }
+    else{
+      hourString = "$hours";
+    }
+    if(minutes < 10){
+      minuteString = "0$minutes";
+    }
+    else{
+      minuteString = "$minutes";
+    }
+
+    distanceETA = "$distance . $hourString:$minuteString";
 
     return distanceETA;
   }
@@ -359,7 +398,41 @@ class NavigationService {
   //__________________________________________________________________________________________________
 
   setCurrentPolyline(){
-    currentPolyline = polylines["$_currentRoute-$_currentLeg"];
+    try{
+      if(_deliveryRoutes == null){
+        return;
+      }
+
+      if(_lengthRemainingAtNextDelivery == null){
+        calculateNextDeliveryPoint();
+      }
+        int lengthRemaining = polylines["$_currentRoute"].points.length - _lengthRemainingAtNextDelivery;
+      if(lengthRemaining == null){
+        throw "Delivery point not found";
+      }
+
+      List<LatLng> currentPoints = [];
+      polylines["current"] = null;
+
+      while(lengthRemaining > 0){
+        currentPoints.add(polylines["$_currentRoute"].points.removeAt(0));
+        lengthRemaining -= 1;
+      }
+
+      currentPolyline = Polyline(
+        polylineId: PolylineId("current"),
+        points: currentPoints,
+        color: Colors.red,
+        width: 8,
+      );
+
+      polylines["current"] = currentPolyline;
+    }catch(error){
+
+      print("Failed to set current polyline.[$error]");
+      return;
+    }
+    //currentPolyline = polylines["$_currentRoute-$_currentLeg"];
   }
 
   setCurrentRoute() async{
@@ -371,6 +444,18 @@ class NavigationService {
   //__________________________________________________________________________________________________
   //                            Getters
   //__________________________________________________________________________________________________
+
+  int getRoute(){
+    return _currentRoute;
+  }
+
+  int getLeg(){
+    return _currentLeg;
+  }
+
+  int getStep(){
+    return _currentStep;
+  }
 
   /*
    * Parameters: none
@@ -483,13 +568,12 @@ class NavigationService {
 
     DateTime deliveryTimeStamp = DateTime.now();
     minutes += temp;
-
     deliveryTimeStamp = deliveryTimeStamp.add(Duration(hours: hours, minutes: minutes));
     hours = deliveryTimeStamp.hour;
     minutes = deliveryTimeStamp.minute;
-
     String hourString;
     String minuteString;
+
     if(hours < 10){
       hourString = "0$hours";
     }
@@ -503,7 +587,6 @@ class NavigationService {
     else{
       minuteString = "$minutes";
     }
-
     eta = "$hourString:$minuteString";
 
     return eta;
@@ -655,11 +738,9 @@ class NavigationService {
 
   int calculateNextDeliveryPoint(){
     LatLng delivery = getNextDeliveryLocation();
-
-
-    for(int i = 0; i < currentPolyline.points.length; i++){
-      if(calculateDistanceBetween(delivery, currentPolyline.points[i]) < 2){
-        _lengthRemainingAtNextDelivery = currentPolyline.points.length - i;
+    for(int i = 0; i < polylines["$_currentRoute"].points.length; i++){
+      if(calculateDistanceBetween(delivery, polylines["$_currentRoute"].points[i]) < 2){
+        _lengthRemainingAtNextDelivery = polylines["$_currentRoute"].points.length - i;
         return _lengthRemainingAtNextDelivery;
       }
     }
@@ -672,18 +753,21 @@ class NavigationService {
   //__________________________________________________________________________________________________
 
   bool isNearDelivery(){
-    int dist = calculateDistanceBetween(currentPolyline.points[0],
-        currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery]);
-
-    if(dist < 50){
-      nearDelivery = true;
-      isAtDelivery();
+    try{
+      int dist = calculateDistanceBetween(currentPolyline.points[0],
+          currentPolyline.points.last);
+      if(dist < 50){
+        nearDelivery = true;
+        isAtDelivery();
+      }
+      else{
+        nearDelivery = false;
+      }
+      showDeliveryRadiusOnMap();
+      return nearDelivery;
+    }catch(error){
+      print("Failed to determine if near delivery.[$error]");
     }
-    else{
-      nearDelivery = false;
-    }
-    showDeliveryRadiusOnMap();
-    return nearDelivery;
   }
 
   showDeliveryRadiusOnMap(){
@@ -696,7 +780,7 @@ class NavigationService {
   }
 
   bool isAtDelivery(){
-    if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points[currentPolyline.points.length - _lengthRemainingAtNextDelivery]) < _position.accuracy + 10){
+    if(calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last) < _position.accuracy + 50){
       atDelivery = true;
       sendDeliveryAPICall();
     }
@@ -811,7 +895,7 @@ class NavigationService {
       }
     }
 
-    if(currentPolyline.points.length - _lengthRemainingAtNextDelivery < 4){
+    if(currentPolyline.points.length < 4){
       isNearDelivery();
     }
 
@@ -819,15 +903,10 @@ class NavigationService {
     if(!nearDelivery){
       // check if on the route
       bool onRoute = false;
-      /*
-      TODO
-        - change implementation of offRoute
-       */
 
       if(!_abnormalityService.offRoute(currentPolyline)){
         onRoute = true;
       }
-      print("Still on route: $onRoute");
 
       if(onRoute){
         updateCurrentPolyline();
@@ -852,7 +931,7 @@ class NavigationService {
        as the
      */
       if(_abnormalityService.drivingTooSlowTemp()){
-        _notificationManager.report = "slow";
+        //_notificationManager.report = "slow";
         //_notificationManager.showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
       }
       //update info
@@ -863,11 +942,6 @@ class NavigationService {
     }
     else{
       // if the driver is at a delivery point
-      /*
-      TODO
-        - make abnormalities for when at destination
-       */
-      print("Near delivery");
       updateCurrentPolyline();
     }
 

@@ -57,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               FlatButton(
                 child: Text('Accept'),
                 onPressed: () {
-                  storage.write(key: 'loginstatus', value: 'false');
+                  storage.deleteAll();
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                   Navigator.of(context).popAndPushNamed('/login');

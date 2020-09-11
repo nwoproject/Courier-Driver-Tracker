@@ -35,7 +35,7 @@ class MapSampleState extends State<GMap> {
   // Navigation
   int _route;
   static String _routeFile = "route.json";
-  NavigationService _navigatorService = NavigationService(jsonFile: _routeFile);
+  NavigationService _navigatorService = NavigationService();
   String _directions = "LOADING...";
   String _stepTimeRemaining = "LOADING...";
   String _distanceETA = "";
@@ -299,8 +299,11 @@ class MapSampleState extends State<GMap> {
   }
 
   _updatePolyline(){
-    if(_navigatorService.currentPolyline != null){
-      polylines = { "$_route" : _navigatorService.currentPolyline};
+    _route = _navigatorService.getRoute();
+    if(_route != null && _route >= 0 && _navigatorService.currentPolyline != null
+        && _navigatorService.polylines["$_route"] != null){
+      polylines = { "current" : _navigatorService.currentPolyline,
+                    "$_route" : _navigatorService.polylines["$_route"]};
     }
   }
 

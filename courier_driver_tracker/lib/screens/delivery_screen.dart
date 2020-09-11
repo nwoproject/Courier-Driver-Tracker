@@ -176,7 +176,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           deliveryRoute["legs"].add(deliveryLeg);
 
           j++;
-          numDeliveries = j;
+          numDeliveries = j - 1;
         }
         // add route to delivery routes
         deliveryRoutes["routes"].add(deliveryRoute);
