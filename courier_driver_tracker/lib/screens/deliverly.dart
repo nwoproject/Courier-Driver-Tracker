@@ -107,25 +107,16 @@ class _FeedbackState extends State<Feedback> {
 
     ApiHandler _api = ApiHandler();
 
-
-
     position = await geolocatorService.getPosition();
-    var token = await storage.read(key: 'token');
-    var driverID = await storage.read(key: 'id');
-    var routeId = await storage.read(key: "RouteID");
+    String currentRoute = await storage.read(key: "current_route");
+    int index = int.parse(currentRoute);
 
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     List<delivery.Location> location;
 
     var currPos = LatLng(position.latitude, position.longitude);
 
-
-    for (int i = 0; i < routes.length; i++) {
-      if (routes[i].routeID == routeId)
-        {
-          location = routes[i].locations;
-        }
-    }
+    location = routes[index].locations;
 
     double distance = 855555555;
     var tempLocID;
@@ -140,10 +131,6 @@ class _FeedbackState extends State<Feedback> {
     }
 
     tempLocID = tempLocID.toString();
-    driverID = driverID.toString();
-    String time = position.timestamp.toString();
-
-
     String resp = "";
 
     if (_character == Abnormality.succ) {
@@ -156,28 +143,12 @@ class _FeedbackState extends State<Feedback> {
       resp = other;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
-        defaultValue: DotEnv().env['BEARER_TOKEN']);
+    String respCode;
+    var response = await _api.completeDelivery(tempLocID, position);
+    print("HEEEEEEEEEEEEEEERRRRRRRREEEEEEEEEEEEEEEEEEEEE");
+    print(response);
 
-   Map data = {
-      "id": driverID,
-      "token": token,
-      "timestamp": time
-    };
-
-    Map<String, String> requestHeaders = {
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $bearerToken'
-    };
-
-    var response = await http.put(
-        "https://drivertracker-api.herokuapp.com/routes/location/$tempLocID",
-        headers: requestHeaders,
-        body: data);
-
-    String respCode = "";
-
-    switch (response.statusCode) {
+    switch (response) {
       case 204:
         respCode = "Timestamp successfully stored.";
         responseCheck(respCode);

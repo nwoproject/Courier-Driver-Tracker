@@ -192,7 +192,7 @@ class ApiHandler {
     Map<String, dynamic> data = {
       "token": token,
       "id": driverID,
-      "timestamp": position.timestamp.toString()
+      "timestamp": DateTime.now().toString().substring(0,19)
     };
 
     var response = await http.put("$apiUrl/api/routes/location/$locationID",
