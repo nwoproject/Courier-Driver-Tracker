@@ -145,8 +145,6 @@ class _FeedbackState extends State<Feedback> {
 
     String respCode;
     var response = await _api.completeDelivery(tempLocID, position);
-    print("HEEEEEEEEEEEEEEERRRRRRRREEEEEEEEEEEEEEEEEEEEE");
-    print(response);
 
     switch (response) {
       case 204:

@@ -1,4 +1,4 @@
-import 'package:courier_driver_tracker/screens/deliverly.dart';
+import 'package:courier_driver_tracker/screens/delivery.dart';
 import 'package:courier_driver_tracker/screens/forgot_passsword_screen.dart';
 import 'package:courier_driver_tracker/screens/delivery_screen.dart';
 import 'package:flutter/material.dart';
