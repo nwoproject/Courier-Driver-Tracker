@@ -127,6 +127,7 @@ class NavigationService {
           snippet: _deliveryRoutes.routes[route].legs[leg].endAddress,
         ),
         icon: BitmapDescriptor.defaultMarker,
+
       );
       markers.add(marker);
 
@@ -150,7 +151,7 @@ class NavigationService {
       // Initializing Polyline
       Polyline polyline = Polyline(
           polylineId: id,
-          color: Colors.purple,
+          color: Colors.deepPurple[200],
           points: polylineCoordinates,
           width: 10);
 
@@ -420,11 +421,12 @@ class NavigationService {
       if (_lengthRemainingAtNextDelivery == null) {
         calculateNextDeliveryPoint();
       }
-      int lengthRemaining = polylines["$_currentRoute"].points.length -
-          _lengthRemainingAtNextDelivery;
-      if (lengthRemaining == null) {
+
+      if(_lengthRemainingAtNextDelivery == null){
         throw "Delivery point not found";
       }
+
+      int lengthRemaining = polylines["$_currentRoute"].points.length - _lengthRemainingAtNextDelivery;
 
       List<LatLng> currentPoints = [];
       polylines["current"] = null;
@@ -434,11 +436,13 @@ class NavigationService {
         lengthRemaining -= 1;
       }
 
+      currentPolyline = null;
       currentPolyline = Polyline(
         polylineId: PolylineId("current"),
         points: currentPoints,
-        color: Colors.red,
+        color: Colors.deepPurple[400],
         width: 8,
+        zIndex: 1000
       );
 
       polylines["current"] = currentPolyline;
@@ -459,15 +463,15 @@ class NavigationService {
   //                            Getters
   //__________________________________________________________________________________________________
 
-  int getRoute() {
+  int getRoute(){
     return _currentRoute;
-  }
+  }   
 
-  int getLeg() {
+  int getLeg(){
     return _currentLeg;
   }
 
-  int getStep() {
+  int getStep(){
     return _currentStep;
   }
 
@@ -477,7 +481,7 @@ class NavigationService {
    * Description: Gets street names for directions.
    *              \u003c = opening tag and \u003e = closing tags
    */
-  String getDirection() {
+  String getDirection(){
     if (_deliveryRoutes == null) {
       return "LOADING...";
     }
@@ -485,7 +489,7 @@ class NavigationService {
         _currentRoute, _currentLeg, _currentStep);
   }
 
-  String getDirectionIcon() {
+  String getDirectionIcon(){
     String path = "assets/images/";
     if (_deliveryRoutes == null || atDelivery) {
       path += "navigation_marker_white.png";
@@ -626,7 +630,6 @@ class NavigationService {
   int getTotalDeliveries() {
     if (_deliveryRoutes == null) {
       return 0;
-    }
     return _deliveryRoutes.getTotalDeliveries();
   }
 
@@ -642,8 +645,8 @@ class NavigationService {
     }
   }
 
-  String getDeliveryAddress(int leg) {
-    if (_deliveryRoutes == null || _currentRoute == -1) {
+  String getDeliveryAddress(int leg){
+    if(_deliveryRoutes == null || _currentRoute == -1){
       return "";
     } else {
       String address = _deliveryRoutes.getDeliveryAddress(_currentRoute, leg);
@@ -651,8 +654,8 @@ class NavigationService {
     }
   }
 
-  int getNumberOfDeliveries() {
-    if (_deliveryRoutes == null || _currentRoute == -1) {
+  int getNumberOfDeliveries(){
+    if(_deliveryRoutes == null || _currentRoute == -1){
       return 0;
     }
     return _deliveryRoutes.routes[_currentRoute].legs.length;
@@ -872,6 +875,8 @@ class NavigationService {
     showDeliveryRadiusOnMap();
     markers.remove(markers.first);
     calculateNextDeliveryPoint();
+    currentPolyline = null;
+    setCurrentPolyline();
     clearAllSetVariables();
     initialiseInfoVariables();
   }

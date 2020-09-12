@@ -335,9 +335,7 @@ class MapSampleState extends State<GMap> {
           _currentPosition.toString() + "\n", "locationFile");
       setDeliveries();
 
-      if (polylines == null || polylines.length == 0) {
-        _updatePolyline();
-      }
+      _updatePolyline();
 
       setInformationVariables();
       if (lockedOnPosition) {
