@@ -139,6 +139,7 @@ class _FeedbackState extends State<Feedback> {
         }
     }
 
+    tempLocID = tempLocID.toString();
     driverID = driverID.toString();
     String time = position.timestamp.toString();
 
