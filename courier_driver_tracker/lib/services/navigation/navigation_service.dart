@@ -617,7 +617,7 @@ class NavigationService {
     if (_deliveryRoutes == null) {
       return null;
     }
-    return getTotalDeliveries() - _currentRoute - 1;
+    return _deliveryRoutes.routes[_currentRoute].legs.length - _currentLeg;
   }
 
   int getTotalDeliveries() {
@@ -832,7 +832,7 @@ class NavigationService {
           currentPolyline.points[0], currentPolyline.points.last) <
           _position.accuracy + 50) {
         atDelivery = true;
-        //sendDeliveryAPICall();
+        sendDeliveryAPICall();
       }
       return atDelivery;
     }
@@ -844,19 +844,23 @@ class NavigationService {
       if (routes == null) {
         return;
       }
-      for (int i = 0; i < routes.length; i++) {
-        for (int j = 0; j < routes[i].locations.length; j++) {
-          if (calculateDistanceBetween(
-              currentPolyline.points.last,
-              LatLng(double.parse(routes[i].locations[j].latitude),
-                  double.parse(routes[i].locations[j].longitude))) <
-              1) {
-            await api.completeDelivery(
-                routes[i].locations[j].locationID, _position);
-            if (_currentLeg == getTotalDeliveries() - 1) {
-              sendCompletedRouteAPICall();
-            }
+      for (int j = 0; j < routes[_currentRoute].locations.length; j++) {
+        if (calculateDistanceBetween(
+            currentPolyline.points.last,
+            LatLng(double.parse(routes[_currentRoute].locations[j].latitude),
+                double.parse(routes[_currentRoute].locations[j].longitude))) <
+            1) {
+          if (_currentLeg == _deliveryRoutes.routes[_currentRoute].legs.length - 1) {
+            sendCompletedRouteAPICall();
+            clearAllSetVariables();
+            currentPolyline = null;
+            polylines = {};
+            markers = {};
+            circles = {};
+            return;
           }
+          await api.completeDelivery(
+              routes[_currentRoute].locations[j].locationID, _position);
         }
       }
     }
@@ -1028,7 +1032,7 @@ class NavigationService {
     */
       if (_abnormalityService.isSpeedingTemp()) {
         _notificationManager
-          ..showNotifications(
+          .showNotifications(
               _abnormalityHeaders["speeding"],
               _abnormalityMessages["speeding"]);
       }
