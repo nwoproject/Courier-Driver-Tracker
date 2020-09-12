@@ -310,8 +310,6 @@ class MapSampleState extends State<GMap> {
   setDeliveries() {
     int number = _navigatorService.getNumberOfDeliveries();
 
-    print("number of deliveries" + number.toString());
-
     for (int x = 0; x < number; x++) {
       setState(() {
         _deliveries1
