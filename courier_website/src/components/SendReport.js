@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import Card from 'react-bootstrap/Card';
-import Alert from 'react-bootstrap/Alert';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
+import Chart from 'react-google-charts';
 
 import MockDrivers from "../mock_data/allDrivers.json";
 import MockAbnormalities from "../mock_data/abnormality.json";
@@ -29,6 +29,9 @@ function SendReport(props){
     const [LeastAbb, setLA] = useState([]);
     const [Time, setT] = useState(true);
     const [Loading, setLoad] = useState(true);
+    const [AbnorPie, setAP] = useState(false);
+    const [PieData, setPD] = useState([]);
+    const [SeeDC, setSDC] = useState(false);
 
     useEffect(()=>{
         let tempNum = 0;
@@ -95,7 +98,6 @@ function SendReport(props){
                         });
                     });
                     Deliveries.map(item=>{
-                        //let aDriver = DriverItem.findIndex(element=>element.id===item.driver_id);
                         let aDriver = '';
                         let searching = true;
                         let index = 0;
@@ -131,6 +133,15 @@ function SendReport(props){
                     Deliveries.Missed = DeliveryMissed;
                     Deliveries.Late = LateDeliveries;
                     setANP(tempNum);
+                    let GData = [];
+                    GData.push(["Description","Count"]);
+                    AbnormalityFrequency.map((item,index)=>{
+                        if(item.count!==0){
+                            GData.push([item.Desc,item.Count]);
+                        }
+                    });
+                    console.log(GData);
+                    setPD(GData);
                     setAAC(AbnormalityFrequency);
                     setDA(DriverItem);
                     //====================================================================================================================
@@ -256,6 +267,15 @@ function SendReport(props){
         }
     }
 
+    function handleClick(event){
+        if(event.target.name==="AbnorPieView"){
+            setAP(!AbnorPie);
+        }
+        else if(event.target.name==="SetDeliveryView"){
+            setSDC(!SeeDC);
+        }
+    }
+
     return(
         <Card>
             <Card.Header>Full Reports: {Time ? "Weekly":"Monthly"}</Card.Header>
@@ -273,15 +293,29 @@ function SendReport(props){
                             <Card.Header>Abnormalities</Card.Header>
                             <Card.Body>
                                 <p><b>Number of Abnormalities: </b>{AbnormalityNumberPresent}</p>
+                                <Button onClick={handleClick} name="AbnorPieView">Switch View</Button>
                                 <hr className="BorderLine"/>
-                                <p><b>Abnormality Counter</b></p>
-                                {AbnormalityArrayCount.map((item, index)=>
-                                    <Row key={index}>
-                                        <Col xs={10}><b>Description: </b>{item.Desc}</Col>
-                                        <Col xs={2}><b>Count: </b>{item.Count}</Col>
-                                        <hr className="SmallerLine"/>
-                                    </Row>    
-                                )}
+                                {AbnorPie ?
+                                <div>
+                                    <Chart
+                                        width={600}
+                                        height={600}
+                                        chartType="PieChart"
+                                        loader={<div>Loading Chart</div>}
+                                        data={PieData}    
+                                    />    
+                                </div>:
+                                <div>
+                                    <p><b>Abnormality Counter</b></p>
+                                    {AbnormalityArrayCount.map((item, index)=>
+                                        <Row key={index}>
+                                            <Col xs={10}><b>Description: </b>{item.Desc}</Col>
+                                            <Col xs={2}><b>Count: </b>{item.Count}</Col>
+                                            <hr className="SmallerLine"/>
+                                        </Row>    
+                                    )}
+                                </div>
+                                }
                             </Card.Body>
                         </Card>
                     </Row> <br />
@@ -289,38 +323,52 @@ function SendReport(props){
                         <Card className="ReportCard">
                             <Card.Header>Deliveries</Card.Header>
                             <Card.Body>
-                                <Row>
-                                    <Col xs={6}>
-                                        Total Deliveries Scheduled: 
-                                    </Col>
-                                    <Col xs={3}>
-                                        {DeliveryArray.Count}
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6}>
-                                        Total Deliveries Made: 
-                                    </Col>
-                                    <Col xs={3}>
-                                        {DeliveryArray.Made}
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6}>
-                                        Total Deliveries Missed: 
-                                    </Col>
-                                    <Col xs={3}>
-                                        {DeliveryArray.Missed}
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6}>
-                                        Total Deliveries Late: 
-                                    </Col>
-                                    <Col xs={3}>
-                                        {DeliveryArray.Late}
-                                    </Col>
-                                </Row>
+                                <Button onClick={handleClick} name="SetDeliveryView">Switch View</Button>
+                                {SeeDC ? <div>
+                                    <h5>Deliveries Scheduled : {DeliveryArray.Count}</h5>
+                                    <Chart
+                                        width={600}
+                                        height={600}
+                                        chartType="PieChart"
+                                        loader={<div>Loading Chart</div>}
+                                        data={[["Abnormality Type","Number"],["Deliveries Made",DeliveryArray.Made],["Deliveries Missed",DeliveryArray.Missed],["Deliveries Late",DeliveryArray.Late]]}    
+                                    />   
+                                </div>:
+                                <div>
+                                    <Row>
+                                        <Col xs={6}>
+                                            Total Deliveries Scheduled: 
+                                        </Col>
+                                        <Col xs={3}>
+                                            {DeliveryArray.Count}
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6}>
+                                            Total Deliveries Made: 
+                                        </Col>
+                                        <Col xs={3}>
+                                            {DeliveryArray.Made}
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6}>
+                                            Total Deliveries Missed: 
+                                        </Col>
+                                        <Col xs={3}>
+                                            {DeliveryArray.Missed}
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6}>
+                                            Total Deliveries Late: 
+                                        </Col>
+                                        <Col xs={3}>
+                                            {DeliveryArray.Late}
+                                        </Col>
+                                    </Row>
+                                </div>
+                                }
                                 <hr className="BorderLine"/>
                             </Card.Body>
                         </Card>

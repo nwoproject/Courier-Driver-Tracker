@@ -1,6 +1,7 @@
 import 'package:courier_driver_tracker/services/navigation/bounds.dart';
 import 'package:courier_driver_tracker/services/navigation/leg.dart';
 import 'package:courier_driver_tracker/services/navigation/overview_polyline.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'route.g.dart';
@@ -23,11 +24,11 @@ class Route{
   }
 
   int getDuration(int leg, int step){
-    return legs[leg].getDuration(step);
+    return legs[leg].getStepDuration(step);
   }
 
   int getDistance(int leg, int step){
-    return legs[leg].getDistance(step);
+    return legs[leg].getStepDistance(step);
   }
 
   int getDeliveryDuration(int leg){
@@ -40,5 +41,25 @@ class Route{
 
   String getDeliveryAddress(int leg){
     return legs[leg].getDeliveryAddress();
+  }
+
+  LatLng getStepStartLatLng(int leg, int step){
+    return legs[leg].getStepStartLatLng(step);
+  }
+
+  LatLng getStepEndLatLng(int leg, int step){
+    return legs[leg].getStepEndLatLng(step);
+  }
+
+  LatLng getNorthEastBound(){
+    return bounds.northEast;
+  }
+
+  LatLng getSouthWestBound(){
+    return bounds.southWest;
+  }
+
+  LatLng getNextDeliveryLocation(int leg){
+    return legs[leg].endLocation;
   }
 }

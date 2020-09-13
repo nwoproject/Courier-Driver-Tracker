@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
@@ -5,9 +7,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class UserFeedbackLongCompany extends StatelessWidget {
-  static const String _title = 'Abnormality Feedback';
+class UserFeedbackAfterDelivery extends StatelessWidget {
+  static const String _title = 'Delivery response';
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +32,7 @@ class UserFeedbackLongCompany extends StatelessWidget {
   }
 }
 
-enum Abnormality { forgot, arranged, other }
+enum Abnormality { succ, fail, other }
 
 class Feedback extends StatefulWidget {
   Feedback({Key key}) : super(key: key);
@@ -36,7 +42,7 @@ class Feedback extends StatefulWidget {
 }
 
 class _FeedbackState extends State<Feedback> {
-  Abnormality _character = Abnormality.forgot;
+  Abnormality _character = Abnormality.succ;
   TextEditingController _controller;
   TextEditingController textController;
   String other;
@@ -57,9 +63,6 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-//  void homePage() async{
-//    Navigator.of(context).pop();
-//  }
 
   void checkForEmptyText() {
     other = textController.text;
@@ -91,57 +94,61 @@ class _FeedbackState extends State<Feedback> {
         textColor: Colors.white);
   }
 
-  void report() async {
-    position = await geolocatorService.getPosition();
-    var token = await storage.read(key: 'token');
-    var driverID = await storage.read(key: 'id');
-    driverID = driverID.toString();
-    String lat = position.latitude.toString();
-    String long = position.longitude.toString();
-    String time = position.timestamp.toString();
+  double calculateDistanceBetween(LatLng currentPosition, LatLng lastPosition){
+    double p = 0.017453292519943295;
+    double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
+        cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
+            (1 - cos((currentPosition.longitude - lastPosition.longitude) * p))/2;
+    return 12742 * asin(sqrt(a)) * 1000;
+  }
 
+
+  void report() async {
+
+    ApiHandler _api = ApiHandler();
+
+    position = await geolocatorService.getPosition();
+    String currentRoute = await storage.read(key: "current_route");
+    int index = int.parse(currentRoute);
+
+    List<delivery.Route> routes = await _api.getUncalculatedRoute();
+    List<delivery.Location> location;
+
+    var currPos = LatLng(position.latitude, position.longitude);
+
+    location = routes[index].locations;
+
+    double distance = 855555555;
+    var tempLocID;
+
+    for (int k = 0; k < location.length; k++) {
+      var tempDistance = calculateDistanceBetween(currPos, LatLng(double.parse(location[k].latitude), double.parse(location[k].longitude)));
+      if (tempDistance < distance)
+        {
+          distance = tempDistance;
+          tempLocID = location[k].locationID;
+        }
+    }
+
+    tempLocID = tempLocID.toString();
     String resp = "";
 
-    if (_character == Abnormality.forgot) {
-      resp = "I forgot to turn off the app.";
+    if (_character == Abnormality.succ) {
+      resp = "Delivery was made successful made.";
     }
-    if (_character == Abnormality.arranged) {
-      resp = "I have arranged with the manager.";
+    if (_character == Abnormality.fail) {
+      resp = "No one was available to collect the delivery.";
     }
     if (_character == Abnormality.other) {
       resp = other;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
-        defaultValue: DotEnv().env['BEARER_TOKEN']);
+    String respCode;
+    var response = await _api.completeDelivery(tempLocID, position);
 
-    print(lat);
-    print(long);
-    print(time);
-    Map data = {
-      "code": "104",
-      "token": token,
-      "description": resp,
-      "latitude": lat,
-      "longitude": long,
-      "timestamp": time
-    };
-
-    Map<String, String> requestHeaders = {
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $bearerToken'
-    };
-
-    var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
-        headers: requestHeaders,
-        body: data);
-
-    String respCode = "";
-
-    switch (response.statusCode) {
-      case 201:
-        respCode = "Abnormality was successfully logged";
+    switch (response) {
+      case 204:
+        respCode = "Timestamp successfully stored.";
         responseCheck(respCode);
         break;
       case 400:
@@ -149,7 +156,11 @@ class _FeedbackState extends State<Feedback> {
         responseCheck(respCode);
         break;
       case 401:
-        respCode = "Invalid :driverid and token combination";
+        respCode = "Unauthorized (incorrect id and token combination).";
+        responseCheck(respCode);
+        break;
+      case 404:
+        respCode = "Location with that :locationid does not exist.";
         responseCheck(respCode);
         break;
       case 500:
@@ -164,13 +175,13 @@ class _FeedbackState extends State<Feedback> {
       children: <Widget>[
         RadioListTile(
           title: const Text(
-            'I forgot to turn off the app.',
+            'Delivery was made successful made.',
             style: TextStyle(
               fontSize: 17,
               fontFamily: 'OpenSans-Regular',
             ),
           ),
-          value: Abnormality.forgot,
+          value: Abnormality.succ,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -182,13 +193,13 @@ class _FeedbackState extends State<Feedback> {
         ),
         RadioListTile(
           title: const Text(
-            'I have arranged with the manager.',
+            'No one was available to collect the delivery.',
             style: TextStyle(
               fontSize: 17,
               fontFamily: 'OpenSans-Regular',
             ),
           ),
-          value: Abnormality.arranged,
+          value: Abnormality.fail,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);

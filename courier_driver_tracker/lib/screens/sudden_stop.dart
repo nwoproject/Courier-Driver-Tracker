@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 
-class UserFeedbackOffRoute extends StatelessWidget {
+class UserFeedbackSudden extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
 
   @override
@@ -26,7 +26,7 @@ class UserFeedbackOffRoute extends StatelessWidget {
   }
 }
 
-enum Abnormality { gotLost, know, other }
+enum Abnormality { accident, cutoff, other }
 
 class Feedback extends StatefulWidget {
   Feedback({Key key}) : super(key: key);
@@ -36,7 +36,7 @@ class Feedback extends StatefulWidget {
 }
 
 class _FeedbackState extends State<Feedback> {
-  Abnormality _character = Abnormality.gotLost;
+  Abnormality _character = Abnormality.accident;
   TextEditingController _controller;
   TextEditingController textController;
   String other;
@@ -57,7 +57,7 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-//  void homePage() async{
+//  void homePage() async {
 //    Navigator.of(context).pop();
 //  }
 
@@ -98,15 +98,15 @@ class _FeedbackState extends State<Feedback> {
     driverID = driverID.toString();
     String lat = position.latitude.toString();
     String long = position.longitude.toString();
-    String time = position.timestamp.toString();
+    String time =  DateTime.now().toString().substring(0,19);
 
     String resp = "";
 
-    if (_character == Abnormality.gotLost) {
-      resp = "I got lost.";
+    if (_character == Abnormality.accident) {
+      resp = "I was in an accident.";
     }
-    if (_character == Abnormality.know) {
-      resp = "I know a better route.";
+    if (_character == Abnormality.cutoff) {
+      resp = "Another driver cut me off.";
     }
     if (_character == Abnormality.other) {
       resp = other;
@@ -119,7 +119,7 @@ class _FeedbackState extends State<Feedback> {
     print(long);
     print(time);
     Map data = {
-      "code": "103",
+      "code": "101",
       "token": token,
       "description": resp,
       "latitude": lat,
@@ -164,13 +164,13 @@ class _FeedbackState extends State<Feedback> {
       children: <Widget>[
         RadioListTile(
           title: const Text(
-            'I got lost',
+            'I was in an accident.',
             style: TextStyle(
               fontSize: 17,
               fontFamily: 'OpenSans-Regular',
             ),
           ),
-          value: Abnormality.gotLost,
+          value: Abnormality.accident,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -182,13 +182,13 @@ class _FeedbackState extends State<Feedback> {
         ),
         RadioListTile(
           title: const Text(
-            'I know a better route.',
+            'Another driver cut me off.',
             style: TextStyle(
               fontSize: 17,
               fontFamily: 'OpenSans-Regular',
             ),
           ),
-          value: Abnormality.know,
+          value: Abnormality.cutoff,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);

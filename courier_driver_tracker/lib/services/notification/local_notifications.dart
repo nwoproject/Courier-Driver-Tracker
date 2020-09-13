@@ -26,11 +26,29 @@ class LocalNotifications {
   }
 
   void showNotifications(String header, String message) async {
-    if(!initialised){
+    while(!initialised){
+      await Future.delayed(Duration(seconds: 5));
       print("Dev: Notification initialisation failed.");
-      return;
     }
     await _notification(header, message);
+
+    switch(header.toString()) {
+      case "Going Off Route!": {report = "offRoute"; }
+      break;
+      case "Sudden Stop!": {report = "sudden"; }
+      break;
+      case "You Stopped Moving!": {report = "long"; }
+      break;
+      case "You Are Speeding!": {report = "speeding"; }
+      break;
+      case "You are driving outside company hours!": {report = "companyCar"; }
+      break;
+//      case "offroute" {report = "offRoute"; }
+//      break;
+      default: {print("Invalid option");}
+      break;
+    }
+
   }
 
   Future<void> _notification(String header, String message) async {
@@ -47,6 +65,7 @@ class LocalNotifications {
     NotificationDetails(androidNotificationDetails, iosNotificationDetails);
     await flutterLocalNotificationsPlugin.show(
         0, header, message, notificationDetails);
+
   }
 
   setContext(BuildContext context){
@@ -70,14 +89,18 @@ class LocalNotifications {
       await  Navigator.of(_notificationContext)
           .pushNamed('/reportSpeed');
     }
-    if (report == "slow") {
-      await  Navigator.of(_notificationContext)
-          .pushNamed('/reportSpeed');
-    }
+//    if (report == "slow") {
+//      await  Navigator.of(_notificationContext)
+//          .pushNamed('/reportSpeed');
+//    }
     if (report == "offRoute") {
       await  Navigator.of(_notificationContext)
           .pushNamed('/reportOff');
     }
+     if (report == "companyCar") {
+       await  Navigator.of(_notificationContext)
+           .pushNamed('/reportCompany');
+     }
   }
 
 }

@@ -1,6 +1,8 @@
+import 'package:courier_driver_tracker/services/location/google_maps.dart';
 import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:courier_driver_tracker/services/navigation/navigator_service.dart';
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,14 +12,13 @@ Future<void> main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
   String filename = "route.json";
   Map<String, dynamic> json = await JsonHandler().parseJson(filename);
-  NavigatorService navigatorService;
-  Position currentPosition;
+  NavigationService navigatorService;
+  BuildContext context;
 
   test("Initialisation Test",() async {
     bool created;
-    navigatorService = NavigatorService(jsonFile: filename);
-
-    if(navigatorService is NavigatorService){
+    navigatorService = NavigationService(context: context);
+    if(navigatorService is NavigationService){
       created  = true;
     }
     else{
@@ -28,12 +29,12 @@ Future<void> main() async {
 
   test("DeliveryRoute Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigatorService(jsonFile: filename);
+      navigatorService = NavigationService();
       await navigatorService.getRoutes();
     }
     bool created;
 
-    if(navigatorService.getDeliveryRoute() is DeliveryRoute){
+    if(navigatorService.NavigationService() is DeliveryRoute){
       created  = true;
     }
     else{
@@ -44,7 +45,7 @@ Future<void> main() async {
 
   test("getDirection Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigatorService(jsonFile: filename);
+      navigatorService = NavigationService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
 
@@ -65,7 +66,7 @@ Future<void> main() async {
 
   test("getNextDirection Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigatorService(jsonFile: filename);
+      navigatorService = NavigationService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
     String direction = navigatorService.getNextDirection();
@@ -74,7 +75,7 @@ Future<void> main() async {
 
   test("getArrivalTime Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigatorService(jsonFile: filename);
+      navigatorService = NavigationService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
     int direction = navigatorService.getArrivalTime();
@@ -83,7 +84,7 @@ Future<void> main() async {
 
   test("getDistance Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigatorService(jsonFile: filename);
+      navigatorService = NavigationService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
     int direction = navigatorService.getDistance();
@@ -92,16 +93,16 @@ Future<void> main() async {
 
   test("getDeliveryArrivalTime Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigatorService(jsonFile: filename);
+      navigatorService = NavigationService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
-    int direction = navigatorService.getDeliveryArrivalTime();
+    int direction = NavigationService.getDeliveryArrivalTime();
     expect(direction, json["routes"][navigatorService.getDelivery()]["legs"][navigatorService.getLeg()]["duration"]);
   });
 
   test("getDeliveryDistance Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigatorService(jsonFile: filename);
+      navigatorService = NavigationService(jsonFile: filename);
       await navigatorService.getRoutes();
     }
     int direction = navigatorService.getDeliveryDistance();
@@ -195,6 +196,21 @@ Future<void> main() async {
 
     expect(found, true);
   });
+
+  test("Some tests",() async {
+    if(navigatorService == null){
+      navigatorService = NavigatorService(jsonFile: filename);
+      await navigatorService.getRoutes();
+    }
+
+    navigatorService.setInitialPolyPointsAndMarkers(0);
+    navigatorService.setCurrentPolyline();
+    navigatorService.setCurrentPoint(4);
+    navigatorService.updateCurrentPolyline();
+
+    expect(true, true);
+  });
+
 
 
 

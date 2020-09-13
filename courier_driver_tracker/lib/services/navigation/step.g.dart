@@ -10,10 +10,10 @@ Step _$StepFromJson(Map<String, dynamic> json) {
   return Step(
     startLocation: json['start_location'] == null
         ? null
-        : Location.fromJson(json['start_location'] as Map<String, dynamic>),
+        : LatLng(json['start_location']["lat"], json['start_location']["lng"]),
     endLocation: json['end_location'] == null
         ? null
-        : Location.fromJson(json['end_location'] as Map<String, dynamic>),
+        : LatLng(json['end_location']["lat"], json['end_location']["lng"]),
     duration: json['duration'] == null
         ? null
         : json['duration'],

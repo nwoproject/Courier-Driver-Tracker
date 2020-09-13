@@ -1,11 +1,11 @@
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:async';
 import "login.dart";
 import "home.dart";
 import 'package:courier_driver_tracker/services/location/permissions.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -23,9 +23,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<bool> _checkLoginStatus() async {
     await Future.delayed(Duration(milliseconds: 5000), (){});
-    String loggedIn = String.fromEnvironment('LOGGED_IN', defaultValue: DotEnv().env['LOGGED_IN']);
-    print(loggedIn);
-    if(loggedIn == "true"){
+    FlutterSecureStorage storage = new FlutterSecureStorage();
+    String loggedIn = await storage.read(key: 'loginstatus');
+    String id = await storage.read(key: 'id');
+    storage.write(key: 'route_initialised', value: 'false');
+
+    if(loggedIn == "true" && id != null){
       return true;
     }
     else{
@@ -38,9 +41,13 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
   }
 
-  void _navigateToHome() {
+  void _navigateToHome() async{
+    FlutterSecureStorage storage = FlutterSecureStorage();
+    String token = await storage.read(key: 'token');
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+    Navigator.of(context)
+        .pushNamed('/delivery', arguments: token);
   }
 
   void _changeActiveWidget() async {

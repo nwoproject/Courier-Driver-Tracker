@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 
-class UserFeedbackSudden extends StatelessWidget {
+class UserFeedbackSpeed extends StatelessWidget {
   static const String _title = 'Abnormality Feedback';
 
   @override
@@ -26,7 +26,7 @@ class UserFeedbackSudden extends StatelessWidget {
   }
 }
 
-enum Abnormality { accident, cutoff, other }
+enum Abnormality { overtaking, unknown, other }
 
 class Feedback extends StatefulWidget {
   Feedback({Key key}) : super(key: key);
@@ -36,7 +36,7 @@ class Feedback extends StatefulWidget {
 }
 
 class _FeedbackState extends State<Feedback> {
-  Abnormality _character = Abnormality.accident;
+  Abnormality _character = Abnormality.overtaking;
   TextEditingController _controller;
   TextEditingController textController;
   String other;
@@ -57,9 +57,9 @@ class _FeedbackState extends State<Feedback> {
     super.dispose();
   }
 
-//  void homePage() async {
-//    Navigator.of(context).pop();
-//  }
+  void homePage() async {
+    Navigator.of(context).pop();
+  }
 
   void checkForEmptyText() {
     other = textController.text;
@@ -98,15 +98,15 @@ class _FeedbackState extends State<Feedback> {
     driverID = driverID.toString();
     String lat = position.latitude.toString();
     String long = position.longitude.toString();
-    String time = position.timestamp.toString();
+    String time =  DateTime.now().toString().substring(0,19);
 
     String resp = "";
 
-    if (_character == Abnormality.accident) {
-      resp = "I was in an accident.";
+    if (_character == Abnormality.overtaking) {
+      resp = "I was overtaking another vehicle.";
     }
-    if (_character == Abnormality.cutoff) {
-      resp = "Another driver cut me off.";
+    if (_character == Abnormality.unknown) {
+      resp = "I did not know what the speed limit was.";
     }
     if (_character == Abnormality.other) {
       resp = other;
@@ -119,7 +119,7 @@ class _FeedbackState extends State<Feedback> {
     print(long);
     print(time);
     Map data = {
-      "code": "101",
+      "code": "102",
       "token": token,
       "description": resp,
       "latitude": lat,
@@ -163,14 +163,12 @@ class _FeedbackState extends State<Feedback> {
     return Column(
       children: <Widget>[
         RadioListTile(
-          title: const Text(
-            'I was in an accident.',
-            style: TextStyle(
-              fontSize: 17,
-              fontFamily: 'OpenSans-Regular',
-            ),
-          ),
-          value: Abnormality.accident,
+          title: const Text('I was overtaking another vehicle.',
+              style: TextStyle(
+                fontSize: 17,
+                fontFamily: 'OpenSans-Regular',
+              )),
+          value: Abnormality.overtaking,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -181,14 +179,12 @@ class _FeedbackState extends State<Feedback> {
           secondary: new Icon(Icons.add_circle),
         ),
         RadioListTile(
-          title: const Text(
-            'Another driver cut me off.',
-            style: TextStyle(
-              fontSize: 17,
-              fontFamily: 'OpenSans-Regular',
-            ),
-          ),
-          value: Abnormality.cutoff,
+          title: const Text('I did not know what the speed limit was.',
+              style: TextStyle(
+                fontSize: 17,
+                fontFamily: 'OpenSans-Regular',
+              )),
+          value: Abnormality.unknown,
           groupValue: _character,
           onChanged: (Abnormality value) {
             print(value);
@@ -199,13 +195,11 @@ class _FeedbackState extends State<Feedback> {
           secondary: new Icon(Icons.add_circle),
         ),
         RadioListTile(
-          title: const Text(
-            'Other (Specify)',
-            style: TextStyle(
-              fontSize: 17,
-              fontFamily: 'OpenSans-Regular',
-            ),
-          ),
+          title: const Text('Other (Specify)',
+              style: TextStyle(
+                fontSize: 17,
+                fontFamily: 'OpenSans-Regular',
+              )),
           value: Abnormality.other,
           groupValue: _character,
           onChanged: (Abnormality value) {

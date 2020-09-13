@@ -1,4 +1,4 @@
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
@@ -22,15 +22,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final RouteLogging routeLogging = RouteLogging();
 
   final storage = new FlutterSecureStorage();
-  var userData = {'name': 'name', 'surname': 'surname'};
+  var userData = {'name': 'name', 'surname': 'surname', 'email': 'email'};
 
   Future<Null> readUserData() async {
     var name = await storage.read(key: 'name');
     var surname = await storage.read(key: 'surname');
+    var email = await storage.read(key: 'email');
     setState(() {
       return userData = {
         'name': name,
         'surname': surname,
+        'email': email,
       };
     });
   }
@@ -39,6 +41,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     readUserData();
     super.initState();
+  }
+
+  String get email {
+    if (userData['email'] == null) {
+      return "Error";
+    } else {
+      return userData['email'];
+    }
+  }
+
+  String get name {
+    if (userData['name'] == null ||
+        userData['name'].length < 1 ||
+        userData['surname'] == null ||
+        userData['surname'].length < 1) {
+      return "Error";
+    } else {
+      return userData['name'] + " " + userData['surname'];
+    }
   }
 
   @override
@@ -70,9 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(2.0),
                       child: ListTile(
                           title: Center(
-                              child: Text(
-                                  userData['name'] + " " + userData['surname'],
-                                  style: headingLabelStyle))))
+                              child: Text(name, style: headingLabelStyle))))
                 ],
               ),
             ),
@@ -111,11 +130,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextSpan(text: "Email:\n", style: labelStyle),
-          TextSpan(text: "example@gmail.com\n\n\n", style: textStyle),
+          TextSpan(text: email + "\n\n\n", style: textStyle),
           TextSpan(text: "Driver Score:\n", style: labelStyle),
-          TextSpan(text: "212\n\n\n", style: textStyle),
+          TextSpan(text: "0\n\n\n", style: textStyle),
           TextSpan(text: "Routes Completed:\n", style: labelStyle),
-          TextSpan(text: "12", style: textStyle)
+          TextSpan(text: "0", style: textStyle)
         ])),
       ),
     );
