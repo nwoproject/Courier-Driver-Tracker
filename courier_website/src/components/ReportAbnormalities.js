@@ -5,7 +5,7 @@ import Alert from 'react-bootstrap/Alert';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-import RadialChart from 'react-vis/dist/radial-chart/index';
+import Chart from 'react-google-charts';
 
 import Abnormality from './Abnormality';
 
@@ -42,92 +42,93 @@ function ReportAbnormalities(props){
                 respone.json()
                 .then(result=>{
                     let GData = [];
-                    let GCount = 0;
+                    let GCount = 1;
                     let AbArr = {};
                     let length = 0;
                     let Counter = 0;
                     let AbObj = {};
+                    GData.push(["Description","Count"]);
                     if(result.abnormalities.code_100.driver_abnormalities.length!==0){
-                        GData.push({angle:0,label:'Still for too long',color:0});
+                        GData.push(['Still for too long',0]);
                         length = length + result.abnormalities.code_100.driver_abnormalities.length;
                         result.abnormalities.code_100.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Standing still for too long.'}
                             Counter++;
                             AbObj = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Standing still for too long.'}; 
                             setAA(prevState=>{return([...prevState, AbObj])});
-                            GData[GCount].angle = GData[GCount].angle+1;
+                            GData[GCount][1] = GData[GCount][1]+1;
                         });
                         GCount++;
                     }
                     if(result.abnormalities.code_101.driver_abnormalities.length!==0){
-                        GData.push({angle:0,label:'Sudden Stop',color:1});
+                        GData.push(['Sudden Stop',0]);
                         length = length + result.abnormalities.code_101.driver_abnormalities.length;
                         result.abnormalities.code_101.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver came to a sudden stop.'}
                             AbObj = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver came to a sudden stop.'};
                             Counter++;
                             setAA(prevState=>{return([...prevState, AbObj])});
-                            GData[GCount].angle = GData[GCount].angle+1;
+                            GData[GCount][1] = GData[GCount][1]+1;
                         });
                         GCount++;
                     }
                     if(result.abnormalities.code_102.driver_abnormalities.length!==0){
-                        GData.push({angle:0,label:'Exceeded Speed Limit',color:2});
+                        GData.push(['Exceeded Speed Limit',0]);
                         length = length + result.abnormalities.code_102.driver_abnormalities.length;
                         result.abnormalities.code_102.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver exceeded the speed limit.'}
                             AbObj = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver exceeded the speed limit.'};
                             Counter++;
                             setAA(prevState=>{return([...prevState, AbObj])});
-                            GData[GCount].angle = GData[GCount].angle+1;
+                            GData[GCount][1] = GData[GCount][1]+1;
                         });
                         GCount++;
                     }
                     if(result.abnormalities.code_103.driver_abnormalities.length!==0){
-                        GData.push({angle:0,label:'Off Route',color:3});
+                        GData.push(['Off Route',0]);
                         length = length + result.abnormalities.code_103.driver_abnormalities.length;
                         result.abnormalities.code_103.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver took a diffrent route than what prescribed.'}
                             Counter++;
                             AbObj = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver took a diffrent route than what prescribed.'};
                             setAA(prevState=>{return([...prevState, AbObj])});
-                            GData[GCount].angle = GData[GCount].angle+1;
+                            GData[GCount][1] = GData[GCount][1]+1;
                         });
                         GCount++;
                     }
                     if(result.abnormalities.code_104.driver_abnormalities.length!==0){
-                        GData.push({angle:0,label:'Driving with no Deliveries',color:4});
+                        GData.push(['Driving with no Deliveries',0]);
                         length = length + result.abnormalities.code_104.driver_abnormalities.length;
                         result.abnormalities.code_104.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver was driving with the company car when no deliveries were scheduled.'}
                             AbObj = AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver was driving with the company car when no deliveries were scheduled.'};
                             Counter++;
                             setAA(prevState=>{return([...prevState, AbObj])});
-                            GData[GCount].angle = GData[GCount].angle+1;
+                            GData[GCount][1] = GData[GCount][1]+1;
                         });
                         GCount++;
                     }
                     if(result.abnormalities.code_105.driver_abnormalities.length!==0){
-                        GData.push({angle:0,label:'Never Started Route',color:5});
+                        GData.push(['Never Started Route',0]);
                         length = length + result.abnormalities.code_105.driver_abnormalities.length;
                         result.abnormalities.code_105.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver never embarked on the route that was assigned to him.'}
                             AbObj = AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver never embarked on the route that was assigned to him.'};
                             Counter++;
                             setAA(prevState=>{return([...prevState, AbObj])});
-                            GData[GCount].angle = GData[GCount].angle+1;
+                            GData[GCount][1] = GData[GCount][1]+1;
                         });
                         GCount++;
                     }
                     if(result.abnormalities.code_106.driver_abnormalities.length!==0){
-                        GData.push({angle:0,label:'Skipped Delivery on Route',color:6});
+                        GData.push(['Skipped Delivery on Route',0]);
                         length = length + result.abnormalities.code_106.driver_abnormalities.length;
                         result.abnormalities.code_106.driver_abnormalities.map((CurrEle, index)=>{
                             AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver skipped a delivery on his route.'}
                             AbObj = AbArr[Counter] = {'Reason' : CurrEle.driver_description, 'timestamp':CurrEle.timestamp, 'ID':Counter, 'Desc':'Driver skipped a delivery on his route.'};
                             Counter++;
                             setAA(prevState=>{return([...prevState, AbObj])});
-                            GData[GCount].angle = GData[GCount].angle+1;
+                            GData[GCount][1] = GData[GCount][1]+1;
                         });
                     }
                     setNA(length);
@@ -163,12 +164,12 @@ function ReportAbnormalities(props){
                             </Row><br />
                                 {Graph ?
                                 <div>
-                                    <RadialChart
-                                        data={GraphData}
+                                    <Chart
                                         width={400}
                                         height={400}
-                                        showLabels={true}
-                                        className="PieChart"
+                                        chartType="PieChart"
+                                        loader={<div>Loading Chart</div>}
+                                        data={GraphData} 
                                     />
                                 </div>
                                 :
