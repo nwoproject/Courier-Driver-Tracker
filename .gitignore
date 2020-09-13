@@ -1,3 +1,10 @@
 courier_driver_tracker/.env
 .idea/
 /workspace.xml
+*.exe
+*.pyc
+*.cfg
+courier_AI/venv/Scripts/activate
+*.ps1
+*.bat
+*.tmpl
