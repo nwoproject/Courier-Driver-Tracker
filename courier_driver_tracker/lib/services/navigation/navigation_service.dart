@@ -684,7 +684,9 @@ class NavigationService {
     }
 
     LatLng getNextDeliveryLocation() {
-      if (_deliveryRoutes == null) {
+      if (_deliveryRoutes == null || _currentRoute < 0 ||
+          _currentRoute > _deliveryRoutes.routes.length || _currentLeg < 0
+          || _currentLeg >= _deliveryRoutes.routes[_currentRoute].legs.length) {
         return null;
       }
       return _deliveryRoutes.getNextDeliveryLocation(
@@ -804,6 +806,9 @@ class NavigationService {
 
     bool isNearDelivery() {
       try {
+        if(currentPolyline.points.length < 2){
+          throw "Not enough points on polyline to calculate";
+        }
         int dist = calculateDistanceBetween(
             currentPolyline.points[0], currentPolyline.points.last);
         if (dist < 50) {
@@ -816,6 +821,8 @@ class NavigationService {
         return nearDelivery;
       } catch (error) {
         print("Failed to determine if near delivery.[$error]");
+        nearDelivery = false;
+        return nearDelivery;
       }
     }
 
@@ -832,7 +839,6 @@ class NavigationService {
           currentPolyline.points[0], currentPolyline.points.last) <
           _position.accuracy + 50) {
         atDelivery = true;
-        sendDeliveryAPICall();
       }
       return atDelivery;
     }
@@ -852,11 +858,6 @@ class NavigationService {
             1) {
           if (_currentLeg == _deliveryRoutes.routes[_currentRoute].legs.length - 1) {
             sendCompletedRouteAPICall();
-            clearAllSetVariables();
-            currentPolyline = null;
-            polylines = {};
-            markers = {};
-            circles = {};
             return;
           }
           await api.completeDelivery(
@@ -872,6 +873,20 @@ class NavigationService {
     }
 
     moveToNextDelivery() {
+      if(_currentLeg >= _deliveryRoutes.routes[_currentRoute].legs.length - 1){
+        clearAllSetVariables();
+        currentPolyline = null;
+        polylines = {};
+        markers = {};
+        circles = {};
+        _currentRoute = -1;
+        _currentLeg = 0;
+        _currentStep = 0;
+        nearDelivery = false;
+        atDelivery = false;
+        return;
+      }
+
       _currentLeg += 1;
       _currentStep = 0;
       nearDelivery = false;
@@ -986,7 +1001,9 @@ class NavigationService {
         } else {
           // making sure only one notification gets sent.
           if (!_abnormalityService.getStillOffRoute()) {
-            currentPolyline.points.removeAt(0);
+            if(currentPolyline.points.length > 0){
+              currentPolyline.points.removeAt(0);
+            }
             _notificationManager.showNotifications(
                 _abnormalityHeaders["offroute"],
                 _abnormalityMessages["offroute"]);

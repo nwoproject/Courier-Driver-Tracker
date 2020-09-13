@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -226,6 +226,12 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     else{
       return "$hours h $minutes min";
     }
+  }
+
+  drivingWithNoRoutes() async {
+    await Future.delayed(Duration(minutes: 2));
+    LocalNotifications notificationManager = LocalNotifications();
+    notificationManager.showNotifications("You are driving outside company hours!", "You are using the application for personal use.");
   }
 
   Widget _deliveryCards(String text, String distance, String time, String del, int route) {

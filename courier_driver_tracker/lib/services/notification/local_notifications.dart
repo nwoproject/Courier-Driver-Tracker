@@ -41,6 +41,8 @@ class LocalNotifications {
       break;
       case "You Are Speeding!": {report = "speeding"; }
       break;
+      case "You are driving outside company hours!": {report = "companyCar"; }
+      break;
 //      case "offroute" {report = "offRoute"; }
 //      break;
       default: {print("Invalid option");}
@@ -95,6 +97,10 @@ class LocalNotifications {
       await  Navigator.of(_notificationContext)
           .pushNamed('/reportOff');
     }
+     if (report == "companyCar") {
+       await  Navigator.of(_notificationContext)
+           .pushNamed('/reportCompany');
+     }
   }
 
 }
