@@ -816,6 +816,7 @@ class NavigationService {
         return nearDelivery;
       } catch (error) {
         print("Failed to determine if near delivery.[$error]");
+        return false;
       }
     }
 

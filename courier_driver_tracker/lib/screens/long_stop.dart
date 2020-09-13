@@ -101,7 +101,7 @@ class _FeedbackState extends State<Feedback> {
     driverID = driverID.toString();
     String lat = position.latitude.toString();
     String long = position.longitude.toString();
-    String time = position.timestamp.toString();
+    String time =  DateTime.now().toString().substring(0,19);
 
     String resp = "";
 
