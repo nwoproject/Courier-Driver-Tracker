@@ -27,7 +27,7 @@ class Location
 
   Location.fromJson(Map<String,dynamic> json)
   {
-    locationID = json['Location_'];
+    locationID = json['location_id'];
     latitude = json['latitude'];
     longitude = json['longitude'];
     if(json['address']!=null)

@@ -106,7 +106,6 @@ class _LoginPageState extends State<LoginPage>
           .pushNamed('/delivery', arguments: responseData['token']);
     } else //invalid credentials
     {
-      print(response.statusCode);
       String errorResponse = '';
 
       switch (response.statusCode) {

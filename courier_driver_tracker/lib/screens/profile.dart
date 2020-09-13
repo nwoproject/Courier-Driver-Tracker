@@ -43,6 +43,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
   }
 
+  String get email {
+    if (userData['email'] == null) {
+      return "Error";
+    } else {
+      return userData['email'];
+    }
+  }
+
+  String get name {
+    if (userData['name'] == null ||
+        userData['name'].length < 1 ||
+        userData['surname'] == null ||
+        userData['surname'].length < 1) {
+      return "Error";
+    } else {
+      return userData['name'] + " " + userData['surname'];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -72,9 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(2.0),
                       child: ListTile(
                           title: Center(
-                              child: Text(
-                                  userData['name'] + " " + userData['surname'],
-                                  style: headingLabelStyle))))
+                              child: Text(name, style: headingLabelStyle))))
                 ],
               ),
             ),
@@ -113,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextSpan(text: "Email:\n", style: labelStyle),
-          TextSpan(text: userData['email'] + "\n\n\n", style: textStyle),
+          TextSpan(text: email + "\n\n\n", style: textStyle),
           TextSpan(text: "Driver Score:\n", style: labelStyle),
           TextSpan(text: "0\n\n\n", style: textStyle),
           TextSpan(text: "Routes Completed:\n", style: labelStyle),

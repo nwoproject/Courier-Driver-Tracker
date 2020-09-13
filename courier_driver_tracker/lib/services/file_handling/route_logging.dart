@@ -71,10 +71,7 @@ class RouteLogging{
       final directoryNewFolder = await directoryFolder.create(recursive: true);
       return directoryNewFolder.path;
     }
-
   }
-
-
 
   Future<File> get locationFile async {
     String fileName = getFileName();
@@ -118,6 +115,58 @@ class RouteLogging{
   String displayFileContents () {
     readFileContents("deliveries");
     return contents;
+  }
+
+  Future<File> deleteFile(String fileType) async {
+    File file;
+    if (fileType == "locationFile") {
+      try {
+        file = await locationFile;
+        await file.delete();
+      }catch (e) {
+        print(e);
+      }
+
+    }
+    else if (fileType == "deliveriesFile") {
+      try {
+        file = await deliveriesFile;
+        await file.delete();
+      }catch (e) {
+        print(e);
+      }
+    }
+    else{
+      print("Dev: Incorrect file type given. [RouteLogging:writeToFile]");
+    }
+
+    if(file == null){
+      print("Dev: File does not exist.");
+
+    }
+    return null;
+  }
+
+  Future<File> clearFileContents(String fileType) async
+  {
+    File file;
+    if (fileType == "locationFile") {
+      file = await locationFile;
+      return file.writeAsString("");
+    }
+    else if (fileType == "deliveriesFile") {
+      file = await deliveriesFile;
+      return file.writeAsString("");
+    }
+    else{
+      print("Dev: Incorrect file type given. [RouteLogging:writeToFile]");
+    }
+
+    if(file == null){
+      print("Dev: File does not exist.");
+
+    }
+    return null;
   }
 
   Future<File> writeToFile(String data, String fileType) async {

@@ -58,7 +58,7 @@ class AbnormalityService{
     _stillOffRoute = off;
   }
 
-  double calculateDistanceBetween(Position currentPosition, Position lastPosition){
+  double calculateDistanceBetween(LatLng currentPosition, LatLng lastPosition){
     double p = 0.017453292519943295;
     double a = 0.5 - cos((currentPosition.latitude - lastPosition.latitude) * p)/2 +
         cos(lastPosition.latitude * p) * cos(currentPosition.latitude * p) *
@@ -116,7 +116,7 @@ class AbnormalityService{
    *              cycles(_maxStopCount).
    */
   bool stoppingTooLong(){
-      double distance = calculateDistanceBetween(_currentPosition, _lastPosition);
+      double distance = calculateDistanceBetween(LatLng(_currentPosition.latitude, _currentPosition.longitude), LatLng(_lastPosition.latitude, _lastPosition.longitude));
       if(_stopCount >= _maxStopCount && distance < _minMovingDistance) {
         _stopCount = 0;
         _stopped = true;
@@ -140,28 +140,34 @@ class AbnormalityService{
    * Description: Uses the current position and specified route to determine
    *              if the driver is still following the specified route.
    */
-  bool offRoute(LatLng start, LatLng end){
-    double m = (end.longitude - start.longitude)/(end.latitude - start.latitude);
-    double shouldBeAt = m*(_currentPosition.latitude - start.latitude) + start.longitude;
-    double distanceFromPolyline = calculateDistanceBetween(_currentPosition, Position(longitude: shouldBeAt, latitude: _currentPosition.latitude));
+  bool offRoute(Polyline currentPolyline){
 
-    // checks if the distance of the courier is more than 20m away from route.
-    if(distanceFromPolyline > _currentPosition.accuracy + 40){
-      if(_wentOffRoute){
-        if(!_stillOffRoute){
-          _stillOffRoute = true;
+    for(int i = 0; i < currentPolyline.points.length - 1; i++){
+      LatLng start = currentPolyline.points[i];
+      LatLng end = currentPolyline.points[i + 1];
+
+      double m = (end.longitude - start.longitude)/(end.latitude - start.latitude);
+      double shouldBeAt = m*(_currentPosition.latitude - start.latitude) + start.longitude;
+      double distanceFromPolyline = calculateDistanceBetween(LatLng(_currentPosition.latitude, _currentPosition.longitude), LatLng(_currentPosition.latitude, shouldBeAt));
+
+      // checks if the distance of the courier is more than 40m away from route.
+      if(distanceFromPolyline < _currentPosition.accuracy + 40){
+        if(_wentOffRoute){
+          _wentOffRoute = false;
+          _stillOffRoute = false;
         }
+        return false;
       }
-      _wentOffRoute = true;
-      return true;
     }
-    else{
-      if(_wentOffRoute){
-        _wentOffRoute = false;
-        _stillOffRoute = false;
+
+    if(_wentOffRoute){
+      if(!_stillOffRoute){
+        _stillOffRoute = true;
       }
-      return false;
     }
+    _wentOffRoute = true;
+    return true;
+
   }
 
 

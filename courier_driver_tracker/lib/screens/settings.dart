@@ -57,6 +57,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               FlatButton(
                 child: Text('Accept'),
                 onPressed: () {
+                  storage.deleteAll();
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                   Navigator.of(context).popAndPushNamed('/login');
                 },
@@ -87,17 +89,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 30.0),
                 Row(
                   children: <Widget>[
-                    Container(
-                      width: 60,
-                      height: 60,
-                    ),
                     const SizedBox(width: 10.0),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text(userData['name'] + " " + userData['surname'],
-                              style: headingLabelStyle),
+                          Text("Settings", style: headingLabelStyle),
                           Text(
                             "Driver",
                             style: TextStyle(

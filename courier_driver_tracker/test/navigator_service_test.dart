@@ -1,4 +1,6 @@
+import 'package:courier_driver_tracker/services/location/google_maps.dart';
 import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:courier_driver_tracker/services/file_handling/json_handler.dart';
@@ -10,10 +12,11 @@ Future<void> main() async {
   String filename = "route.json";
   Map<String, dynamic> json = await JsonHandler().parseJson(filename);
   NavigationService navigatorService;
+  BuildContext context;
 
   test("Initialisation Test",() async {
     bool created;
-    navigatorService = NavigationService(jsonFile: filename);
+    navigatorService = NavigationService(context: context);
     if(navigatorService is NavigationService){
       created  = true;
     }
@@ -25,7 +28,7 @@ Future<void> main() async {
 
   test("DeliveryRoute Test",() async {
     if(navigatorService == null){
-      navigatorService = NavigationService(jsonFile: filename);
+      navigatorService = NavigationService();
       await navigatorService.getRoutes();
     }
     bool created;

@@ -81,6 +81,7 @@ class ApiHandler {
   Future<dynamic> callCalculateRoute(routeID) async {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
+    await storage.write(key: 'RouteID', value: routeID);
 
     Map<String, dynamic> data = {
       "id": driverID,
@@ -191,7 +192,7 @@ class ApiHandler {
     Map<String, dynamic> data = {
       "token": token,
       "id": driverID,
-      "timestamp": position.timestamp.toString()
+      "timestamp": DateTime.now().toString().substring(0,19)
     };
 
     var response = await http.put("$apiUrl/api/routes/location/$locationID",

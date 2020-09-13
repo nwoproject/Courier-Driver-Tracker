@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -25,6 +25,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   int _totalDistance = 0;
   int _totalDuration = 0;
   String _durationString;
+  String _selectedRoute = "LOADING...";
 
   List<Widget> _deliveries = [];
   List<Widget> _loadingDeliveries = [];
@@ -34,12 +35,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   @override
   void initState() {
-    /*
-    TODO
-      - use json to populate the cards
-     */
     getRoutes();
-
     super.initState();
   }
 
@@ -47,11 +43,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     String currentRoute = await storage.read(key: 'current_route');
+
     int currentActiveRoute;
     if(currentRoute == null){
       currentActiveRoute = -1;
     }
     else{
+      _selectedRoute = currentRoute;
       currentActiveRoute = int.parse(currentRoute);
     }
 
@@ -178,7 +176,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           deliveryRoute["legs"].add(deliveryLeg);
 
           j++;
-          numDeliveries = j;
+          numDeliveries = j - 1;
         }
         // add route to delivery routes
         deliveryRoutes["routes"].add(deliveryRoute);
@@ -228,6 +226,12 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     else{
       return "$hours h $minutes min";
     }
+  }
+
+  drivingWithNoRoutes() async {
+    await Future.delayed(Duration(minutes: 2));
+    LocalNotifications notificationManager = LocalNotifications();
+    notificationManager.showNotifications("You are driving outside company hours!", "You are using the application for personal use.");
   }
 
   Widget _deliveryCards(String text, String distance, String time, String del, int route) {
@@ -334,7 +338,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     TextSpan(
                         text: "  Total time : $_durationString\n\n", style: textStyle),
                     TextSpan(
-                        text: "Current Route: Not Selected", style: textStyle)
+                        text: "Current Route: $_selectedRoute", style: textStyle)
                   ])),
                 ),
               ),

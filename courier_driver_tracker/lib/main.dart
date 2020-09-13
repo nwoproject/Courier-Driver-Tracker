@@ -7,7 +7,7 @@ Future main() async {
   runApp(CourierDriverTracker());
 }
 
-class CourierDriverTracker extends StatelessWidget{
+class CourierDriverTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
