@@ -1,13 +1,17 @@
+import dotenv
 import psycopg2
-import numpy as np
-from copy import copy, deepcopy
+import os
+from copy import copy
+
+dotenv.load_dotenv()
+
 
 class DBManagement:
     def __init__(self):
-        self.host = "ec2-46-137-79-235.eu-west-1.compute.amazonaws.com"
-        self.db_name = "ddvhk09prbb319"
-        self.user = "sgeuntubjgaaek"
-        self.password = "e914fb8aecf8c7311077b98de52252fc56d549705874e0e6ebf3e12dda278e02"
+        self.host = os.getenv("DB_HOST")
+        self.db_name = os.getenv("DB_NAME")
+        self.user = os.getenv("DB_USER")
+        self.password = os.getenv("DB_PASSWORD")
         self.port = "5432"
         self.conn = psycopg2.connect(database=self.db_name, user=self.user,
                                      password=self.password, host=self.host, port=self.port)
@@ -80,13 +84,3 @@ class DBManagement:
 
         return data
 
-
-#test = DBManagement()
-#day1 = [0, 0, 0, 0, 0, 0, 0]
-#day3 = [0, 0, 0, 0, 0, 0, 0]
-#day4 = [0, 0, 0, 0, 0, 0, 0]
-#day5 = [0, 0, 0, 0, 0, 0, 0]
-#expected = 0
-
-#week = test.getMonthlyInputs()
-#print(week)
