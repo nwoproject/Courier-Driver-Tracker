@@ -1,4 +1,5 @@
 import random
+import data.db_management
 
 
 class WeeklyTraining:
@@ -15,10 +16,10 @@ class WeeklyTraining:
 
         if training_type == "none":
             data[5] = 0
-            numberOfAbnormalities = random.randrange(0, 55)
+            numberOfAbnormalities = random.randrange(0, 56)
             while numberOfAbnormalities > 0:
-                day = random.randrange(0, 4)
-                abnormality = random.randrange(0, 6)
+                day = random.randrange(0, 5)
+                abnormality = random.randrange(0, 7)
                 if abnormality == 6 and data[day][abnormality] >= 3:
                     continue
                 data[day][abnormality] += 1
@@ -26,35 +27,35 @@ class WeeklyTraining:
 
         elif training_type == "daily":
             data[5] = 1
-            numberOfAbnormalities = random.randrange(5, 35)
-            variant = random.randrange(0, 10)
-            abnormality = random.randrange(0, 6)
+            numberOfAbnormalities = random.randrange(5, 36)
+            variant = random.randrange(0, 11)
+            abnormality = random.randrange(0, 7)
             while numberOfAbnormalities > 0:
-                for i in range(0, 6):
+                for i in range(0, 7):
                     data[i][abnormality] += 1
                     numberOfAbnormalities -= 1
 
             while variant > 0:
-                day = random.randrange(0, 4)
-                abnormality = random.randrange(0, 6)
+                day = random.randrange(0, 5)
+                abnormality = random.randrange(0, 7)
                 data[day][abnormality] += 1
                 variant -= 1
 
         elif training_type == "racurring":
             data[5] = 2
-            numDayRepeat = random.randrange(2, 4)
-            numberOfAbnormalities = random.randrange(15, 35)
-            variant = random.randrange(0, 10)
+            numDayRepeat = random.randrange(2, 5)
+            numberOfAbnormalities = random.randrange(15, 36)
+            variant = random.randrange(0, 11)
 
             days = []
             while numDayRepeat > 0:
-                day = random.randrange(0, 4)
+                day = random.randrange(0, 5)
                 if days.__contains__(day):
                     continue
                 days.append(day)
                 numDayRepeat -= 1
 
-            abnormality = random.randrange(0, 6)
+            abnormality = random.randrange(0, 7)
 
             while numberOfAbnormalities > 0:
                 day = random.randrange(0, len(days))
@@ -62,34 +63,34 @@ class WeeklyTraining:
                 numberOfAbnormalities -= 1
 
             while variant > 0:
-                day = random.randrange(0, 4)
-                abnormality = random.randrange(0, 6)
+                day = random.randrange(0, 5)
+                abnormality = random.randrange(0, 7)
                 data[day][abnormality] += 1
                 variant -= 1
 
         elif training_type == "connected-recurring":
             data[5] = 3
-            numDayRepeat = random.randrange(2, 4)
-            numAbnormalityRepeat = random.randrange(2, 3)
-            numberOfAbnormalities = random.randrange(numAbnormalityRepeat * numDayRepeat, 35)
-            variant = random.randrange(0, 10)
+            numDayRepeat = random.randrange(2, 5)
+            numAbnormalityRepeat = random.randrange(2, 5)
+            numberOfAbnormalities = random.randrange(numAbnormalityRepeat * numDayRepeat, 36)
+            variant = random.randrange(0, 11)
 
             days = []
             while numDayRepeat > 0:
-                day = random.randrange(0, 4)
+                day = random.randrange(0, 5)
                 if days.__contains__(day):
                     continue
                 days.append(day)
                 numDayRepeat -= 1
 
-            abnormality1 = random.randrange(0, 6)
-            abnormality2 = random.randrange(0, 6)
-            abnormality3 = random.randrange(0, 6)
+            abnormality1 = random.randrange(0, 7)
+            abnormality2 = random.randrange(0, 7)
+            abnormality3 = random.randrange(0, 7)
 
             while abnormality1 == abnormality2 or abnormality1 == abnormality3 or abnormality2 == abnormality3:
-                abnormality1 = random.randrange(0, 6)
-                abnormality2 = random.randrange(0, 6)
-                abnormality3 = random.randrange(0, 6)
+                abnormality1 = random.randrange(0, 7)
+                abnormality2 = random.randrange(0, 7)
+                abnormality3 = random.randrange(0, 7)
 
             while numberOfAbnormalities > 0:
                 day = random.randrange(0, len(days))
@@ -103,8 +104,8 @@ class WeeklyTraining:
                 numberOfAbnormalities -= 2
 
             while variant > 0:
-                day = random.randrange(0, 4)
-                abnormality = random.randrange(0, 6)
+                day = random.randrange(0, 5)
+                abnormality = random.randrange(0, 7)
                 data[day][abnormality] += 1
                 variant -= 1
 
@@ -113,9 +114,17 @@ class WeeklyTraining:
 
         return data
 
-    def createWeeklyTrainingElement(self, training_size):
-
+    def createWeeklyTraining(self, training_size):
+        calculatedData = []
         for each in range(0, 4):
             for element in range(0, round(training_size/4)):
-                data = self.createWeeklyTrainingElement(each)
+                calculatedData.append(self.createWeeklyTrainingElement(each))
 
+        for each in calculatedData:
+            print("Doin it!")
+
+
+training = WeeklyTraining("hello")
+for each in range(0, 20):
+    print("Element " + str(each))
+    print(training.createWeeklyTrainingElement("none"))
