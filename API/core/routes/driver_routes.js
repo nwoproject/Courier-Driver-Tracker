@@ -221,6 +221,17 @@ router.put('/completed/:routeid',async(req,res)=>{
                         if(!res.writableEnded)
                         {
                             let route = results.rows[0].route_id;
+                            if(completed)
+                            {
+                                res.status(204).end();
+                            }
+                            else // Driver potentially missed a delivery
+                            {
+                                res.status(206).end();
+                            }   
+
+                            //Move to logs and remove entry from active routes table after response has been sent (better performance)
+
                             await new Promise((resolve)=>{
                                 DB.pool.query(`INSERT INTO log."route_log"("route_id","driver_id","date_assigned","completed","timestamp_completed") 
                                 SELECT "route_id","driver_id","date_assigned","completed","timestamp_completed" FROM route."route" WHERE route_id=($1)`, [route], (logError,routes)=>{ 
@@ -250,16 +261,6 @@ router.put('/completed/:routeid',async(req,res)=>{
                                     }
                                 });
                             });
-                            if(completed)
-                            {
-                                res.status(204).end();
-                            }
-                            else // Driver potentially missed a delivery
-                            {
-                                res.status(206).end();
-                            }   
-
-                            // Remove entry from active routes table after response has been sent (better performance)
 
                             DB.pool.query('DELETE FROM route."route" WHERE route_id=($1)',[route],(deleterr,deleteRes)=>
                             {
