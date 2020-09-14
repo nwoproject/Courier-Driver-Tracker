@@ -1,147 +1,179 @@
 import random
-import data.db_management
+import data.db_management as db
 
 
 class MonthlyTraining:
     def __init__(self, db_manager):
-        self.manager = db_manager
+        self.db_manager = db_manager
 
     def createMonthlyTrainingElement(self, training_type):
-        data = [[0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
+        data = [[0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
                 0]
 
-        if training_type == "none":
+        if training_type == 0:
             data[4] = 0
-            case = random.randrange(0, 2)
 
-            if case == 0:
-                for each in data:
-                    limit = 100
-                    randomValue = random.randrange(75, limit)
-                    data[each][0] = randomValue/100
-                    limit -= randomValue
-                    randomValue = random.randrange(0, limit)
-                    data[each][1] = randomValue / 100
-                    limit -= randomValue
-                    randomValue = random.randrange(0, limit)
-                    data[each][2] = randomValue / 100
-                    limit -= randomValue
-                    data[each][3] = limit
+            for each in range(0, 4):
+                limit = 100
+                random_value = random.randrange(75, limit)
+                data[each][0] = random_value / 100
+                limit -= random_value
+                random_value = random.randrange(0, limit)
+                data[each][1] = random_value / 100
+                limit -= random_value
+                random_value = random.randrange(0, limit)
+                data[each][2] = random_value / 100
+                limit -= random_value
+                data[each][3] = limit / 100
 
-            else:
-                for each in data:
-                    limit = 100
-                    randomValue = random.randrange(0, limit)
-                    data[each][0] = randomValue/100
-                    limit -= randomValue
-                    randomValue = random.randrange(0, limit)
-                    data[each][1] = randomValue / 100
-                    limit -= randomValue
-                    randomValue = random.randrange(0, limit)
-                    data[each][2] = randomValue / 100
-                    limit -= randomValue
-                    data[each][3] = limit
-
-        elif training_type == "daily":
+        elif training_type == 1:
             data[4] = 1
-            numberOfAbnormalities = random.randrange(5, 35)
-            variant = random.randrange(0, 10)
-            abnormality = random.randrange(0, 6)
-            while numberOfAbnormalities > 0:
-                for i in range(0, 6):
-                    data[i][abnormality] += 1
-                    numberOfAbnormalities -= 1
+            for each in range(0, 4):
+                limit = 100
+                random_value = random.randrange(75, limit)
+                data[each][1] = random_value
+                limit -= random_value
+                random_value = random.randrange(0, limit)
+                data[each][0] = random_value / 100
+                limit -= random_value
+                random_value = random.randrange(0, limit)
+                data[each][2] = random_value / 100
+                limit -= random_value
+                data[each][3] = limit / 100
 
-            while variant > 0:
-                day = random.randrange(0, 4)
-                abnormality = random.randrange(0, 6)
-                data[day][abnormality] += 1
-                variant -= 1
-
-        elif training_type == "racurring":
+        elif training_type == 2:
             data[4] = 2
-            numDayRepeat = random.randrange(2, 4)
-            numberOfAbnormalities = random.randrange(15, 35)
-            variant = random.randrange(0, 10)
+            week = random.randrange(0, 4)
+            abnormalities_chosen = [1, 2, 3, 4]
+            chosen_abnormality = random.randrange(0, len(abnormalities_chosen))
+            abnormality = chosen_abnormality
+            limit = 100
+            random_value = random.randrange(75, limit)
+            while len(abnormalities_chosen) > 1:
+                data[week][abnormalities_chosen[abnormality]] = random_value / 100
+                abnormalities_chosen.remove(abnormalities_chosen[abnormality])
+                random_value = random.randrange(0, limit)
+                abnormality = random.randrange(0, len(abnormalities_chosen))
+                limit -= random_value
 
-            days = []
-            while numDayRepeat > 0:
-                day = random.randrange(0, 4)
-                if days.__contains__(day):
+            data[week][0] = random_value / 100
+
+            for each in range(0, 4):
+                if each == week:
                     continue
-                days.append(day)
-                numDayRepeat -= 1
+                abnormalities_chosen = []
+                limit = 100
+                random_value = random.randrange(75, limit)
+                for ab in range(0, 5):
+                    if ab == chosen_abnormality:
+                        continue
+                    abnormalities_chosen.append(ab)
 
-            abnormality = random.randrange(0, 6)
+                while len(abnormalities_chosen) > 1:
+                    data[each][abnormalities_chosen[abnormality]] = random_value / 100
+                    abnormalities_chosen.remove(abnormalities_chosen[abnormality])
+                    random_value = random.randrange(0, limit)
+                    abnormality = random.randrange(0, len(abnormalities_chosen))
+                    limit -= random_value
 
-            while numberOfAbnormalities > 0:
-                day = random.randrange(0, len(days))
-                data[day][abnormality] += 1
-                numberOfAbnormalities -= 1
+                data[each][chosen_abnormality] = random_value / 100
 
-            while variant > 0:
-                day = random.randrange(0, 4)
-                abnormality = random.randrange(0, 6)
-                data[day][abnormality] += 1
-                variant -= 1
-
-        elif training_type == "connected-recurring":
+        elif training_type == 3:
             data[4] = 3
-            numDayRepeat = random.randrange(2, 4)
-            numAbnormalityRepeat = random.randrange(2, 3)
-            numberOfAbnormalities = random.randrange(numAbnormalityRepeat * numDayRepeat, 35)
-            variant = random.randrange(0, 10)
+            weeks = []
+            num_weeks = random.randrange(2, 5)
 
-            days = []
-            while numDayRepeat > 0:
-                day = random.randrange(0, 4)
-                if days.__contains__(day):
+            while len(weeks) < num_weeks:
+                week = random.randrange(0, 4)
+                if weeks.count(week) > 0:
                     continue
-                days.append(day)
-                numDayRepeat -= 1
+                weeks.append(week)
 
-            abnormality1 = random.randrange(0, 6)
-            abnormality2 = random.randrange(0, 6)
-            abnormality3 = random.randrange(0, 6)
+            for each in range(0, 4):
+                if weeks.count(each) > 0:
+                    limit = 100
+                    random_value = random.randrange(75, limit)
+                    data[each][2] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][0] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][1] = random_value / 100
+                    limit -= random_value
+                    data[each][3] = limit / 100
+                else:
+                    limit = 100
+                    random_value = random.randrange(0, limit)
+                    data[each][0] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][1] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][2] = random_value / 100
+                    limit -= random_value
+                    data[each][3] = limit / 100
 
-            while abnormality1 == abnormality2 or abnormality1 == abnormality3 or abnormality2 == abnormality3:
-                abnormality1 = random.randrange(0, 6)
-                abnormality2 = random.randrange(0, 6)
-                abnormality3 = random.randrange(0, 6)
+        elif training_type == 4:
+            data[4] = 4
+            weeks = []
+            num_weeks = random.randrange(2, 4)
 
-            while numberOfAbnormalities > 0:
-                day = random.randrange(0, len(days))
-                data[day][abnormality1] += 1
-                data[day][abnormality2] += 1
+            while len(weeks) < num_weeks:
+                week = random.randrange(0, 4)
+                if weeks.count(week) > 0:
+                    continue
+                weeks.append(week)
 
-                if numAbnormalityRepeat > 2:
-                    data[day][abnormality3] += 1
-                    numberOfAbnormalities -= 1
-
-                numberOfAbnormalities -= 2
-
-            while variant > 0:
-                day = random.randrange(0, 4)
-                abnormality = random.randrange(0, 6)
-                data[day][abnormality] += 1
-                variant -= 1
-
+            for each in range(0, 4):
+                if weeks.count(each) > 0:
+                    limit = 100
+                    random_value = random.randrange(75, limit)
+                    data[each][3] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][0] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][1] = random_value / 100
+                    limit -= random_value
+                    data[each][2] = limit / 100
+                else:
+                    limit = 100
+                    random_value = random.randrange(0, limit)
+                    data[each][0] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][1] = random_value / 100
+                    limit -= random_value
+                    random_value = random.randrange(0, limit)
+                    data[each][2] = random_value / 100
+                    limit -= random_value
+                    data[each][3] = limit / 100
         else:
             return
 
         return data
 
-    def createMonthlyTrainingElement(self, training_size):
+    def createMonthlyTrainingSet(self, training_size):
         calculatedData = []
-        for each in range(0, 4):
-            for element in range(0, round(training_size/4)):
-                calculatedData.append(self.createWeeklyTrainingElement(each))
+        for each in range(0, 5):
+            self.db_manager.deleteMonthRow(each)
+            for element in range(0, round(training_size / 5)):
+                calculatedData.append(self.createMonthlyTrainingElement(each))
 
         for each in calculatedData:
-            print("Doin it!")
+            self.db_manager.insertMonthlyInputs(each[0],
+                                                each[1],
+                                                each[2],
+                                                each[3],
+                                                each[4])
 
 
-training = MonthlyTraining("hello")
+training = MonthlyTraining(db.DBManagement())
+training.createMonthlyTrainingSet(4000)
+print("noice")

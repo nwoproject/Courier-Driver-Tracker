@@ -1,10 +1,10 @@
 import random
-import data.db_management
+import data.db_management as db
 
 
 class WeeklyTraining:
     def __init__(self, db_manager):
-        self.manager = db_manager
+        self.db_manager = db_manager
 
     def createWeeklyTrainingElement(self, training_type):
         data = [[0, 0, 0, 0, 0, 0, 0],
@@ -14,7 +14,7 @@ class WeeklyTraining:
                 [0, 0, 0, 0, 0, 0, 0],
                 0]
 
-        if training_type == "none":
+        if training_type == 0:
             data[5] = 0
             numberOfAbnormalities = random.randrange(0, 56)
             while numberOfAbnormalities > 0:
@@ -25,13 +25,13 @@ class WeeklyTraining:
                 data[day][abnormality] += 1
                 numberOfAbnormalities -= 1
 
-        elif training_type == "daily":
+        elif training_type == 1:
             data[5] = 1
             numberOfAbnormalities = random.randrange(5, 36)
             variant = random.randrange(0, 11)
             abnormality = random.randrange(0, 7)
             while numberOfAbnormalities > 0:
-                for i in range(0, 7):
+                for i in range(0, 5):
                     data[i][abnormality] += 1
                     numberOfAbnormalities -= 1
 
@@ -41,7 +41,7 @@ class WeeklyTraining:
                 data[day][abnormality] += 1
                 variant -= 1
 
-        elif training_type == "racurring":
+        elif training_type == 2:
             data[5] = 2
             numDayRepeat = random.randrange(2, 5)
             numberOfAbnormalities = random.randrange(15, 36)
@@ -68,7 +68,7 @@ class WeeklyTraining:
                 data[day][abnormality] += 1
                 variant -= 1
 
-        elif training_type == "connected-recurring":
+        elif training_type == 3:
             data[5] = 3
             numDayRepeat = random.randrange(2, 5)
             numAbnormalityRepeat = random.randrange(2, 5)
@@ -114,17 +114,25 @@ class WeeklyTraining:
 
         return data
 
-    def createWeeklyTraining(self, training_size):
+    def createWeeklyTrainingSet(self, training_size):
         calculatedData = []
         for each in range(0, 4):
-            for element in range(0, round(training_size/4)):
-                calculatedData.append(self.createWeeklyTrainingElement(each))
+            self.db_manager.deleteWeekRow(each)
+            for element in range(0, round(training_size / 4)):
+                data = self.createWeeklyTrainingElement(each)
+                print(data)
+                calculatedData.append(data)
 
         for each in calculatedData:
-            print("Doin it!")
+            self.db_manager.insertWeeklyInputs(each[0],
+                                               each[1],
+                                               each[2],
+                                               each[3],
+                                               each[4],
+                                               each[5])
 
 
-training = WeeklyTraining("hello")
-for each in range(0, 20):
-    print("Element " + str(each))
-    print(training.createWeeklyTrainingElement("none"))
+training = WeeklyTraining(db.DBManagement())
+
+#training.createWeeklyTrainingSet(4000)
+#print("done")

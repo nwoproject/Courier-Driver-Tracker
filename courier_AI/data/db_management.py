@@ -12,7 +12,7 @@ class DBManagement:
         self.db_name = os.getenv("DB_NAME")
         self.user = os.getenv("DB_USER")
         self.password = os.getenv("DB_PASSWORD")
-        self.port = "5432"
+        self.port = os.getenv("DB_PORT")
         self.conn = psycopg2.connect(database=self.db_name, user=self.user,
                                      password=self.password, host=self.host, port=self.port)
         self.connection()
@@ -63,11 +63,8 @@ class DBManagement:
         self.conn.commit()
 
         records = cursor.fetchall()
-        for row in records:
-            data = copy(row)
 
-        return data
-
+        return records
 
 
     def getMonthlyInputs(self):
@@ -79,8 +76,25 @@ class DBManagement:
         self.conn.commit()
 
         records = cursor.fetchall()
-        for row in records:
-            data = copy(row)
 
-        return data
+        return records
 
+
+#   Row Deletions
+
+    #   deletes row based on expected value
+    def deleteWeekRow(self, expected):
+
+        cursor = self.conn.cursor()
+        sql = "DELETE from weekly_training where expected = " + str(expected)
+        cursor.execute(sql)
+        self.conn.commit()
+        print(cursor.rowcount, "weekly row(s) deleted.")
+
+    def deleteMonthRow(self, expected):
+
+        cursor = self.conn.cursor()
+        sql = "DELETE from monthly_training where expected = " + str(expected)
+        cursor.execute(sql)
+        self.conn.commit()
+        print(cursor.rowcount, "monthly row(s) deleted.")
