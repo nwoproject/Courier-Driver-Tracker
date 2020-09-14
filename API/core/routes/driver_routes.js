@@ -203,7 +203,7 @@ router.put('/completed/:routeid',async(req,res)=>{
         await checks.driverCheck(req.body.id,req.body.token,res);
         if(!res.writableEnded) // driver is valid
         {
-            DB.pool.query('UPDATE route."route" SET "completed"=($1),"timestamp_completed"=($2) WHERE "route_id"=($3) AND "driver_id"=($4)',
+            DB.pool.query('UPDATE route."route" SET "completed"=($1),"timestamp_completed"=($2) WHERE "route_id"=($3) AND "driver_id"=($4) RETURNING *',
             [true,req.body.timestamp,route_id,req.body.id], async (err,results)=>{
                 if(err)
                 {
@@ -220,15 +220,54 @@ router.put('/completed/:routeid',async(req,res)=>{
                         const completed = await checks.routeLocationsCheck(req.body.id,route_id,res);
                         if(!res.writableEnded)
                         {
+                            let route = results.rows[0].route_id;
+                            await new Promise((resolve)=>{
+                                DB.pool.query(`INSERT INTO log."route_log"("route_id","driver_id","date_assigned","completed","timestamp_completed") 
+                                SELECT "route_id","driver_id","date_assigned","completed","timestamp_completed" FROM route."route" WHERE route_id=($1)`, [route], (logError,routes)=>{ 
+                                    if(logError)
+                                    {
+                                        DB.dbErrorHandlerNoResponse(logError);
+                                        resolve();
+                                    }
+                                    else
+                                    {
+                                        if(routes.rowCount != 0)
+                                        {
+                                            DB.pool.query(`INSERT INTO log."location_log"("location_id","route_id","latitude","longitude","address","name","timestamp_completed") 
+                                            SELECT "location_id","route_id","latitude","longitude","address","name","timestamp_completed" FROM route."location" WHERE route_id=($1)`,[route],(locErr,locRes)=>{
+                                                if(locErr)
+                                                {
+                                                    DB.dbErrorHandlerNoResponse(locErr);
+                                                }
+
+                                                resolve();
+                                            });
+                                        }
+                                        else
+                                        {
+                                            resolve();
+                                        }
+                                    }
+                                });
+                            });
                             if(completed)
                             {
                                 res.status(204).end();
                             }
                             else // Driver potentially missed a delivery
                             {
-
                                 res.status(206).end();
                             }   
+
+                            // Remove entry from active routes table after response has been sent (better performance)
+
+                            DB.pool.query('DELETE FROM route."route" WHERE route_id=($1)',[route],(deleterr,deleteRes)=>
+                            {
+                                if(deleterr)
+                                {
+                                    DB.dbErrorHandlerNoResponse(deleterr);
+                                }
+                            });
                         }
                     }
                 }
