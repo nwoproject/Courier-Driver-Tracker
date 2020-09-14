@@ -1,5 +1,8 @@
 import random
 import data.db_management as db
+import data.db_management
+import datetime
+import tensorflow as tf
 
 
 class WeeklyTraining:
@@ -136,3 +139,4 @@ training = WeeklyTraining(db.DBManagement())
 
 #training.createWeeklyTrainingSet(4000)
 #print("done")
+
