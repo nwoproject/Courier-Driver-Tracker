@@ -2,6 +2,8 @@ import dotenv
 import psycopg2
 import os
 from copy import copy
+import requests
+import datetime
 
 dotenv.load_dotenv()
 
@@ -12,10 +14,11 @@ class DBManagement:
         self.db_name = os.getenv("DB_NAME")
         self.user = os.getenv("DB_USER")
         self.password = os.getenv("DB_PASSWORD")
-        self.port = os.getenv("DB_PORT")
+        self.port = "5432"
         self.conn = psycopg2.connect(database=self.db_name, user=self.user,
                                      password=self.password, host=self.host, port=self.port)
         self.connection()
+        self.bearer = os.getenv("BEARER_TOKEN")
 
     def connection(self):
         try:
@@ -63,8 +66,11 @@ class DBManagement:
         self.conn.commit()
 
         records = cursor.fetchall()
+        for row in records:
+            data = copy(row)
 
-        return records
+        return data
+
 
 
     def getMonthlyInputs(self):
@@ -76,25 +82,139 @@ class DBManagement:
         self.conn.commit()
 
         records = cursor.fetchall()
+        for row in records:
+            data = copy(row)
 
-        return records
+        return data
+
+    def getDriverAbnormalities(self):
+
+        r = requests.get(url="https://drivertracker-api.herokuapp.com/api/reports/drivers")
+        data = r
+        print(data)
+        currTime = datetime.datetime.now()
+        week = datetime.timedelta(days=7)
+        result = currTime - week
+
+        abnormalities = [[0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0]]
 
 
-#   Row Deletions
+        for each in data["drivers"]:
+            r2 = requests.get(url="https://drivertracker-api.herokuapp.com/api/abnormalities/:" + str(each["id"]))
+            data2 = r2
 
-    #   deletes row based on expected value
-    def deleteWeekRow(self, expected):
+            for each2 in data2["abnormalities"]["code_100"]["driver_abnormalities"]:
+                if datetime.fromtimestamp(each2["timestamp"]) < result:
+                    break
+                else:
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                        abnormalities[0][0] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                        abnormalities[0][1] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                        abnormalities[0][2] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                        abnormalities[0][3] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                        abnormalities[0][4] += 1
 
-        cursor = self.conn.cursor()
-        sql = "DELETE from weekly_training where expected = " + str(expected)
-        cursor.execute(sql)
-        self.conn.commit()
-        print(cursor.rowcount, "weekly row(s) deleted.")
+            for each2 in data2["abnormalities"]["code_101"]["driver_abnormalities"]:
+                if datetime.fromtimestamp(each2["timestamp"]) < result:
+                    break
+                else:
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                        abnormalities[1][0] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                        abnormalities[1][1] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                        abnormalities[1][2] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                        abnormalities[1][3] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                        abnormalities[1][4] += 1
 
-    def deleteMonthRow(self, expected):
+            for each2 in data2["abnormalities"]["code_102"]["driver_abnormalities"]:
+                if datetime.fromtimestamp(each2["timestamp"]) < result:
+                    break
+                else:
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                        abnormalities[2][0] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                        abnormalities[2][1] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                        abnormalities[2][2] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                        abnormalities[2][3] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                        abnormalities[2][4] += 1
 
-        cursor = self.conn.cursor()
-        sql = "DELETE from monthly_training where expected = " + str(expected)
-        cursor.execute(sql)
-        self.conn.commit()
-        print(cursor.rowcount, "monthly row(s) deleted.")
+            for each2 in data2["abnormalities"]["code_103"]["driver_abnormalities"]:
+                if datetime.fromtimestamp(each2["timestamp"]) < result:
+                    break
+                else:
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                        abnormalities[3][0] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                        abnormalities[3][1] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                        abnormalities[3][2] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                        abnormalities[3][3] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                        abnormalities[3][4] += 1
+
+            for each2 in data2["abnormalities"]["code_104"]["driver_abnormalities"]:
+                if datetime.fromtimestamp(each2["timestamp"]) < result:
+                    break
+                else:
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                        abnormalities[4][0] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                        abnormalities[4][1] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                        abnormalities[4][2] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                        abnormalities[4][3] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                        abnormalities[4][4] += 1
+
+            for each2 in data2["abnormalities"]["code_105"]["driver_abnormalities"]:
+                if datetime.fromtimestamp(each2["timestamp"]) < result:
+                    break
+                else:
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                        abnormalities[5][0] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                        abnormalities[5][1] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                        abnormalities[5][2] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                        abnormalities[5][3] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                        abnormalities[5][4] += 1
+
+            for each2 in data2["abnormalities"]["code_106"]["driver_abnormalities"]:
+                if datetime.fromtimestamp(each2["timestamp"]) < result:
+                    break
+                else:
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                        abnormalities[6][0] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                        abnormalities[6][1] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                        abnormalities[6][2] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                        abnormalities[6][3] += 1
+                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                        abnormalities[6][4] += 1
+        return abnormalities
+
+db = DBManagement()
+db.getDriverAbnormalities()
+
+
+
