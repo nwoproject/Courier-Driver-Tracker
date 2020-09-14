@@ -41,6 +41,9 @@ class NeuralNetwork:
             save_weights_only=False,
             period=1
         )
+        self.model.compile(optimizer='adam',
+                      loss='sparse_categorical_crossentropy',
+                      metrics=['accuracy'])
         self.model.fit(trainX,
                        trainY,
                        batchsize=100,
@@ -64,33 +67,18 @@ class NeuralNetwork:
         return data
 
     def getInputData(self):
+        return
 
 
+nn = NeuralNetwork()
+print(nn.getTrainingInputData())
+print("\n\n\n")
+print(nn.getTrainingOutputData())
 
-    #TRAIN = insert training data
-    #TEST = insert test data
+#test_loss, test_acc = model.evaluate(test, verbose=1)
 
-    names = ['day1', 'day2', 'day3', 'day4', 'day5', 'expected']
-    #train = pd.read_data(TRAIN, names=names)
-    #test = pd.read_data(TEST, names=names)
+#print('Test accuracy:', test_acc)
+#predictions = model.predict(test)
 
-    model = keras.Sequential([
-        keras.layers.Flatten(input_shape=(5, 7)),  # input layer (1)
-        keras.layers.Dense(128, activation='relu'),  # hidden layer (2)
-        keras.layers.Dense(128, activation='relu'),
-        keras.layers.Dense(4, activation='softmax') # output layer (4)
-    ])
+#predictions[0]
 
-    model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
-
-    #
-
-    #test_loss, test_acc = model.evaluate(test, verbose=1)
-
-    #print('Test accuracy:', test_acc)
-    #predictions = model.predict(test)
-
-
-    #predictions[0]
