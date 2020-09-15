@@ -69,14 +69,35 @@ class NeuralNetwork:
 
     def getTrainingOutputData(self):
         data = self.db_manager.getWeeklyInputs()
-        # TODO
+        for each in range(0, len(data)):
+            temp_arr = []
 
-    def getInputData(self):
-        return
+            for each2 in range(0, len(data[each])):
+                expected = data[each][5]
+                temp_arr.append(expected)
+            data[each] = temp_arr
+
+        output = []
+        for this in range(0, len(data)):
+            if data[this][0] == 0:
+                tem = [1, 0, 0, 0]
+                output.append(tem)
+            if data[this][0] == 1:
+                tem = [0, 1, 0, 0]
+                output.append(tem)
+            if data[this][0] == 2:
+                tem = [0, 0, 1, 0]
+                output.append(tem)
+            if data[this][0] == 3:
+                tem = [0, 0, 0, 1]
+                output.append(tem)
+
+        return output
 
 
 nn = NeuralNetwork()
 nn.train()
+
 
 # test_loss, test_acc = model.evaluate(test, verbose=1)
 

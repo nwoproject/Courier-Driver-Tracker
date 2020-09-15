@@ -69,10 +69,8 @@ class DBManagement:
         self.conn.commit()
 
         records = cursor.fetchall()
-        for row in records:
-            data = copy(row)
 
-        return data
+        return records
 
     def getMonthlyInputs(self):
 
@@ -83,9 +81,19 @@ class DBManagement:
         self.conn.commit()
 
         records = cursor.fetchall()
-        for row in records:
-            data = copy(row)
 
+        return records
+
+    def getTrainingInputData(self):
+        data = self.db_manager.getWeeklyInputs()
+        for each in range(0, len(data)):
+            temp_arr = []
+            for each2 in range(0, len(data[each]) - 1):
+                temp = []
+                for val in data[each][each2]:
+                    temp.append(val)
+                temp_arr.append(temp)
+            data[each] = temp_arr
         return data
 
     def getDriverAbnormalities(self):
@@ -221,5 +229,4 @@ class DBManagement:
                         abnormalities[6][4] += 1
         return abnormalities
 
-db = DBManagement()
-db.getDriverAbnormalities()
+
