@@ -5,6 +5,7 @@ from copy import copy
 import requests
 import datetime
 from requests import Request, Session
+import time
 import asyncio
 
 
@@ -59,10 +60,26 @@ class DBManagement:
         self.conn.commit()
         print(cursor.rowcount, "monthly input inserted.")
 
+    def insertWeeklyReport(self, driverID, report):
+        cursor = self.conn.cursor()
+        sql = "INSERT INTO weekly_reports (driver_id, report) VALUES (%s, %s)"
+        val = (driverID, report)
+        cursor.execute(sql, val)
+        self.conn.commit()
+        print(cursor.rowcount, "weekly report inserted.")
+
+
+    def insertMonthlyReport(self, driverID, report):
+        cursor = self.conn.cursor()
+        sql = "INSERT INTO monthly_reports (driver_id, report) VALUES (%s, %s)"
+        val = (driverID, report)
+        cursor.execute(sql, val)
+        self.conn.commit()
+        print(cursor.rowcount, "monthly report inserted.")
+
     #   Database GETTERS
     def getWeeklyInputs(self):
 
-        data = []
         cursor = self.conn.cursor()
         sql = "SELECT day1, day2, day3, day4, day5, expected from weekly_training"
         cursor.execute(sql)
