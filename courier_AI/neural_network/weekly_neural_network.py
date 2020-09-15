@@ -20,16 +20,17 @@ class NeuralNetwork:
             save_weights_only=False,
             period=1
         )
-        self.labels = ['day1', 'day2', 'day3', 'day4', 'day5', 'expected']
         self.db_manager = db.DBManagement()
         self.initialise()
 
     def initialise(self):
         self.model = keras.Sequential([
-            keras.layers.Flatten(input_shape=(5, 7)),  # input layer (1)
+            keras.layers.Dense(units=35, input_shape=(5, 7)),  # input layer (1)tr
+            keras.layers.Flatten(),
             keras.layers.Dense(128, activation='relu'),  # hidden layer (2)
             keras.layers.Dense(128, activation='relu'),
             keras.layers.Dense(4, activation='softmax')  # output layer (4)
+
         ])
         self.exportNN()
 
@@ -40,8 +41,12 @@ class NeuralNetwork:
         self.model.save(self.model_path)
 
     def train(self):
-        trainX = self.getTrainingInputData()
-        trainY = self.getTrainingOutputData()
+
+        trainX = np.asarray(self.getTrainingInputData())
+        trainY = np.asarray(self.getTrainingOutputData())
+        print("X" + str(trainX.shape))
+        print("Y" + str(trainY.shape))
+
         self.model.compile(optimizer='adam',
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
@@ -54,6 +59,7 @@ class NeuralNetwork:
                        callbacks=[self.checkpoint]
                        )
         self.exportNN()
+
 
     def getTrainingInputData(self):
         data = self.db_manager.getWeeklyInputs()
@@ -80,23 +86,25 @@ class NeuralNetwork:
         output = []
         for this in range(0, len(data)):
             if data[this][0] == 0:
-                tem = [1, 0, 0, 0]
+                tem = 0
                 output.append(tem)
             if data[this][0] == 1:
-                tem = [0, 1, 0, 0]
+                tem = 1
                 output.append(tem)
             if data[this][0] == 2:
-                tem = [0, 0, 1, 0]
+                tem = 2
                 output.append(tem)
             if data[this][0] == 3:
-                tem = [0, 0, 0, 1]
+                tem = 3
                 output.append(tem)
 
         return output
 
 
 nn = NeuralNetwork()
+
 nn.train()
+
 
 
 # test_loss, test_acc = model.evaluate(test, verbose=1)
