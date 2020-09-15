@@ -1,3 +1,4 @@
+const { response } = require('express');
 const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
@@ -27,4 +28,34 @@ router.post('/weekly/:driverid', async (req,res)=>{
 });
 
 
+
+router.get('/report/:time',async(req,res)=>{
+    const TimeVar = req.params.time;
+    let MyDate = new Date();
+    let Request = '';
+    if(TimeVar==="week"){
+        MyDate.setDate(MyDate.getDate() - 7);
+        Request = 'SELECT * FROM ai."weekly_pattern" where "date">($1)';
+    }
+    else if(TimeVar==="month"){
+        MyDate.setDate(MyDate.getDate() - 30);
+        Request = 'SELECT * FROM ai."monthly_pattern" where "date">($1)';
+    }
+    else{
+        res.status(400).end();
+    }
+    DB.pool.query(Request,[MyDate],(err,result)=>{
+        if(err){
+            DB.dbErrorHandler(res,err);
+        }
+        else{
+            if(result.rowCount==0){
+                res.status(204).end();
+            }
+            else{
+                res.status(200).json(result.rows).end();
+            }
+        }
+    });
+});
 module.exports = router;
