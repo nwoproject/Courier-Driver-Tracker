@@ -274,7 +274,6 @@ public class BackgroundService extends Service {
                 .setContentText(message)
                 .setContentTitle(title)
                 .setOngoing(true)
-                .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setTicker(message)
                 .setWhen(System.currentTimeMillis());
@@ -285,26 +284,6 @@ public class BackgroundService extends Service {
         }
         return builder.build();
     }
-
-
-    /*
-     * Author: Jordan Nijs
-     * Parameters: Context
-     * Returns: Boolean
-     * Description: Checks if application is running in the foreground.
-     */
-    private boolean serviceIsRunningInForeGround(Context context){
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for(ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
-            if(getClass().getName().equals(service.service.getClassName())){
-                if(service.foreground){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     /*
      * Author: Jordan Nijs

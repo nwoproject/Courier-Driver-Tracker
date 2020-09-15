@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
-const { dbErrorHandler } = require('../services/db_config');
 
 // GET /api/reports/drivers
 router.get('/drivers', (req, res) => {
@@ -106,7 +105,7 @@ router.get("/locations/:time",(req,res)=>{
                 else{
                     let DriverObj = {"driver_id":'',"routes":[]};
                     let RouteObj = {"route_id":'',"locations":[]};
-                    for(i=0;i<result.rowCount;i++){
+                    for(let i=0;i<result.rowCount;i++){
                         let thisRow = result.rows[i];
                         //Check if same driver to continue Driver object
                         if(thisRow.driver_id == TempDID){

@@ -31,6 +31,8 @@ function AddRoutes(){
     const [Daily, setD] = useState(false);
     const [Weekly, setW] = useState(false);
     const [Montly, setM] = useState(false);
+    const [DriverArr, setDA] = useState([]);
+    const [SelectDriver, setSD] = useState("None");
 
     function handleChange(event){
         if(event.target.name==="Query"){
@@ -61,7 +63,17 @@ function AddRoutes(){
                 setLocs(prevState=>{return([...prevState, item])});
             });
         }
-
+        fetch(process.env.REACT_APP_API_SERVER+"/api/reports/drivers",{
+            method: 'GET',
+            headers:{
+                'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                'Content-Type' : 'application/json'    
+            }
+        })
+        .then(response=>response.json())
+        .then(result=>{
+            setDA(result.drivers);
+        });
     },[])
 
     function SubmitRoute(event){
@@ -188,6 +200,11 @@ function AddRoutes(){
                 setM(true);
             }    
         }
+        else if(event.target.name==="DriverID"){
+            let ToGo = event.target.id;
+            setID(DriverArr[ToGo].id);
+            setSD(DriverArr[ToGo].name + " " + DriverArr[ToGo].surname);
+        }
         else{
             window.alert("I don't know how you got here.....");
         }
@@ -241,11 +258,20 @@ function AddRoutes(){
                                     {Montly ? <p>Currently Selected is an Auto Assigned Montly Route</p>:null}
                                 </Col>
                                 <Col xs={4}>
-                                    {OnceOff ? <Form.Control 
-                                        type="text" 
-                                        placeholder="Input Driver ID" 
-                                        name="Route"
-                                        onChange={handleChange}/>:null}
+                                    {OnceOff ?
+                                    <div>
+                                        <DropdownButton
+                                            key="right"
+                                            drop="right"
+                                            title="Drivers"
+                                        >
+                                           {DriverArr.map((item,index)=>
+                                               <Dropdown.Item name="DriverID" id={index} onClick={handleDropDown} key={index}>{item.name + " " + item.surname}</Dropdown.Item>
+                                           )} 
+                                        </DropdownButton><br />
+                                        <p>Current Driver selected: {SelectDriver}</p> 
+                                    </div>
+                                    :null}
                                 </Col>
                                 <Col xs={2}>
                                     <Button variant="primary" type="submit">Submit Route</Button>

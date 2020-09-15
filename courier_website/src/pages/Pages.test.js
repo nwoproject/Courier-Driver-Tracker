@@ -30,8 +30,6 @@ describe("AlwaysOnTracking",()=>{
     test("Render TrackingCard",()=>{
         render(<AlwaysOnTracking />);
         expect(screen.getByText(/Always On Tracking/)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Enter Driver ID to track/)).toBeInTheDocument();
-        expect(screen.getByRole("button")).toBeInTheDocument();
     });
 });
 
@@ -46,6 +44,5 @@ describe("Report",()=>{
     test("Render Report",()=>{
         render(<Report />);
         expect(screen.getByText(/Reporting/)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Enter Driver ID/)).toBeInTheDocument();
     });
 });
