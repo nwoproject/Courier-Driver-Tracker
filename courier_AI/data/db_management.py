@@ -68,7 +68,6 @@ class DBManagement:
         self.conn.commit()
         print(cursor.rowcount, "weekly report inserted.")
 
-
     def insertMonthlyReport(self, driverID, report):
         cursor = self.conn.cursor()
         sql = "INSERT INTO monthly_reports (driver_id, report) VALUES (%s, %s)"
@@ -76,6 +75,8 @@ class DBManagement:
         cursor.execute(sql, val)
         self.conn.commit()
         print(cursor.rowcount, "monthly report inserted.")
+
+
 
     #   Database GETTERS
     def getWeeklyInputs(self):
@@ -91,7 +92,6 @@ class DBManagement:
 
     def getMonthlyInputs(self):
 
-        data = []
         cursor = self.conn.cursor()
         sql = "SELECT week1, week2, week3, week4, expected from monthly_training"
         cursor.execute(sql)
@@ -112,6 +112,39 @@ class DBManagement:
                 temp_arr.append(temp)
             data[each] = temp_arr
         return data
+
+#   Database deletes
+
+    def deleteWeeklyTraining(self, expected):
+
+        cursor = self.conn.cursor()
+        sql = "DELETE from weekly_training where expected =" + str(expected)
+        cursor.execute(sql)
+        self.conn.commit()
+
+    def deleteMonthlyTraining(self, expected):
+
+        cursor = self.conn.cursor()
+        sql = "DELETE from monthly_training where expected =" + str(expected)
+        cursor.execute(sql)
+        self.conn.commit()
+
+    def deleteWeeklyReportRow(self, driverID):
+
+        cursor = self.conn.cursor()
+        sql = "DELETE from weekly_reports where driver_id =" + str(driverID)
+        cursor.execute(sql)
+        self.conn.commit()
+        print("driver with ID: " + str(driverID) + " weekly reports have been removed")
+
+    def deleteMonthlyReportRow(self, driverID):
+
+        cursor = self.conn.cursor()
+        sql = "DELETE from monthly_reports where driver_id =" + str(driverID)
+        cursor.execute(sql)
+        self.conn.commit()
+        print("driver with ID: " + str(driverID) + " monthly reports have been removed")
+
 
     def getDriverAbnormalities(self):
 
@@ -245,5 +278,14 @@ class DBManagement:
                     if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
                         abnormalities[6][4] += 1
         return abnormalities
+db = DBManagement()
+
+report = [0.0, 0.0, 0.0, 1.0]
+report2 = [0.0, 1.0, 0.0, 0.0, 0.0]
+db.insertWeeklyReport(27, report)
+db.insertMonthlyReport(22, report2)
 
 
+
+#db.deleteWeeklyReport(27)
+#db.deleteMonthlyReport(22)
