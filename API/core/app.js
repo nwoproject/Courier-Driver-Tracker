@@ -42,7 +42,7 @@ app.use((err, req, res, next) => {
 
 //At 23:59 on every day-of-week from Monday through Friday.
 // Performs DB maintenence, moves todays routes and locations over to logs and check if all routes for the day has been completed.
-cron.schedule('59 23 * * 1-5', async () => 
+cron.schedule('59 23 * * *', async () => 
 {
   tasks.logTodaysRoutes();
 },{
