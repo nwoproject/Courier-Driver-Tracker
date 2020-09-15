@@ -2,7 +2,7 @@ package com.ctrlaltelite.courier_driver_tracker.location_service;
 
 import android.content.Context;
 import android.location.Location;
-import android.preference.PreferenceManager;
+import androidx.preference.*;
 
 import com.ctrlaltelite.courier_driver_tracker.BackgroundService;
 
