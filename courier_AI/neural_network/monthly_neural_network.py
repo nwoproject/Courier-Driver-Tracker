@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
 import data.db_management as db
+import pydot
 
 
 class NeuralNetwork:
@@ -32,6 +33,7 @@ class NeuralNetwork:
             keras.layers.Dense(4, activation='softmax')  # output layer (4)
 
         ])
+
         self.exportNN()
 
     def importNN(self):
@@ -52,16 +54,32 @@ class NeuralNetwork:
         self.model.compile(optimizer='adam',
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(trainX,
+        graph = self.model.fit(trainX,
                        trainY,
                        batch_size=100,
-                       epochs=2,
+                       epochs=3,
                        shuffle=True,
                        validation_split=0.1,
                        callbacks=[self.checkpoint]
                        )
+
         self.exportNN()
 
+        plt.plot(graph.history['accuracy'])
+        plt.plot(graph.history['val_accuracy'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        plt.show()
+
+        plt.plot(graph.history['loss'])
+        plt.plot(graph.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        plt.show()
 
     def getMonthlyInputData(self):
         data = self.db_manager.getMonthlyInputs()
@@ -106,4 +124,6 @@ class NeuralNetwork:
         return output
 
 
+nn = NeuralNetwork()
 
+nn.train()

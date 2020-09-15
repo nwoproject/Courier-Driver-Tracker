@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
 import data.db_management as db
-from neural_network.operations import plot
 
 
 class NeuralNetwork:
@@ -51,14 +50,14 @@ class NeuralNetwork:
         self.model.compile(optimizer='adam',
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
-        p = plot.TrainingPlot()
+
         self.model.fit(trainX,
                        trainY,
+                       validation_split=0.1,
                        batch_size=100,
                        epochs=10,
                        shuffle=True,
-                       validation_split=0.1,
-                       callbacks=[self.checkpoint, plot.on_epoch_end(plot.epoch, plot.logs)]
+                       callbacks=[self.checkpoint]
                        )
         self.exportNN()
 
@@ -105,8 +104,6 @@ class NeuralNetwork:
 nn = NeuralNetwork()
 
 nn.train()
-
-
 
 # test_loss, test_acc = model.evaluate(test, verbose=1)
 
