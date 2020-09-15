@@ -18,6 +18,7 @@ class _LoginPageState extends State<LoginPage>
   
   bool _clicked = false;
   double _opacity = 1.0;
+  bool enableButton = true;
 
   TextEditingController email = new TextEditingController();
   TextEditingController password = new TextEditingController();
@@ -62,6 +63,7 @@ class _LoginPageState extends State<LoginPage>
     setState(() {
       _clicked = !_clicked;
       _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+      enableButton = true;
     });
   }
 
@@ -263,70 +265,78 @@ class _LoginPageState extends State<LoginPage>
   Widget _button() {
     return Stack(
       children: <Widget>[
-        InkWell(
-          onTap: () {
-              setState(() {
-              _clicked = !_clicked;
-              _opacity = _opacity == 1.0 ? 0.0 : 1.0;
-            });
-          },
-          child: AnimatedContainer(
-            width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.75,
-            height: 55,
-            curve: Curves.fastOutSlowIn,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
-              color: Colors.white,
-            ),
-            duration: Duration(milliseconds: 700),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                AnimatedOpacity(
-                  duration: Duration(seconds: 1),
-                  child: Text(
-                    "LOGIN",
-                    style: TextStyle(
-                      color: Colors.black, 
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "OpenSans-Regular"
+        AbsorbPointer(
+          absorbing: !enableButton,
+          child: InkWell(
+            onTap: () {
+                setState(() {
+                _clicked = !_clicked;
+                _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+                enableButton = false;
+              });
+            },
+            child: AnimatedContainer(
+              width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.80,
+              height: 55,
+              curve: Curves.fastOutSlowIn,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
+                color: Colors.white,
+              ),
+              duration: Duration(milliseconds: 700),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  AnimatedOpacity(
+                    duration: Duration(seconds: 1),
+                    child: Text(
+                      "LOGIN",
+                      style: TextStyle(
+                        color: Colors.black, 
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "OpenSans-Regular"
+                      ),
                     ),
+                    opacity: _opacity,
                   ),
-                  opacity: _opacity,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-        InkWell(
-          onTap: () {
-            setState(() {
-              _clicked = !_clicked;
-              _opacity = _opacity == 1.0 ? 0.0 : 1.0;
-            });
-            userLogin();
-          },
-          child: AnimatedContainer(
-            width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.75,
-            height: 55,
-            curve: Curves.fastOutSlowIn,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
-            ),
-            duration: Duration(milliseconds: 700),
-            child: AnimatedOpacity(
-              duration: Duration(milliseconds: 700),
-              child: Padding(
-                child: CircularProgressIndicator(
-                    backgroundColor: Colors.greenAccent,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        _clicked ? Colors.black : Colors.greenAccent),
-                        ),
-                padding: EdgeInsets.all(1),
+        AbsorbPointer(
+          absorbing: !enableButton,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _clicked = !_clicked;
+                _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+                enableButton = false;
+              });
+              userLogin();
+            },
+            child: AnimatedContainer(
+              width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.80,
+              height: 55,
+              curve: Curves.fastOutSlowIn,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
               ),
-              opacity: _opacity == 0.0 ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 700),
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 700),
+                child: Padding(
+                  child: CircularProgressIndicator(
+                      backgroundColor: Colors.greenAccent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          _clicked ? Colors.black : Colors.greenAccent),
+                          ),
+                  padding: EdgeInsets.all(1),
+                ),
+                opacity: _opacity == 0.0 ? 1.0 : 0.0,
+              ),
             ),
           ),
         ),
@@ -336,63 +346,71 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: AssetImage("assets/images/login.jpg"),
+    return new GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if(!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        body: Stack(
+          children: <Widget>[
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: AssetImage("assets/images/login.jpg"),
+                ),
               ),
             ),
-          ),
-          Container(
-            height: double.infinity,
-            child: SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(
-                horizontal: 40.0,
-                vertical: 100.0,
-              ),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: loginResponse +
-                      <Widget>[
-                        Text(
-                          "Sign In",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'OpenSans',
-                            fontSize: 35.0,
-                            fontWeight: FontWeight.bold,
+            Container(
+              height: double.infinity,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 40.0,
+                  vertical: 100.0,
+                ),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: loginResponse +
+                        <Widget>[
+                          Text(
+                            "Sign In",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'OpenSans',
+                              fontSize: 35.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 30.0),
-                        _username(),
-                        SizedBox(height: 30.0),
-                        _password(),
-                        _forgetPassword(),
-                        _button(),
-                        Container(
-                          padding: EdgeInsets.only(bottom: 0.0),
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 100.0),
-                            child: Text(
-                              "By CTRL-ALT-ELITE",
-                              style: TextStyle(
-                                color: Colors.white,
+                          SizedBox(height: 30.0),
+                          _username(),
+                          SizedBox(height: 30.0),
+                          _password(),
+                          _forgetPassword(),
+                          _button(),
+                          Container(
+                            padding: EdgeInsets.only(bottom: 0.0),
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 100.0),
+                              child: Text(
+                                "By CTRL-ALT-ELITE",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ]),
+                        ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
