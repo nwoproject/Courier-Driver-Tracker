@@ -4,6 +4,9 @@ import os
 from copy import copy
 import requests
 import datetime
+from requests import Request, Session
+import asyncio
+
 
 dotenv.load_dotenv()
 
@@ -27,19 +30,19 @@ class DBManagement:
         except:
             print("Database not connected")
 
-#   -------------NB-----------------
-#   array structure for data to be sent:
-#   day(n)[long_stop, off_route, sudden_stop, company_car, speeding, neverStartedRoute, skippedDelivery ]
+    #   -------------NB-----------------
+    #   array structure for data to be sent:
+    #   day(n)[long_stop, off_route, sudden_stop, company_car, speeding, neverStartedRoute, skippedDelivery ]
 
-#   0 - long_stop
-#   1 - off_route
-#   2 - sudden_stop
-#   3 - company_car
-#   4 - speeding
-#   5 - neverStartedRoute
-#   6 - skippedDelivery
+    #   0 - long_stop
+    #   1 - off_route
+    #   2 - sudden_stop
+    #   3 - company_car
+    #   4 - speeding
+    #   5 - neverStartedRoute
+    #   6 - skippedDelivery
 
-#   Database inserters
+    #   Database inserters
     def insertWeeklyInputs(self, day1, day2, day3, day4, day5, expected):
         cursor = self.conn.cursor()
         sql = "INSERT INTO weekly_training (day1, day2, day3, day4, day5, expected) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -56,7 +59,7 @@ class DBManagement:
         self.conn.commit()
         print(cursor.rowcount, "monthly input inserted.")
 
-#   Database GETTERS
+    #   Database GETTERS
     def getWeeklyInputs(self):
 
         data = []
@@ -70,8 +73,6 @@ class DBManagement:
             data = copy(row)
 
         return data
-
-
 
     def getMonthlyInputs(self):
 
@@ -89,19 +90,26 @@ class DBManagement:
 
     def getDriverAbnormalities(self):
 
-        r = requests.get(url="https://drivertracker-api.herokuapp.com/api/reports/drivers")
-        data = r
+        s = Session()
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + str(self.bearer)
+        }
+        req = Request('GET', "https://drivertracker-api.herokuapp.com/api/reports/drivers", headers=headers)
+        prepped = s.prepare_request(req)
+        resp = s.send(prepped)
+
+        data = resp
         print(data)
         currTime = datetime.datetime.now()
         week = datetime.timedelta(days=7)
         result = currTime - week
 
         abnormalities = [[0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0]]
-
+                         [0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0]]
 
         for each in data["drivers"]:
             r2 = requests.get(url="https://drivertracker-api.herokuapp.com/api/abnormalities/:" + str(each["id"]))
@@ -215,6 +223,3 @@ class DBManagement:
 
 db = DBManagement()
 db.getDriverAbnormalities()
-
-
-
