@@ -9,6 +9,7 @@ import Chart from 'react-google-charts';
 import MockDrivers from "../mock_data/allDrivers.json";
 import MockAbnormalities from "../mock_data/abnormality.json";
 import MockDeliveries from "../mock_data/deliveries.json";
+import Pattern from './Pattern';
 
 import './style/style.css';
 
@@ -140,7 +141,6 @@ function SendReport(props){
                             GData.push([item.Desc,item.Count]);
                         }
                     });
-                    console.log(GData);
                     setPD(GData);
                     setAAC(AbnormalityFrequency);
                     setDA(DriverItem);
@@ -458,6 +458,9 @@ function SendReport(props){
                                 </Row>
                             </Card.Body>
                         </Card>
+                    </Row><br />
+                    <Row>
+                        <Pattern time={props.Time}/>
                     </Row>
                 </Card.Body>
             </div>
