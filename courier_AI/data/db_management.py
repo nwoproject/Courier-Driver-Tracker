@@ -56,18 +56,20 @@ class DBManagement:
         self.conn.commit()
         print(cursor.rowcount, "monthly input inserted.")
 
-    def insertWeeklyReport(self, driverID, report):
+    def insertWeeklyReport(self, driverID, report, days, abnormalities, pattern):
         cursor = self.conn.cursor()
-        sql = "INSERT INTO weekly_reports (driver_id, report) VALUES (%s, %s)"
-        val = (driverID, report)
+        sql = "INSERT INTO weekly_reports (driver_id, report, days, abnormalities, pattern) " \
+              "VALUES (%s, %s, %s, %s, %s)"
+        val = (driverID, report, days, abnormalities, pattern)
         cursor.execute(sql, val)
         self.conn.commit()
         print(cursor.rowcount, "weekly report inserted.")
 
-    def insertMonthlyReport(self, driverID, report):
+    def insertMonthlyReport(self, driverID, report, weeks, abnormalities, pattern):
         cursor = self.conn.cursor()
-        sql = "INSERT INTO monthly_reports (driver_id, report) VALUES (%s, %s)"
-        val = (driverID, report)
+        sql = "INSERT INTO monthly_reports (driver_id, report, weeks, abnormalities, pattern) " \
+              "VALUES (%s, %s, %s, %s, %s)"
+        val = (driverID, report, weeks, abnormalities, pattern)
         cursor.execute(sql, val)
         self.conn.commit()
         print(cursor.rowcount, "monthly report inserted.")
@@ -323,3 +325,7 @@ class DBManagement:
             self.insertDriverAbnormalities(int(each['id']), abnormalities[0], abnormalities[1], abnormalities[2],
                                            abnormalities[3], abnormalities[4])
         return abnormalities
+
+db = DBManagement()
+db.insertMonthlyReport(20, [0.0, 0.1, 0.0, 0.0], [4], [102, 103, 106], "recurring")
+db.insertWeeklyReport(20, [0, 0, 0, 1, 0], [2], [102, 103], "recurring")
