@@ -10,7 +10,7 @@ import data.db_management as db
 
 class NeuralNetwork:
     def __init__(self):
-        self.model_path = 'models/'
+        self.model_path = 'models/MonthlyModel'
         self.checkpoint = ModelCheckpoint(
             self.model_path,
             monitor="val_acc",
@@ -55,7 +55,7 @@ class NeuralNetwork:
         self.model.fit(trainX,
                        trainY,
                        batch_size=100,
-                       epochs=10,
+                       epochs=2,
                        shuffle=True,
                        validation_split=0.1,
                        callbacks=[self.checkpoint]
@@ -67,7 +67,6 @@ class NeuralNetwork:
         data = self.db_manager.getMonthlyInputs()
         for each in range(0, len(data)):
             temp_arr = []
-            print(data[each])
             for each2 in range(0, len(data[each]) - 1):
                 temp = []
                 for val in data[each][each2]:
@@ -107,6 +106,4 @@ class NeuralNetwork:
         return output
 
 
-nn = NeuralNetwork()
-nn.train()
 

@@ -1,12 +1,8 @@
 import dotenv
 import psycopg2
 import os
-from copy import copy
-import requests
-import datetime
 from requests import Request, Session
-import time
-import asyncio
+from datetime import datetime, timedelta
 
 
 dotenv.load_dotenv()
@@ -120,6 +116,7 @@ class DBManagement:
             data[each] = temp_arr
         return data
 
+    @property
 #   Database deletes
 
     def deleteWeeklyTraining(self, expected):
@@ -162,126 +159,167 @@ class DBManagement:
         }
         req = Request('GET', "https://drivertracker-api.herokuapp.com/api/reports/drivers", headers=headers)
         prepped = s.prepare_request(req)
-        resp = s.send(prepped)
+        resp = s.send(prepped).json()
 
         data = resp
-        print(data)
-        currTime = datetime.datetime.now()
-        week = datetime.timedelta(days=7)
+        currTime = datetime.now()
+        week = timedelta(days=7)
         result = currTime - week
 
-        abnormalities = [[0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0]]
-
         for each in data["drivers"]:
-            r2 = requests.get(url="https://drivertracker-api.herokuapp.com/api/abnormalities/:" + str(each["id"]))
-            data2 = r2
+
+            abnormalities = [[0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0]]
+
+            req2 = Request('GET', "https://drivertracker-api.herokuapp.com/api/abnormalities/" + str(each['id']),
+                              headers=headers)
+            prepped = s.prepare_request(req2)
+            resp2 = s.send(prepped)
+
+            if resp2.status_code == 204:
+                self.insertDriverAbnormalities(int(each['id']), abnormalities[0], abnormalities[1], abnormalities[2],
+                                               abnormalities[3], abnormalities[4])
+                continue
+
+            resp2 = resp2.json()
+            data2 = resp2
 
             for each2 in data2["abnormalities"]["code_100"]["driver_abnormalities"]:
-                if datetime.fromtimestamp(each2["timestamp"]) < result:
-                    break
+                date_str = each2["timestamp"]
+                date_str = date_str.split(".")
+                date_str = date_str[0]
+                date_dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                if date_dt < result:
+                    continue
                 else:
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
+                    if date_dt.weekday() == 0:
                         abnormalities[0][0] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
-                        abnormalities[0][1] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
-                        abnormalities[0][2] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
-                        abnormalities[0][3] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
-                        abnormalities[0][4] += 1
+                    if date_dt.weekday() == 1:
+                        abnormalities[1][0] += 1
+                    if date_dt.weekday() == 2:
+                        abnormalities[2][0] += 1
+                    if date_dt.weekday() == 3:
+                        abnormalities[3][0] += 1
+                    if date_dt.weekday() == 4:
+                        abnormalities[4][0] += 1
+
 
             for each2 in data2["abnormalities"]["code_101"]["driver_abnormalities"]:
-                if datetime.fromtimestamp(each2["timestamp"]) < result:
-                    break
+                date_str = each2["timestamp"]
+                date_str = date_str.split(".")
+                date_str = date_str[0]
+                date_dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                if date_dt < result:
+                    continue
                 else:
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
-                        abnormalities[1][0] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
+                    if date_dt.weekday() == 0:
+                        abnormalities[0][1] += 1
+                    if date_dt.weekday() == 1:
                         abnormalities[1][1] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
-                        abnormalities[1][2] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
-                        abnormalities[1][3] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
-                        abnormalities[1][4] += 1
+                    if date_dt.weekday() == 2:
+                        abnormalities[2][1] += 1
+                    if date_dt.weekday() == 3:
+                        abnormalities[3][1] += 1
+                    if date_dt.weekday() == 4:
+                        abnormalities[4][1] += 1
 
             for each2 in data2["abnormalities"]["code_102"]["driver_abnormalities"]:
-                if datetime.fromtimestamp(each2["timestamp"]) < result:
-                    break
+                date_str = each2["timestamp"]
+                date_str = date_str.split(".")
+                date_str = date_str[0]
+                date_dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                if date_dt < result:
+                    continue
                 else:
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
-                        abnormalities[2][0] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
-                        abnormalities[2][1] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
+                    if date_dt.weekday() == 0:
+                        abnormalities[0][2] += 1
+                    if date_dt.weekday() == 1:
+                        abnormalities[1][2] += 1
+                    if date_dt.weekday() == 2:
                         abnormalities[2][2] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
-                        abnormalities[2][3] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
-                        abnormalities[2][4] += 1
+                    if date_dt.weekday() == 3:
+                        abnormalities[3][2] += 1
+                    if date_dt.weekday() == 4:
+                        abnormalities[4][2] += 1
 
             for each2 in data2["abnormalities"]["code_103"]["driver_abnormalities"]:
-                if datetime.fromtimestamp(each2["timestamp"]) < result:
-                    break
+                date_str = each2["timestamp"]
+                date_str = date_str.split(".")
+                date_str = date_str[0]
+                date_dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                if date_dt < result:
+                    continue
                 else:
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
-                        abnormalities[3][0] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
-                        abnormalities[3][1] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
-                        abnormalities[3][2] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
+                    if date_dt.weekday() == 0:
+                        abnormalities[0][3] += 1
+                    if date_dt.weekday() == 1:
+                        abnormalities[1][3] += 1
+                    if date_dt.weekday() == 2:
+                        abnormalities[2][3] += 1
+                    if date_dt.weekday() == 3:
                         abnormalities[3][3] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
-                        abnormalities[3][4] += 1
+                    if date_dt.weekday() == 4:
+                        abnormalities[4][3] += 1
 
             for each2 in data2["abnormalities"]["code_104"]["driver_abnormalities"]:
-                if datetime.fromtimestamp(each2["timestamp"]) < result:
-                    break
+                date_str = each2["timestamp"]
+                date_str = date_str.split(".")
+                date_str = date_str[0]
+                date_dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                if date_dt < result:
+                    continue
                 else:
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
-                        abnormalities[4][0] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
-                        abnormalities[4][1] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
-                        abnormalities[4][2] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
-                        abnormalities[4][3] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
+                    if date_dt.weekday() == 0:
+                        abnormalities[0][4] += 1
+                    if date_dt.weekday() == 1:
+                        abnormalities[1][4] += 1
+                    if date_dt.weekday() == 2:
+                        abnormalities[2][4] += 1
+                    if date_dt.weekday() == 3:
+                        abnormalities[3][4] += 1
+                    if date_dt.weekday() == 4:
                         abnormalities[4][4] += 1
 
             for each2 in data2["abnormalities"]["code_105"]["driver_abnormalities"]:
-                if datetime.fromtimestamp(each2["timestamp"]) < result:
-                    break
+                date_str = each2["timestamp"]
+                date_str = date_str.split(".")
+                date_str = date_str[0]
+                date_dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                if date_dt < result:
+                    continue
                 else:
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
-                        abnormalities[5][0] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
-                        abnormalities[5][1] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
-                        abnormalities[5][2] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
-                        abnormalities[5][3] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
-                        abnormalities[5][4] += 1
+                    if date_dt.weekday() == 0:
+                        abnormalities[0][5] += 1
+                    if date_dt.weekday() == 1:
+                        abnormalities[1][5] += 1
+                    if date_dt.weekday() == 2:
+                        abnormalities[2][5] += 1
+                    if date_dt.weekday() == 3:
+                        abnormalities[3][5] += 1
+                    if date_dt.weekday() == 4:
+                        abnormalities[4][5] += 1
 
             for each2 in data2["abnormalities"]["code_106"]["driver_abnormalities"]:
-                if datetime.fromtimestamp(each2["timestamp"]) < result:
-                    break
+                date_str = each2["timestamp"]
+                date_str = date_str.split(".")
+                date_str = date_str[0]
+                date_dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                if date_dt < result:
+                    continue
                 else:
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 0:
-                        abnormalities[6][0] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 1:
-                        abnormalities[6][1] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 2:
-                        abnormalities[6][2] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 3:
-                        abnormalities[6][3] += 1
-                    if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
-                        abnormalities[6][4] += 1
+                    if date_dt.weekday() == 0:
+                        abnormalities[0][6] += 1
+                    if date_dt.weekday() == 1:
+                        abnormalities[1][6] += 1
+                    if date_dt.weekday() == 2:
+                        abnormalities[2][6] += 1
+                    if date_dt.weekday() == 3:
+                        abnormalities[3][6] += 1
+                    if date_dt.weekday() == 4:
+                        abnormalities[4][6] += 1
+            self.insertDriverAbnormalities(int(each['id']), abnormalities[0], abnormalities[1], abnormalities[2],
+                                           abnormalities[3], abnormalities[4])
         return abnormalities

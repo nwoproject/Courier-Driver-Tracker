@@ -10,7 +10,7 @@ import data.db_management as db
 
 class NeuralNetwork:
     def __init__(self):
-        self.model_path = 'models/'
+        self.model_path = 'models/WeeklyModel'
         self.checkpoint = ModelCheckpoint(
             self.model_path,
             monitor="val_acc",
