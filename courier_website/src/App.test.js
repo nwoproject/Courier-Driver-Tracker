@@ -7,10 +7,6 @@ describe("App", () =>{
     test("Render Header Component", ()=>{
         render(<App />);
         expect(screen.getByText("Account")).toBeInTheDocument();
-        expect(screen.getByText("Routes")).toBeInTheDocument();
-        expect(screen.getByText("Always On Tracking")).toBeInTheDocument();
-        expect(screen.getByText("Manage Drivers")).toBeInTheDocument();
-        expect(screen.getByText("Report")).toBeInTheDocument();
     });
     test("Render Footer Component", ()=>{
         render(<App />);
@@ -18,11 +14,5 @@ describe("App", () =>{
         expect(screen.getByText(/Created for Epi-Use in collaboration with the University of Pretoria/)).toBeInTheDocument();
         expect(screen.getByText(/All rights reserved/)).toBeInTheDocument();
     });
-    test("Navbar not Functional when not logged in",()=>{
-        render(<App />);
-        expect(screen.getByText(/Login/i)).toBeInTheDocument();
-        fireEvent.click(screen.getByText(/Routes/i));
-        expect(screen.queryByText(/Search For Location/i)).toBeNull();
-        expect(screen.getByText(/Login/i)).toBeInTheDocument();
-    })
+
 });

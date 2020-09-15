@@ -30,18 +30,26 @@ function Header() {
                     <Nav.Link href="#Login" as={Link} to="/pages/Login">
                         Account
                     </Nav.Link>
-                    <Nav.Link href="#routes" as={Link} to={Logged ? "/pages/Routes" : "/pages/Login"}>
-                        Routes
-                    </Nav.Link>
-                    <Nav.Link href="#Tracking" as={Link} to={Logged ? "/pages/AlwaysOnTracking" : "/pages/Login"}>
-                        Always On Tracking
-                    </Nav.Link>
-                    <Nav.Link href="#ManageDrivers" as={Link} to={Logged ? "/pages/ManageDrivers" : "/pages/Login"}>
-                        Manage Drivers
-                    </Nav.Link>
-                    <Nav.Link href="#Report" as={Link} to={Logged ? "/pages/Report" : "/pages/Login"}>
-                        Report
-                    </Nav.Link>
+                    {Logged ? 
+                        <Nav.Link href="#routes" as={Link} to="/pages/Routes">
+                            Routes
+                        </Nav.Link>
+                    :null}
+                    {Logged ? 
+                        <Nav.Link href="#Tracking" as={Link} to="/pages/AlwaysOnTracking">
+                            Always On Tracking
+                        </Nav.Link>
+                    :null}
+                    {Logged ? 
+                        <Nav.Link href="#ManageDrivers" as={Link} to="/pages/ManageDrivers">
+                            Manage Drivers
+                        </Nav.Link>
+                    :null}
+                    {Logged ? 
+                        <Nav.Link href="#Report" as={Link} to="/pages/Report">
+                            Report
+                        </Nav.Link>
+                    :null}
                 </Nav>
         </Navbar>
     );
