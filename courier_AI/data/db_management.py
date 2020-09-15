@@ -76,7 +76,14 @@ class DBManagement:
         self.conn.commit()
         print(cursor.rowcount, "monthly report inserted.")
 
-
+    def insertDriverAbnormalities(self, driverID, day1, day2, day3, day4, day5):
+        cursor = self.conn.cursor()
+        sql = "INSERT INTO driver_abnormalities (driver_id, day1, day2, day3, day4, day5) " \
+              "VALUES (%s, %s, %s, %s, %s, %s)"
+        val = (driverID, day1, day2, day3, day4, day5)
+        cursor.execute(sql, val)
+        self.conn.commit()
+        print(cursor.rowcount, "Abnormalities for driver with ID: " + str(driverID) + " have been inserted")
 
     #   Database GETTERS
     def getWeeklyInputs(self):
@@ -278,14 +285,3 @@ class DBManagement:
                     if datetime.fromtimestamp(each2["timestamp"]).weekday() == 4:
                         abnormalities[6][4] += 1
         return abnormalities
-db = DBManagement()
-
-report = [0.0, 0.0, 0.0, 1.0]
-report2 = [0.0, 1.0, 0.0, 0.0, 0.0]
-db.insertWeeklyReport(27, report)
-db.insertMonthlyReport(22, report2)
-
-
-
-#db.deleteWeeklyReport(27)
-#db.deleteMonthlyReport(22)
