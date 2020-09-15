@@ -15,6 +15,9 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final storage = new FlutterSecureStorage();
   final loginResponse = List<Widget>();
+  
+  bool _clicked = false;
+  double _opacity = 1.0;
 
   TextEditingController email = new TextEditingController();
   TextEditingController password = new TextEditingController();
@@ -54,6 +57,14 @@ class _LoginPageState extends State<LoginPage>
     });
   }
 
+  void changeLoginButtonState()
+  {
+    setState(() {
+      _clicked = !_clicked;
+      _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+    });
+  }
+
   void userLogin() async {
     setState(() {
       loginResponse.clear();
@@ -61,6 +72,7 @@ class _LoginPageState extends State<LoginPage>
 
     if (email.text.isEmpty) {
       createLoginResponse('Please enter your email address.');
+      changeLoginButtonState();
       return;
     }
 
@@ -69,11 +81,13 @@ class _LoginPageState extends State<LoginPage>
         .hasMatch(email.text.trim());
     if (!emailValid) {
       createLoginResponse('Email is invalid.');
+      changeLoginButtonState();
       return;
     }
 
     if (password.text.isEmpty) {
       createLoginResponse('Please enter a password.');
+      changeLoginButtonState();
       return;
     }
 
@@ -99,8 +113,8 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'surname', value: responseData['surname']);
       await storage.write(key: 'loginstatus', value: 'true');
       await storage.write(key: 'email', value: email.text);
-      print("EMAIL HERE" + email.text);
-
+     
+      changeLoginButtonState();
       Navigator.of(context)
           .popAndPushNamed('/home', arguments: responseData['token']);
       Navigator.of(context)
@@ -121,6 +135,7 @@ class _LoginPageState extends State<LoginPage>
           break;
       }
 
+      changeLoginButtonState();
       createLoginResponse(errorResponse);
     }
   }
@@ -246,27 +261,76 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Widget _button() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0),
-      width: double.infinity,
-      child: RaisedButton(
-        elevation: 5.0,
-        onPressed: () => {userLogin()},
-        padding: EdgeInsets.all(15.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
+    return Stack(
+      children: <Widget>[
+        InkWell(
+          onTap: () {
+              setState(() {
+              _clicked = !_clicked;
+              _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+            });
+          },
+          child: AnimatedContainer(
+            width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.75,
+            height: 55,
+            curve: Curves.fastOutSlowIn,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
+              color: Colors.white,
+            ),
+            duration: Duration(milliseconds: 700),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                AnimatedOpacity(
+                  duration: Duration(seconds: 1),
+                  child: Text(
+                    "LOGIN",
+                    style: TextStyle(
+                      color: Colors.black, 
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "OpenSans-Regular"
+                    ),
+                  ),
+                  opacity: _opacity,
+                ),
+              ],
+            ),
+          ),
         ),
-        color: Colors.white,
-        child: Text(
-          "LOGIN",
-          style: TextStyle(
-              color: Colors.black,
-              letterSpacing: 1.5,
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-              fontFamily: "OpenSans-Regular"),
+        InkWell(
+          onTap: () {
+            setState(() {
+              _clicked = !_clicked;
+              _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+            });
+            userLogin();
+          },
+          child: AnimatedContainer(
+            width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.75,
+            height: 55,
+            curve: Curves.fastOutSlowIn,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
+            ),
+            duration: Duration(milliseconds: 700),
+            child: AnimatedOpacity(
+              duration: Duration(milliseconds: 700),
+              child: Padding(
+                child: CircularProgressIndicator(
+                    backgroundColor: Colors.greenAccent,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        _clicked ? Colors.black : Colors.greenAccent),
+                        ),
+                padding: EdgeInsets.all(1),
+              ),
+              opacity: _opacity == 0.0 ? 1.0 : 0.0,
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
