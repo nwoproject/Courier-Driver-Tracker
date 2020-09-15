@@ -50,16 +50,16 @@ class NeuralNetwork:
         self.model.compile(optimizer='adam',
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
+
         self.model.fit(trainX,
                        trainY,
+                       validation_split=0.1,
                        batch_size=100,
                        epochs=10,
                        shuffle=True,
-                       validation_split=0.1,
                        callbacks=[self.checkpoint]
                        )
         self.exportNN()
-
 
     def getTrainingInputData(self):
         data = self.db_manager.getWeeklyInputs()
@@ -104,8 +104,6 @@ class NeuralNetwork:
 nn = NeuralNetwork()
 
 nn.train()
-
-
 
 # test_loss, test_acc = model.evaluate(test, verbose=1)
 
