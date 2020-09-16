@@ -4,6 +4,8 @@ import Spinner from 'react-bootstrap/Spinner';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
+import './style/style.css';
+
 function Pattern(props){
     const [PatternList, setPL] = useState();
     const [Loading, setL] = useState(true);
@@ -45,6 +47,33 @@ function Pattern(props){
         }
     }
 
+    function AbnormalityName(code){
+        if(code==100){
+            return("Standing Still for too long");
+        }
+        else if(code==101){
+            return("Driver came to a Sudden Stop");
+        }
+        else if(code==102){
+            return("Driver exceeded the speed limit");
+        }
+        else if(code==103){
+            return("Driver took a diffrent route than what prescribed");
+        }
+        else if(code==104){
+            return("Driver was driving with the company car when no deliveries were scheduled");
+        }
+        else if(code==105){
+            return("Driver never embarked on the route that was assigned to him");
+        }
+        else if(code==106){
+            return("Driver skipped a delivery on his route");
+        }
+        else{
+            return("eh?");
+        }
+    }
+
     return(
         <div>
             {Loading ? 
@@ -54,20 +83,23 @@ function Pattern(props){
                     :
                 <Card>
                     <Card.Header>Patterns</Card.Header>
-                    <Card.Body>
+                    <Card.Body className="ReportCard">
                     {PatternList.map((item, index)=>
                         <Row>
                             <Col xs={3}>
                                 {item.pattern_detected}
                             </Col>
                             <Col xs={3}>
-                                Abnormality List : {item.abnormality.map((item, index)=><div>{item}</div>)}
+                                Abnormality List : {item.abnormality.map((item, index)=><div>{AbnormalityName(item)}<br /></div>)}
                             </Col>
                             <Col xs={2}>
                                 Occured on : {item.date.substring(0,10)}
                             </Col>
                             <Col xs={4}>
                                 By : {getDriver(item.driver_id)}
+                            </Col>
+                            <Col xs={12}>
+                                <hr className="BorderLine"/>
                             </Col>
                         </Row>
                     )}

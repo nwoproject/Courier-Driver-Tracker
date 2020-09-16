@@ -460,7 +460,9 @@ function SendReport(props){
                         </Card>
                     </Row><br />
                     <Row>
-                        <Pattern time={props.Time}/>
+                        <Col xs={11}>
+                            <Pattern time={props.Time}/>
+                        </Col>
                     </Row>
                 </Card.Body>
             </div>
