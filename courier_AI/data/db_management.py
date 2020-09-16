@@ -1,6 +1,7 @@
 import dotenv
 import psycopg2
 import os
+
 from requests import Request, Session
 from datetime import datetime, timedelta
 
@@ -57,6 +58,24 @@ class DBManagement:
         print(cursor.rowcount, "monthly input inserted.")
 
     def insertWeeklyReport(self, driverID, report, days, abnormalities, pattern):
+
+        data = {
+            "patternsDetected": pattern,
+            "abnormalities": abnormalities,
+            "days": days
+        }
+
+
+        r = Session()
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + str(self.bearer)
+        }
+        req = Request('POST', "https://drivertracker-api.herokuapp.com/api/patterns/weekly/" + str(driverID),
+                      headers=headers, data=data)
+        prepped = r.prepare_request(req)
+        resp = r.send(prepped)
+
         cursor = self.conn.cursor()
         sql = "INSERT INTO weekly_reports (driver_id, report, days, abnormalities, pattern) " \
               "VALUES (%s, %s, %s, %s, %s)"
@@ -66,6 +85,23 @@ class DBManagement:
         print(cursor.rowcount, "weekly report inserted.")
 
     def insertMonthlyReport(self, driverID, report, weeks, abnormalities, pattern):
+
+        data = {
+            "patternsDetected": pattern,
+            "abnormalities": abnormalities,
+            "weeks": weeks
+        }
+
+        r = Session()
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + str(self.bearer)
+        }
+        req = Request('POST', "https://drivertracker-api.herokuapp.com/api/patterns/monthly/" + str(driverID),
+                      headers=headers, data=data)
+        prepped = r.prepare_request(req)
+        resp = r.send(prepped)
+
         cursor = self.conn.cursor()
         sql = "INSERT INTO monthly_reports (driver_id, report, weeks, abnormalities, pattern) " \
               "VALUES (%s, %s, %s, %s, %s)"
@@ -327,5 +363,5 @@ class DBManagement:
         return abnormalities
 
 db = DBManagement()
-db.insertMonthlyReport(20, [0.0, 0.1, 0.0, 0.0], [4], [102, 103, 106], "recurring")
-db.insertWeeklyReport(20, [0, 0, 0, 1, 0], [2], [102, 103], "recurring")
+db.insertMonthlyReport(20, [0.0, 0.1, 0.0, 0.0], [0,1], [102, 103, 106], "recurring")
+db.insertWeeklyReport(20, [0, 0, 0, 1, 0], [2,3], [102, 103], "recurring")
