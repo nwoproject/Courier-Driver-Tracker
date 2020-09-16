@@ -1,19 +1,18 @@
 config: 
-    target: ${{secrets.API_URL}}
+    target: "{{ $processEnvironment.SERVICE_API_KEY }}"
     phases:
       - duration: 60
         arrivalRate: 1
         name: "Performance under relative low load"
-      - duration: 120
-        arrivalRate: 1
-        rampTo: 50
-        name: "Performance under moderate load"
       - duration: 60
         arrivalRate: 50
-        name: "Max load"
+        name: "Performance under moderate load"
+      - duration: 60
+        arrivalRate: 100
+        name: "High Load"
     defaults:
         headers:
-            authorization: ${{secrets.BEARER_TOKEN}}
+            authorization: "Bearer {{ $processEnvironment.BEARER_TOKEN }}" 
 scenarios:
   - name: "Driver Log in"
     flow: 
