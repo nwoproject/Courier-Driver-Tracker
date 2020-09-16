@@ -2,20 +2,18 @@ name: Api performance and load testing
 
 env:
   BEARER_TOKEN: ${{secrets.BEARER_TOKEN}}
-  DEV_STATUS: ${{secrets.DEV_STATUS}}
   EMAIL_TEST_D: ${{secrets.EMAIL_TEST_D}}
-  EMAIL_TEST_M: ${{secrets.EMAIL_TEST_M}}
   PASSWORD_TEST_D: ${{secrets.PASSWORD_TEST_D}}
-  PASSWORD_TEST_M: ${{secrets.PASSWORD_TEST_M}}
-  TOKEN_TEST_D: ${{secrets.TOKEN_TEST_D}}}
-  MANAGER_TOKEN: ${{secrets.MANAGER_TOKEN}}
-  MANAGER_ID: ${{secrets.MANAGER_ID}}
-  
+  TOKEN_TEST_D: ${{secrets.TOKEN_TEST_D}}
+  TOKEN_TEST_M: ${{secrets.TOKEN_TEST_M}}
+  API_URL: ${{secrets.API_URL}}
+  DRIVER_ID: ${{secrets.DRIVER_ID}}
+
 on:
   push:
-    branches: [ master , release/api-alpha ]
+    branches: [ tests/api-performance ]
   pull_request:
-    branches: [ master ]
+    branches: [ tests/api-performance ]
 
 jobs:
   Run-api-performance-tests:
@@ -29,16 +27,6 @@ jobs:
       uses: actions/setup-node@v1
     - run: npm ci
       working-directory: ./API
-    - run: npm run build --if-present
-      working-directory: ./API
-    - run: export BEARER_TOKEN="${{secrets.BEARER_TOKEN}}}"
-      working-directory: ./API/tests
-    - run: export BEARER_TOKEN="${{secrets.API_URL}}}"
-      working-directory: ./API/tests
-    - run: export BEARER_TOKEN="${{secrets.PASSWORD_TEST_D}}}"
-      working-directory: ./API/tests
-    - run: export BEARER_TOKEN="${{secrets.EMAIL_TEST_D}}}"
-      working-directory: ./API/tests
     - run: $(npm bin)/artillery run performance_tests.yml
       working-directory: ./API/tests
   
