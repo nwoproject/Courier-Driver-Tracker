@@ -1,0 +1,28 @@
+config: 
+  target: "{{$processEnvironment.API_URL}}"
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      name: "Performance under relative low load"
+    - duration: 60
+      arrivalRate: 15
+      name: "Performance under moderate load"
+    - duration: 60
+      arrivalRate: 30
+      name: "Max load"
+  defaults:
+      headers:
+          authorization: "Bearer {{$processEnvironment.BEARER_TOKEN}}" 
+scenarios:
+- name: "Driver Log in"
+  flow: 
+   - post:
+      url: "/api/drivers/authenticate"
+      json:
+          email: "{{$processEnvironment.EMAIL_TEST_D}}" 
+          password: "{{$processEnvironment.PASSWORD_TEST_D}}"  
+
+- name: "Get driver Location"
+  flow: 
+   - get:
+      url: "/api/location/driver?id={{$processEnvironment.DRIVER_ID}}"

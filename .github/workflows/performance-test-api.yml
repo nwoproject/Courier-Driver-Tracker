@@ -1,0 +1,32 @@
+name: Api performance and load testing
+
+env:
+  BEARER_TOKEN: ${{secrets.BEARER_TOKEN}}
+  EMAIL_TEST_D: ${{secrets.EMAIL_TEST_D}}
+  PASSWORD_TEST_D: ${{secrets.PASSWORD_TEST_D}}
+  TOKEN_TEST_D: ${{secrets.TOKEN_TEST_D}}
+  TOKEN_TEST_M: ${{secrets.TOKEN_TEST_M}}
+  API_URL: ${{secrets.API_URL}}
+  DRIVER_ID: ${{secrets.DRIVER_ID}}
+
+on:
+  push:
+    branches: [ tests/api-performance ]
+  pull_request:
+    branches: [ tests/api-performance ]
+
+jobs:
+  Run-api-performance-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+    - run: npm ci
+      working-directory: ./API
+    - run: $(npm bin)/artillery run performance_tests.yml
+      working-directory: ./API/tests
+  
