@@ -21,6 +21,7 @@
     "pg": "^8.2.1"
   },
   "devDependencies": {
+    "artillery": "^1.6.1",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "faker": "^4.1.0",
