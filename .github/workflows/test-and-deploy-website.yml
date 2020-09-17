@@ -6,7 +6,7 @@ env:
   
 on:
   push:
-    branches: [ master, feature/companion-website ]
+    branches: [ master, feature/companion-website, feature/website-API-Reporting ]
   pull_request:
     branches: [ master ]
 
@@ -22,8 +22,8 @@ jobs:
       uses: actions/setup-node@v1
     - run: npm ci
       working-directory: ./courier_website
-    - run: npm test --watchAll
-      working-directory: ./courier_website
+    # - run: npm test --watchAll
+    #  working-directory: ./courier_website 
   
   deploy-Website:
     needs: Run-website-tests
