@@ -31,6 +31,9 @@ dependencies:
   http: ^0.12.2
   flutter_dotenv: ^2.1.0
 
+  # Keep screen awake
+  screen: ^0.0.5
+
   # notifications
   flutter_local_notifications: ^1.4.4+1
   path_provider: ^0.5.0+1
