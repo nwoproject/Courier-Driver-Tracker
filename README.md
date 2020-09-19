@@ -8,6 +8,8 @@ The system is for tracking a courier fleet. It will monitor and navigate them wh
 [Link to Video on Google Drive](https://drive.google.com/file/d/16d59JDQPIuUwE9LoyA8EPGkKK0BDIXZN/view?usp=sharing)
 ### Demo Three
 [Link to Video on Google Drive](https://drive.google.com/file/d/1FufgG6jVMLL6ApeuONJL1N-ek0IS_gdj/view?usp=sharing)
+### Demo Four
+[Link to Video on Google Drive](https://drive.google.com/file/d/1-nZrMBCw6qyue_PymKfJeA7slOtJusTI/view?usp=sharing)
 ### Website
 [Courier Driver Tracker Companion Website](https://drivertracker-web.herokuapp.com/)
 ### Functional Requirements Document
@@ -18,6 +20,8 @@ The system is for tracking a courier fleet. It will monitor and navigate them wh
 [Viewable Link](https://www.overleaf.com/read/sxyjnxkhdmvf)
 ### Technical Installation Manual
 [Viewable Link](https://www.overleaf.com/read/gfnsdvdzwdgk)
+### Testing Policy Document
+[Viewable Link](https://www.overleaf.com/read/cznsdhcmjfgt)
 ### Project Management Tool
 [Clubhouse](https://app.clubhouse.io/ctraltelite/stories/space/24/everything)
 ### Application APK
