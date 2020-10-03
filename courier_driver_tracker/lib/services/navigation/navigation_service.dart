@@ -48,8 +48,8 @@ class NavigationService {
   String directions;
   String deliveryTimeRemaining;
   int distance;
+  String distanceString;
   String eta;
-  String distanceETA;
   String delivery;
   String deliveryAddress;
   String directionIconPath;
@@ -74,9 +74,11 @@ class NavigationService {
   };
 
   NavigationService._construct() {
-    _currentRoute = -1;
-    _currentLeg = 0;
-    _currentStep = 0;
+    if(_currentRoute == null && _currentLeg == null && _currentStep == null){
+      _currentRoute = -1;
+      _currentLeg = 0;
+      _currentStep = 0;
+    }
   }
 
   factory NavigationService(){
@@ -184,14 +186,15 @@ class NavigationService {
 
   initialiseInfoVariables() {
     getDeliveryArrivalTime();
+    updateDistanceRemaining();
     int del = _currentLeg + 1;
     delivery = "Delivery $del";
     directions = getDirection();
     deliveryTimeRemaining = getTimeToDelivery();
-    String distance = updateDistanceRemaining();
-    distanceETA = "$distance . $eta";
     deliveryAddress = getCurrentDeliveryAddress();
     directionIconPath = getDirectionIcon();
+    notifyStepInfoChange();
+    notifyDeliveryInfoChange();
   }
 
   initialiseDeliveryCircle() {
@@ -211,7 +214,6 @@ class NavigationService {
     deliveryTimeRemaining = null;
     distance = null;
     eta = null;
-    distanceETA = null;
     delivery = null;
     deliveryAddress = null;
     directionIconPath = null;
@@ -259,9 +261,6 @@ class NavigationService {
       // remove any previous points
       newLength = currentPolyline.points.length - newLength;
 
-      print("testing new step calculate:");
-      print("Points until change: " + (currentPolyline.points.length - calculateNextStepPoint()).toString());
-
       while (currentPolyline.points.length > 0 &&
           currentPolyline.points.length > newLength) {
         if(_lengthRemainingAfterNextStep == null){
@@ -270,12 +269,19 @@ class NavigationService {
         else if(_lengthRemainingAfterNextStep >= currentPolyline.points.length){
           _currentStep++;
           calculateNextStepPoint();
-          // call notify functions
+          // call update functions
+          updateDirections();
+          updateDeliveryTimeRemaining();
+          updateETA();
+          updateDirectionIconPath();
+
+          notifyStepInfoChange();
         }
         currentPolyline.points.removeAt(0);
       }
       // re-add current position
       currentPolyline.points.insert(0, positionOnPoly);
+      notifyMapInfoChange();
     } catch (error) {
       print("Failed to update current polyline.[$error]");
       return null;
@@ -345,52 +351,39 @@ class NavigationService {
         m = (m / 100).round();
         totalDistance = (totalDistance / 10).round() * 10;
         distance = totalDistance;
-        return "$km,$m km";
+        distanceString = "$km,$m km";
+        notifyDistanceChange();
+        return distanceString;
       }
 
       totalDistance = (totalDistance / 10).round() * 10;
       distance = totalDistance;
-      return "$totalDistance m";
+      distanceString = "$totalDistance m";
+      notifyDistanceChange();
+
+      return distanceString;
     } catch (error) {
       print("Failed to update distance-eta.[$error]");
       return "N/A";
     }
   }
 
-  String updateDistanceETA() {
+  String updateETA(){
     if (_deliveryRoutes == null) {
       return null;
     }
-    DateTime now = DateTime.now();
-    int totalTime =
-    _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
-    for (int i = 0; i < _currentStep; i++) {
-      totalTime -=
-          _deliveryRoutes.getStepDuration(_currentRoute, _currentLeg, i);
+
+    getDeliveryArrivalTime();
+    return eta;
+  }
+
+  String updateDirectionIconPath(){
+    if (_deliveryRoutes == null) {
+      return null;
     }
 
-    totalTime = (totalTime / 60).ceil();
-    now = now.add(Duration(minutes: totalTime));
-    String distance = updateDistanceRemaining();
-    int hours = now.hour;
-    String hourString;
-    int minutes = now.minute;
-    String minuteString;
-
-    if (hours < 10) {
-      hourString = "0$hours";
-    } else {
-      hourString = "$hours";
-    }
-    if (minutes < 10) {
-      minuteString = "0$minutes";
-    } else {
-      minuteString = "$minutes";
-    }
-
-    distanceETA = "$distance . $hourString:$minuteString";
-
-    return distanceETA;
+    getDirectionIcon();
+    return directionIconPath;
   }
 
   String updateDeliveryTimeRemaining() {
@@ -407,6 +400,7 @@ class NavigationService {
     totalTime = (totalTime / 60).ceil();
 
     deliveryTimeRemaining = "$totalTime min";
+
     return deliveryTimeRemaining;
   }
 
@@ -416,11 +410,17 @@ class NavigationService {
     }
     getDirectionIcon();
     directions = getDirection();
+
     return directions;
   }
 
   updateCurrentDeliveryRoutes() async {
     // store and switch
+    /*
+    TODO
+      -Remove this shit and implement the single route
+     */
+
     String currentRoute = await _storage.read(key: 'current_route');
 
     if (currentRoute != null &&
@@ -522,6 +522,13 @@ class NavigationService {
     notifyDeliveryAddressChange();
   }
 
+  notifyMapInfoChange(){
+    /*
+    TODO
+      - create notify for polyline, marker and circle updates.
+     */
+  }
+
   notifyDirectionChange(){
     subscribers.forEach((element) {
       element.setDirection(directions);
@@ -535,8 +542,9 @@ class NavigationService {
   }
 
   notifyDistanceChange(){
+    print("notifying");
     subscribers.forEach((element) {
-      element.setDistance(distance);
+      element.setDistance(distanceString);
     });
   }
 
@@ -1027,6 +1035,7 @@ class NavigationService {
     - update current polyline
     - update the info vars for map
      */
+
       if (_deliveryRoutes == null) {
         initialiseRoutes();
         return;
@@ -1037,7 +1046,6 @@ class NavigationService {
         initialiseNotifications(context);
       }
       if (!_notificationManager.initialised) {
-        print("Here");
         _notificationManager.initializing(context);
       }
 
@@ -1074,15 +1082,16 @@ class NavigationService {
         //_abnormalityService.getSpeedLimit(currentPolyline.points);
       }
       if (directions == null ||
-          distance == null ||
-          distanceETA == null ||
+          distanceString == null ||
           delivery == null ||
           deliveryAddress == null ||
           directionIconPath == null) {
+
         initialiseInfoVariables();
+        print(distanceString);
         return;
       }
-
+      print(distanceString);
       if (_lengthRemainingAfterNextDelivery == null) {
         calculateNextDeliveryPoint();
         if (_lengthRemainingAfterNextDelivery == null) {
@@ -1090,7 +1099,6 @@ class NavigationService {
           return;
         }
       }
-
       if (currentPolyline.points.length < 4) {
         isNearDelivery();
       }
@@ -1135,7 +1143,6 @@ class NavigationService {
 //          //_notificationManager.showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
 //        }
         //update info
-        updateDistanceETA();
         updateDeliveryTimeRemaining();
         updateDistanceRemaining();
         updateDirections();

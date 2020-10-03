@@ -37,11 +37,11 @@ class MapSampleState extends State<GMap> {
 
   // Navigation
   int _route;
-  static String _routeFile = "route.json";
   NavigationService _navigatorService = NavigationService();
   String _directions = "LOADING...";
   String _stepTimeRemaining = "LOADING...";
-  String _distanceETA = "";
+  String _distance = "";
+  String _eta = "";
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
   String _directionIconPath = "assets/images/navigation_marker_white.png";
@@ -53,7 +53,7 @@ class MapSampleState extends State<GMap> {
     getCurrentLocation();
     getCurrentRoute();
     _createRoute();
-    setInformationVariables();
+    _navigatorService.subscribe(this);
   }
 
   BorderRadiusGeometry radius = BorderRadius.only(
@@ -82,7 +82,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Sets current location and Google maps polylines if not set.
@@ -102,8 +101,37 @@ class MapSampleState extends State<GMap> {
     }
   }
 
+  setDirection(String directions){
+    _directions = directions;
+  }
+
+  setTimeRemaining(String deliveryTimeRemaining){
+    _stepTimeRemaining = deliveryTimeRemaining;
+  }
+
+  setDistance(String distance){
+    _distance = distance;
+    print("Distance: $distance");
+  }
+
+  setETA(String eta){
+    print(_eta);
+    _eta = eta;
+  }
+
+  setDelivery(String delivery){
+    _delivery = delivery;
+  }
+
+  setDeliveryAddress(String deliveryAddress){
+    _deliveryAddress = deliveryAddress;
+  }
+
+  setDirectionIconPath(String directionIconPath){
+    _directionIconPath = directionIconPath;
+  }
+
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to current location.
@@ -130,7 +158,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to show entire route.
@@ -161,7 +188,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Zooms in or out on Google map camera to show route within screen bounds.
@@ -198,7 +224,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to current location
@@ -245,43 +270,7 @@ class MapSampleState extends State<GMap> {
         southWestLongitudeCheck;
   }
 
-  setInformationVariables() {
-    if (_navigatorService.directions != null) {
-      _directions = _navigatorService.directions;
-    } else {
-      _directions = "LOADING...";
-    }
-    if (_navigatorService.deliveryTimeRemaining != null) {
-      _stepTimeRemaining = _navigatorService.deliveryTimeRemaining;
-    } else {
-      _stepTimeRemaining = "LOADING...";
-    }
-    if (_navigatorService.distanceETA != null) {
-      _distanceETA = _navigatorService.distanceETA;
-    } else {
-      _distanceETA = "";
-    }
-    if (_navigatorService.delivery != null) {
-      _delivery = _navigatorService.delivery;
-    } else {
-      _delivery = "LOADING...";
-    }
-    if (_navigatorService.deliveryAddress != null) {
-      _deliveryAddress = _navigatorService.deliveryAddress;
-    } else {
-      _deliveryAddress = "";
-    }
-    if (_navigatorService.directionIconPath != null) {
-      _directionIconPath = _navigatorService.directionIconPath;
-    } else {
-      _directionIconPath = "assets/images/navigation_marker_white.png";
-    }
-    circles = _navigatorService.circles;
-    atDelivery = _navigatorService.atDelivery;
-  }
-
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Creates the whole routes polylines and sets markers.
@@ -334,8 +323,6 @@ class MapSampleState extends State<GMap> {
       setDeliveries();
 
       _updatePolyline();
-
-      setInformationVariables();
       if (lockedOnPosition) {
         moveToCurrentLocation();
       }
@@ -389,7 +376,7 @@ class MapSampleState extends State<GMap> {
                     padding:
                         const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(atDelivery ? "at Destination" : _distanceETA,
+                      child: Text(atDelivery ? "at Destination" : "$_distance . $_eta",
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "OpenSans-Regular",
