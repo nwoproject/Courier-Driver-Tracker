@@ -141,7 +141,6 @@ class AbnormalityService{
    *              if the driver is still following the specified route.
    */
   bool offRoute(Polyline currentPolyline){
-
     for(int i = 0; i < currentPolyline.points.length - 1; i++){
       LatLng start = currentPolyline.points[i];
       LatLng end = currentPolyline.points[i + 1];

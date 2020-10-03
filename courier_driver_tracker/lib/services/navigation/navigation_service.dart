@@ -19,11 +19,14 @@ class NavigationService {
    * Description: Navigation class.
    */
 
+  static final NavigationService _navigationService = NavigationService._construct();
+
   DeliveryRoute _deliveryRoutes;
   int _currentRoute;
   int _currentLeg; // delivery
   int _currentStep; // directions
-  int _lengthRemainingAtNextDelivery; // number of points on route remaining at next delivery.
+  int _lengthRemainingAfterNextDelivery; // number of points on route remaining at next delivery.
+  int _lengthRemainingAfterNextStep;
   String jsonFile;
   LocalNotifications _notificationManager = LocalNotifications();
   AbnormalityService _abnormalityService = AbnormalityService();
@@ -32,6 +35,7 @@ class NavigationService {
   // Map polylines and markers
   Map<String, Polyline> polylines = {};
   Polyline currentPolyline;
+  LatLng previousPoint;
   Set<Marker> markers = {};
   Set<Circle> circles = {};
   LatLng northEast;
@@ -50,6 +54,9 @@ class NavigationService {
   String deliveryAddress;
   String directionIconPath;
 
+  // observers
+  List<dynamic> subscribers = [];
+
   // Notifications
   Map<String, String> _abnormalityHeaders = {
     "offroute": "Going Off Route!",
@@ -66,11 +73,16 @@ class NavigationService {
     "driving_too_slow": "You are driving slow for a while now."
   };
 
-  NavigationService() {
+  NavigationService._construct() {
     _currentRoute = -1;
     _currentLeg = 0;
     _currentStep = 0;
   }
+
+  factory NavigationService(){
+    return _navigationService;
+  }
+
 
   //__________________________________________________________________________________________________
   //                            Initialisation
@@ -219,6 +231,8 @@ class NavigationService {
     /*
     TODO
       - fix to work with new current polyline
+      - make use of new calculateNextStepPoint and points to new step to update
+      - call notify functions when going to next step
      */
 
     try {
@@ -245,29 +259,18 @@ class NavigationService {
       // remove any previous points
       newLength = currentPolyline.points.length - newLength;
 
+      print("testing new step calculate:");
+      print("Points until change: " + (currentPolyline.points.length - calculateNextStepPoint()).toString());
+
       while (currentPolyline.points.length > 0 &&
           currentPolyline.points.length > newLength) {
-        if (_currentStep + 1 <=
-            _deliveryRoutes
-                .routes[_currentRoute].legs[_currentLeg].steps.length -
-                1 &&
-            calculateDistanceBetween(
-                currentPolyline.points[0],
-                getStepStartLatLng(
-                    _currentRoute, _currentLeg, _currentStep + 1)) <
-                20) {
-          _currentStep += 1;
-        } else if (_currentStep - 1 >= 0 &&
-            _currentStep + 1 <=
-                _deliveryRoutes
-                    .routes[_currentRoute].legs[_currentLeg].steps.length -
-                    1 &&
-            (calculateDistanceBetween(
-                currentPolyline.points[0],
-                getStepEndLatLng(
-                    _currentRoute, _currentLeg, _currentStep - 1)) <
-                20)) {
-          _currentStep += 1;
+        if(_lengthRemainingAfterNextStep == null){
+          calculateNextStepPoint();
+        }
+        else if(_lengthRemainingAfterNextStep >= currentPolyline.points.length){
+          _currentStep++;
+          calculateNextStepPoint();
+          // call notify functions
         }
         currentPolyline.points.removeAt(0);
       }
@@ -277,6 +280,37 @@ class NavigationService {
       print("Failed to update current polyline.[$error]");
       return null;
     }
+  }
+
+  int calculateNextStepPoint(){
+    LatLng nextStepStart = getStepStartLatLng(_currentRoute, _currentLeg, _currentStep);
+    LatLng currentStepEnd;
+    if(_currentStep > 0){
+      currentStepEnd = getStepEndLatLng(_currentRoute, _currentLeg, _currentStep - 1);
+    }
+    else{
+      currentStepEnd = getStepEndLatLng(_currentRoute, _currentLeg, _currentStep);
+    }
+
+    for (int i = 0; i < currentPolyline.points.length; i++) {
+      if (_currentStep + 1 <= currentPolyline.points.length - 1 &&
+          calculateDistanceBetween(
+              currentPolyline.points[i],
+              nextStepStart) <
+              20) {
+        _lengthRemainingAfterNextStep = currentPolyline.points.length - i;
+        return _lengthRemainingAfterNextStep;
+      } else if (_currentStep - 1 >= 0 &&
+          _currentStep + 1 <=
+              _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1 &&
+          calculateDistanceBetween(
+              currentPolyline.points[i],
+              currentStepEnd) < 20) {
+        _lengthRemainingAfterNextStep = currentPolyline.points.length - i;
+        return _lengthRemainingAfterNextStep;
+      }
+    }
+    return -1;
   }
 
   String updateDistanceRemaining() {
@@ -418,16 +452,16 @@ class NavigationService {
         return;
       }
 
-      if (_lengthRemainingAtNextDelivery == null) {
+      if (_lengthRemainingAfterNextDelivery == null) {
         calculateNextDeliveryPoint();
       }
 
-      if (_lengthRemainingAtNextDelivery == null) {
+      if (_lengthRemainingAfterNextDelivery == null) {
         throw "Delivery point not found";
       }
 
       int lengthRemaining = polylines["$_currentRoute"].points.length -
-          _lengthRemainingAtNextDelivery;
+          _lengthRemainingAfterNextDelivery;
 
       List<LatLng> currentPoints = [];
       polylines["current"] = null;
@@ -460,6 +494,76 @@ class NavigationService {
         : -1);
   }
 
+  setPreviousPoint(LatLng point){
+    previousPoint = point;
+  }
+
+  //__________________________________________________________________________________________________
+  //                            Observers
+  //__________________________________________________________________________________________________
+
+  subscribe(dynamic subscriber){
+    subscribers.add(subscriber);
+  }
+
+  unsubscribe(dynamic subscriber){
+    subscribers.remove(subscriber);
+  }
+
+  notifyStepInfoChange(){
+    notifyDirectionChange();
+    notifyTimeRemainingChange();
+    notifyETAChange();
+    notifyDirectionIconPathChange();
+  }
+
+  notifyDeliveryInfoChange(){
+    notifyDeliveryChange();
+    notifyDeliveryAddressChange();
+  }
+
+  notifyDirectionChange(){
+    subscribers.forEach((element) {
+      element.setDirection(directions);
+    });
+  }
+
+  notifyTimeRemainingChange(){
+    subscribers.forEach((element) {
+      element.setTimeRemaining(deliveryTimeRemaining);
+    });
+  }
+
+  notifyDistanceChange(){
+    subscribers.forEach((element) {
+      element.setDistance(distance);
+    });
+  }
+
+  notifyETAChange(){
+    subscribers.forEach((element) {
+      element.setETA(eta);
+    });
+  }
+
+  notifyDeliveryChange(){
+    subscribers.forEach((element) {
+      element.setDelivery(delivery);
+    });
+  }
+
+  notifyDeliveryAddressChange(){
+    subscribers.forEach((element) {
+      element.setDeliveryAddress(deliveryAddress);
+    });
+  }
+
+  notifyDirectionIconPathChange(){
+    subscribers.forEach((element) {
+      element.setDirectionIconPath(directionIconPath);
+    });
+  }
+
   //__________________________________________________________________________________________________
   //                            Getters
   //__________________________________________________________________________________________________
@@ -474,6 +578,10 @@ class NavigationService {
 
   int getStep() {
     return _currentStep;
+  }
+
+  DeliveryRoute getDeliveryRoutes(){
+    return _deliveryRoutes;
   }
 
   /*
@@ -792,9 +900,9 @@ class NavigationService {
         if (calculateDistanceBetween(
             delivery, polylines["$_currentRoute"].points[i]) <
             2) {
-          _lengthRemainingAtNextDelivery =
+          _lengthRemainingAfterNextDelivery =
               polylines["$_currentRoute"].points.length - i;
-          return _lengthRemainingAtNextDelivery;
+          return _lengthRemainingAfterNextDelivery;
         }
       }
       return null;
@@ -926,7 +1034,7 @@ class NavigationService {
 
       if (_notificationManager == null) {
         _notificationManager = LocalNotifications();
-        _notificationManager.initializing(context);
+        initialiseNotifications(context);
       }
       if (!_notificationManager.initialised) {
         print("Here");
@@ -975,9 +1083,9 @@ class NavigationService {
         return;
       }
 
-      if (_lengthRemainingAtNextDelivery == null) {
+      if (_lengthRemainingAfterNextDelivery == null) {
         calculateNextDeliveryPoint();
-        if (_lengthRemainingAtNextDelivery == null) {
+        if (_lengthRemainingAfterNextDelivery == null) {
           print("Dev: Couldn't find next delivery Point");
           return;
         }
