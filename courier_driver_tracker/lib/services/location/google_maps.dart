@@ -19,10 +19,9 @@ class MapSampleState extends State<GMap> {
   // Google map setup
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
-  Set<Marker> markers = {};
-  Set<Circle> circles = {};
-  List<LatLng> polylineCoordinates = [];
-  Map<String, Polyline> polylines = {};
+  Set<Marker> _markers = {};
+  Set<Circle> _circles = {};
+  Map<String, Polyline> _polylines = {};
   bool lockedOnPosition = true;
 
   List<Widget> _deliveries = [];
@@ -111,11 +110,9 @@ class MapSampleState extends State<GMap> {
 
   setDistance(String distance){
     _distance = distance;
-    print("Distance: $distance");
   }
 
   setETA(String eta){
-    print(_eta);
     _eta = eta;
   }
 
@@ -129,6 +126,18 @@ class MapSampleState extends State<GMap> {
 
   setDirectionIconPath(String directionIconPath){
     _directionIconPath = directionIconPath;
+  }
+
+  setPolylines(Map<String, Polyline> poly){
+    _polylines = poly;
+  }
+
+  setCircles(Set<Circle> circles){
+    _circles = circles;
+  }
+
+  setMarkers(Set<Marker> markers){
+    _markers = markers;
   }
 
   /*
@@ -280,7 +289,7 @@ class MapSampleState extends State<GMap> {
       - make new function to replace polylines.
      */
     await _navigatorService.initialisePolyPointsAndMarkers(_route);
-    markers = _navigatorService.markers;
+    _markers = _navigatorService.markers;
   }
 
   _updatePolyline() {
@@ -289,7 +298,7 @@ class MapSampleState extends State<GMap> {
         _route >= 0 &&
         _navigatorService.currentPolyline != null &&
         _navigatorService.polylines["$_route"] != null) {
-      polylines = {
+      _polylines = {
         "current": _navigatorService.currentPolyline,
         "$_route": _navigatorService.polylines["$_route"]
       };
@@ -438,12 +447,12 @@ class MapSampleState extends State<GMap> {
                       Container(
                         child: GoogleMap(
                           initialCameraPosition: _initialLocation,
-                          markers: markers != null
-                              ? Set<Marker>.from(markers)
+                          markers: _markers != null
+                              ? Set<Marker>.from(_markers)
                               : null,
-                          polylines: Set<Polyline>.of(polylines.values),
-                          circles: circles != null
-                              ? Set<Circle>.from(circles)
+                          polylines: Set<Polyline>.of(_polylines.values),
+                          circles: _circles != null
+                              ? Set<Circle>.from(_circles)
                               : null,
                           myLocationEnabled: true,
                           myLocationButtonEnabled: false,

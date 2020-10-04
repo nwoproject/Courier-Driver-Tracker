@@ -109,8 +109,7 @@ class NavigationService {
     RouteLogging logger = RouteLogging();
     String jsonString = await logger.readFileContents("deliveries");
     if (jsonString == null || jsonString.length == 0) {
-      print(
-          "Dev: Error initialising routes from json file. [Navigation Service:initialiseRoutes]");
+      print("Dev: Error initialising routes from json file. [Navigation Service:initialiseRoutes]");
       return;
     }
     Map<String, dynamic> json = jsonDecode(jsonString);
@@ -175,6 +174,7 @@ class NavigationService {
     }
     // after all polylines are created set current polyline for navigation.
     setCurrentPolyline();
+    notifyMapInfoChange();
   }
 
   initialiseBounds() {
@@ -207,6 +207,7 @@ class NavigationService {
       radius: 100.0,
     );
     circles.add(deliveryCircle);
+    notifyCircleChange();
   }
 
   clearAllSetVariables() {
@@ -230,13 +231,6 @@ class NavigationService {
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline() {
-    /*
-    TODO
-      - fix to work with new current polyline
-      - make use of new calculateNextStepPoint and points to new step to update
-      - call notify functions when going to next step
-     */
-
     try {
       if (_deliveryRoutes == null || currentPolyline == null) {
         throw "Route error";
@@ -277,7 +271,13 @@ class NavigationService {
 
           notifyStepInfoChange();
         }
-        currentPolyline.points.removeAt(0);
+        if(currentPolyline.points.length == newLength + 1){
+          previousPoint = currentPolyline.points.removeAt(0);
+        }
+        else{
+          currentPolyline.points.removeAt(0);
+        }
+
       }
       // re-add current position
       currentPolyline.points.insert(0, positionOnPoly);
@@ -414,34 +414,6 @@ class NavigationService {
     return directions;
   }
 
-  updateCurrentDeliveryRoutes() async {
-    // store and switch
-    /*
-    TODO
-      -Remove this shit and implement the single route
-     */
-
-    String currentRoute = await _storage.read(key: 'current_route');
-
-    if (currentRoute != null &&
-        currentRoute != '$_currentRoute' &&
-        currentRoute != '-1') {
-      _storage.write(
-          key: 'route$_currentRoute', value: '$_currentLeg-$_currentStep');
-      String savedRouteInfo = await _storage.read(key: 'route$currentRoute');
-      List<String> routeInfo =
-      savedRouteInfo != null ? savedRouteInfo.split("-") : ["0", "0"];
-      _currentRoute = int.parse(currentRoute);
-      _currentLeg = int.parse(routeInfo[0]);
-      _currentStep = int.parse(routeInfo[1]);
-
-      clearAllSetVariables();
-      initialisePolyPointsAndMarkers(_currentRoute);
-      initialiseBounds();
-      initialiseInfoVariables();
-    }
-  }
-
   //__________________________________________________________________________________________________
   //                            Setters
   //__________________________________________________________________________________________________
@@ -523,10 +495,8 @@ class NavigationService {
   }
 
   notifyMapInfoChange(){
-    /*
-    TODO
-      - create notify for polyline, marker and circle updates.
-     */
+    notifyPolylineChange();
+    notifyMarkerChange();
   }
 
   notifyDirectionChange(){
@@ -542,7 +512,6 @@ class NavigationService {
   }
 
   notifyDistanceChange(){
-    print("notifying");
     subscribers.forEach((element) {
       element.setDistance(distanceString);
     });
@@ -569,6 +538,24 @@ class NavigationService {
   notifyDirectionIconPathChange(){
     subscribers.forEach((element) {
       element.setDirectionIconPath(directionIconPath);
+    });
+  }
+
+  notifyPolylineChange(){
+    subscribers.forEach((element) {
+      element.setPolylines(polylines);
+    });
+  }
+
+  notifyCircleChange(){
+    subscribers.forEach((element) {
+      element.setCircles(circles);
+    });
+  }
+
+  notifyMarkerChange(){
+    subscribers.forEach((element) {
+      element.setMarkers(markers);
     });
   }
 
@@ -883,7 +870,15 @@ class NavigationService {
         return null;
       }
 
-      LatLng start = currentPolyline.points[0];
+      /*
+      TODO
+        - Fix this shit
+       */
+
+      LatLng start = previousPoint;
+      if(start == null){
+        start = currentPolyline.points[0];
+      }
       LatLng end = currentPolyline.points[1];
 
       // work out perpendicular intersect of line between polyline points and line that goes through current position.
@@ -1049,8 +1044,6 @@ class NavigationService {
         _notificationManager.initializing(context);
       }
 
-      updateCurrentDeliveryRoutes();
-
       if (_currentRoute == -1) {
         String currentRoute = await _storage.read(key: 'current_route');
         if (currentRoute == null) {
@@ -1088,10 +1081,8 @@ class NavigationService {
           directionIconPath == null) {
 
         initialiseInfoVariables();
-        print(distanceString);
         return;
       }
-      print(distanceString);
       if (_lengthRemainingAfterNextDelivery == null) {
         calculateNextDeliveryPoint();
         if (_lengthRemainingAfterNextDelivery == null) {
@@ -1173,13 +1164,10 @@ class NavigationService {
 /*
 TODO
   - see if old route is still saved, meaning incomplete. create abnormality
-  - store current route, leg and step in secure storage for if they change route
-  - read in all of the above variables in case it is stored
-  - change icons on delivery page
-  */
+ */
 /*
  TODO
-  -navigation
+  navigation
   - update storage variables
   - when routes are completed, delete file clear uncalculated and calculating
  */
