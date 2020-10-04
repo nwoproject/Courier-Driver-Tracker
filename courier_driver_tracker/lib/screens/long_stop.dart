@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import "dart:ui";
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
@@ -102,21 +101,21 @@ class _FeedbackState extends State<Feedback> {
     driverID = driverID.toString();
     String lat = position.latitude.toString();
     String long = position.longitude.toString();
-    String time = position.timestamp.toString();
+    String time =  DateTime.now().toString().substring(0,19);
 
     String resp = "";
 
     if (_character == Abnormality.fuelstop) {
-      resp = "Filled the vehicle with fuel";
+    resp = "Filled the vehicle with fuel";
     }
     if (_character == Abnormality.lunch) {
-      resp = "Stopped for lunch";
+    resp = "Stopped for lunch";
     }
     if (_character == Abnormality.traffic) {
-      resp = "Filled the vehicle with fuel";
+    resp = "Filled the vehicle with fuel";
     }
     if (_character == Abnormality.other) {
-      resp = other;
+    resp = other;
     }
 
     String bearerToken = String.fromEnvironment('BEARER_TOKEN',
@@ -140,29 +139,29 @@ class _FeedbackState extends State<Feedback> {
     };
 
     var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
-        headers: requestHeaders,
-        body: data);
+    "https://drivertracker-api.herokuapp.com/api/abnormalities/$driverID",
+    headers: requestHeaders,
+    body: data);
 
     String respCode = "";
 
     switch (response.statusCode) {
-      case 201:
-        respCode = "Abnormality was successfully logged";
-        responseCheck(respCode);
-        break;
-      case 400:
-        respCode = "Bad request (missing parameters in request body)";
-        responseCheck(respCode);
-        break;
-      case 401:
-        respCode = "Invalid :driverid and token combination";
-        responseCheck(respCode);
-        break;
-      case 500:
-        respCode = "Server error";
-        responseCheck(respCode);
-        break;
+    case 201:
+    respCode = "Abnormality was successfully logged";
+    responseCheck(respCode);
+    break;
+    case 400:
+    respCode = "Bad request (missing parameters in request body)";
+    responseCheck(respCode);
+    break;
+    case 401:
+    respCode = "Invalid :driverid and token combination";
+    responseCheck(respCode);
+    break;
+    case 500:
+    respCode = "Server error";
+    responseCheck(respCode);
+    break;
     }
   }
 
@@ -278,4 +277,5 @@ class _FeedbackState extends State<Feedback> {
       ],
     );
   }
+
 }

@@ -1,5 +1,6 @@
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:async';
 import "login.dart";
 import "home.dart";
@@ -20,10 +21,19 @@ class _SplashScreenState extends State<SplashScreen> {
     _changeActiveWidget();
   }
 
-  Future<bool> _checkFlutter() async {
-    await Future.delayed(Duration(milliseconds: 5000), () {});
+  Future<bool> _checkLoginStatus() async {
+    await Future.delayed(Duration(milliseconds: 5000), (){});
+    FlutterSecureStorage storage = new FlutterSecureStorage();
+    String loggedIn = await storage.read(key: 'loginstatus');
+    String id = await storage.read(key: 'id');
+    storage.write(key: 'route_initialised', value: 'false');
 
-    return false;
+    if(loggedIn == "true" && id != null){
+      return true;
+    }
+    else{
+      return false;
+    }
   }
 
   void _navigateToLogin() {
@@ -31,9 +41,13 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
   }
 
-  void _navigateToHome() {
+  void _navigateToHome() async{
+    FlutterSecureStorage storage = FlutterSecureStorage();
+    String token = await storage.read(key: 'token');
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+    Navigator.of(context)
+        .pushNamed('/delivery', arguments: token);
   }
 
   void _changeActiveWidget() async {
@@ -41,15 +55,18 @@ class _SplashScreenState extends State<SplashScreen> {
     bool perm = await isLocationPermissionGranted();
     bool storagePerm = await RouteLogging.checkPermissions();
 
-    if (service && perm && storagePerm) {
-      _checkFlutter().then((status) {
-        if (!status) {
-          _navigateToLogin();
-        } else {
-          _navigateToHome();
-        }
-      });
-    } else {
+    if(service && perm && storagePerm){
+      _checkLoginStatus().then(
+              (status){
+            if(!status){
+              _navigateToLogin();
+            } else{
+              _navigateToHome();
+            }
+          }
+      );
+    }
+    else {
       showMyDialog(context);
       setState(() => {_activeWidget = Permissions()});
     }

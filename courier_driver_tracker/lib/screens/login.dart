@@ -15,6 +15,10 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final storage = new FlutterSecureStorage();
   final loginResponse = List<Widget>();
+  
+  bool _clicked = false;
+  double _opacity = 1.0;
+  bool enableButton = true;
 
   TextEditingController email = new TextEditingController();
   TextEditingController password = new TextEditingController();
@@ -54,6 +58,15 @@ class _LoginPageState extends State<LoginPage>
     });
   }
 
+  void changeLoginButtonState()
+  {
+    setState(() {
+      _clicked = !_clicked;
+      _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+      enableButton = true;
+    });
+  }
+
   void userLogin() async {
     setState(() {
       loginResponse.clear();
@@ -61,6 +74,7 @@ class _LoginPageState extends State<LoginPage>
 
     if (email.text.isEmpty) {
       createLoginResponse('Please enter your email address.');
+      changeLoginButtonState();
       return;
     }
 
@@ -69,11 +83,13 @@ class _LoginPageState extends State<LoginPage>
         .hasMatch(email.text.trim());
     if (!emailValid) {
       createLoginResponse('Email is invalid.');
+      changeLoginButtonState();
       return;
     }
 
     if (password.text.isEmpty) {
       createLoginResponse('Please enter a password.');
+      changeLoginButtonState();
       return;
     }
 
@@ -97,12 +113,16 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'token', value: responseData['token']);
       await storage.write(key: 'name', value: responseData['name']);
       await storage.write(key: 'surname', value: responseData['surname']);
-
+      await storage.write(key: 'loginstatus', value: 'true');
+      await storage.write(key: 'email', value: email.text);
+     
+      changeLoginButtonState();
       Navigator.of(context)
-          .pushNamed('/home', arguments: responseData['token']);
+          .popAndPushNamed('/home', arguments: responseData['token']);
+      Navigator.of(context)
+          .pushNamed('/delivery', arguments: responseData['token']);
     } else //invalid credentials
     {
-      print(response.statusCode);
       String errorResponse = '';
 
       switch (response.statusCode) {
@@ -117,6 +137,7 @@ class _LoginPageState extends State<LoginPage>
           break;
       }
 
+      changeLoginButtonState();
       createLoginResponse(errorResponse);
     }
   }
@@ -228,7 +249,7 @@ class _LoginPageState extends State<LoginPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {"implementation missing"},
+        onPressed: () => {Navigator.of(context).pushNamed('/forgotPassword')},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
@@ -242,89 +263,154 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Widget _button() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0),
-      width: double.infinity,
-      child: RaisedButton(
-        elevation: 5.0,
-        onPressed: () => {userLogin()},
-        padding: EdgeInsets.all(15.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
+    return Stack(
+      children: <Widget>[
+        AbsorbPointer(
+          absorbing: !enableButton,
+          child: InkWell(
+            onTap: () {
+                setState(() {
+                _clicked = !_clicked;
+                _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+                enableButton = false;
+              });
+            },
+            child: AnimatedContainer(
+              width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.80,
+              height: 55,
+              curve: Curves.fastOutSlowIn,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
+                color: Colors.white,
+              ),
+              duration: Duration(milliseconds: 700),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  AnimatedOpacity(
+                    duration: Duration(seconds: 1),
+                    child: Text(
+                      "LOGIN",
+                      style: TextStyle(
+                        color: Colors.black, 
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "OpenSans-Regular"
+                      ),
+                    ),
+                    opacity: _opacity,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        color: Colors.white,
-        child: Text(
-          "LOGIN",
-          style: TextStyle(
-              color: Colors.black,
-              letterSpacing: 1.5,
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-              fontFamily: "OpenSans-Regular"),
+        AbsorbPointer(
+          absorbing: !enableButton,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _clicked = !_clicked;
+                _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+                enableButton = false;
+              });
+              userLogin();
+            },
+            child: AnimatedContainer(
+              width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.80,
+              height: 55,
+              curve: Curves.fastOutSlowIn,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
+              ),
+              duration: Duration(milliseconds: 700),
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 700),
+                child: Padding(
+                  child: CircularProgressIndicator(
+                      backgroundColor: Colors.greenAccent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          _clicked ? Colors.black : Colors.greenAccent),
+                          ),
+                  padding: EdgeInsets.all(1),
+                ),
+                opacity: _opacity == 0.0 ? 1.0 : 0.0,
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: AssetImage("assets/images/login.jpg"),
+    return new GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if(!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        body: Stack(
+          children: <Widget>[
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: AssetImage("assets/images/login.jpg"),
+                ),
               ),
             ),
-          ),
-          Container(
-            height: double.infinity,
-            child: SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(
-                horizontal: 40.0,
-                vertical: 100.0,
-              ),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: loginResponse +
-                      <Widget>[
-                        Text(
-                          "Sign In",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'OpenSans',
-                            fontSize: 35.0,
-                            fontWeight: FontWeight.bold,
+            Container(
+              height: double.infinity,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 40.0,
+                  vertical: 100.0,
+                ),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: loginResponse +
+                        <Widget>[
+                          Text(
+                            "Sign In",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'OpenSans',
+                              fontSize: 35.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 30.0),
-                        _username(),
-                        SizedBox(height: 30.0),
-                        _password(),
-                        _forgetPassword(),
-                        _button(),
-                        Container(
-                          padding: EdgeInsets.only(bottom: 0.0),
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 100.0),
-                            child: Text(
-                              "By CTRL-ALT-ELITE",
-                              style: TextStyle(
-                                color: Colors.white,
+                          SizedBox(height: 30.0),
+                          _username(),
+                          SizedBox(height: 30.0),
+                          _password(),
+                          _forgetPassword(),
+                          _button(),
+                          Container(
+                            padding: EdgeInsets.only(bottom: 0.0),
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 100.0),
+                              child: Text(
+                                "By CTRL-ALT-ELITE",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ]),
+                        ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

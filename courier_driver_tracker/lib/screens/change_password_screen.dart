@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   @override
@@ -53,39 +51,34 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
     });
   }
 
-  final storage = new FlutterSecureStorage();
-  var userData = {
-    'name': 'name',
-    'surname': 'surname',
-    'email': 'email',
-    'id': 'id',
-    'token': 'token'
-  };
-
-  Future<Null> readUserData() async {
-    var name = await storage.read(key: 'name');
-    var surname = await storage.read(key: 'surname');
-    var email = await storage.read(key: 'email');
-    var id = await storage.read(key: 'id');
-    var token = await storage.read(key: 'token');
-    setState(() {
-      return userData = {
-        'name': name,
-        'surname': surname,
-        'email': email,
-        'id': id,
-        'token': token
-      };
-    });
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: void
+   * Description: displays a toast when password is successfully updated.
+*/
+  void showToast() {
+    Fluttertoast.showToast(
+        msg: 'Password updated',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 2,
+        backgroundColor: Colors.grey[800],
+        textColor: Colors.white);
   }
 
   @override
   void initState() {
-    readUserData();
     super.initState();
   }
 
-  void userLogin() async {
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: void
+   * Description: validates and creates API calls to update the users password.
+*/
+  void verify() async {
     setState(() {
       loginResponse.clear();
     });
@@ -105,58 +98,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
       return;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
-        defaultValue: DotEnv().env['BEARER_TOKEN']);
-    String token = userData['token'];
-    await storage.deleteAll();
-    Map data = {"email": userData['email'], "password": password.text.trim()};
-    Map<String, String> requestHeaders = {
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $bearerToken'
-    };
-    Map data2 = {"password": password.text.trim(), "token": '$token'};
+    ApiHandler api = new ApiHandler();
+    var response = await api.updateDriverPassword(newPassword.text.toString());
 
-    var response = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/drivers/authenticate",
-        headers: requestHeaders,
-        body: data);
-    if (response.statusCode != 200) //invalid credentials
+    if (response != 204) //invalid credentials
     {
-      print(response.statusCode);
       String errorResponse = '';
-
-      switch (response.statusCode) {
-        case 401:
-          errorResponse = 'Incorrect password!';
-          break;
-        case 404:
-          errorResponse = 'your email has not been registered!';
-          break;
-        case 500:
-          errorResponse = 'Service is currently unavailable';
-          break;
-      }
-      createLoginResponse(errorResponse);
-    }
-    String userId = userData["id"];
-
-    var response2 = await http.post(
-        "https://drivertracker-api.herokuapp.com/api/drivers/$userId/password",
-        headers: requestHeaders,
-        body: data2);
-    if (response.statusCode == 200 && response2.statusCode == 204) {
-      var responseData = json.decode(response.body);
-      Navigator.of(context)
-          .pushNamed('/home', arguments: responseData['token']);
-    } else //invalid credentials
-    {
-      print(response2.statusCode);
-      String errorResponse = '';
-
-      switch (response2.statusCode) {
-        case 204:
-          errorResponse = 'Password has been updated';
-          break;
+      switch (response) {
         case 404:
           errorResponse = 'Invalid :driverid or token';
           break;
@@ -166,8 +114,18 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
       }
       createLoginResponse(errorResponse);
     }
+    if (response == 204) {
+      Navigator.of(context).pop();
+      showToast();
+    }
   }
 
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: Widget
+   * Description: Creates the new password input box for user
+*/
   Widget _newPassword() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +139,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
             border:
-                Border(bottom: BorderSide(color: Colors.grey[100], width: 4)),
+                Border(bottom: BorderSide(color: Colors.grey[100], width: 2)),
             color: Colors.transparent,
           ),
           height: 60.0,
@@ -203,12 +161,18 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
     );
   }
 
+/*
+   * Author: Jordan Nijs
+   * Parameters: none
+   * Returns: Widget
+   * Description: Creates the current password input box for user
+*/
   Widget _password() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Enter your password',
+          'Verify your current password',
           style: headingLabelStyle,
         ),
         SizedBox(height: 10.0),
@@ -216,7 +180,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
             border:
-                Border(bottom: BorderSide(color: Colors.grey[100], width: 4)),
+                Border(bottom: BorderSide(color: Colors.grey[100], width: 2)),
             color: Colors.transparent,
           ),
           height: 60.0,
@@ -243,7 +207,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {"implementation missing"},
+        onPressed: () => {Navigator.of(context).pushNamed('/forgotPassword')},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
@@ -262,7 +226,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: () => {userLogin()},
+        onPressed: () => {verify()},
         padding: EdgeInsets.all(15.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30.0),

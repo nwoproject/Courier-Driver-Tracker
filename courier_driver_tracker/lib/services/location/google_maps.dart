@@ -1,16 +1,14 @@
-import 'package:courier_driver_tracker/services/location/delivery.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
-import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import 'deliveries.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 
 class GMap extends StatefulWidget {
   @override
@@ -21,52 +19,128 @@ class MapSampleState extends State<GMap> {
   // Google map setup
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
-  Set<Marker> markers = {};
-  PolylinePoints polylinePoints;
-  List<LatLng> polylineCoordinates = [];
-  Map<PolylineId, Polyline> polylines = {};
+  Set<Marker> _markers = {};
+  Set<Circle> _circles = {};
+  Map<String, Polyline> _polylines = {};
+  bool lockedOnPosition = true;
+
+  List<Widget> _deliveries = [];
+  List<Widget> _deliveries1 = [];
 
   //Location service
   GeolocatorService _geolocatorService = GeolocatorService();
   Position _currentPosition;
 
-  // Deliveries
-  List<Position> deliveries = [
-    new Position(latitude: -25.7815, longitude: 28.2759),
-    new Position(latitude: -25.7597, longitude: 28.2436),
-    new Position(latitude: -25.7545, longitude: 28.2314),
-    new Position(latitude: -25.7608, longitude: 28.2310),
-    new Position(latitude: -25.7713, longitude: 28.2334)
-  ];
-  //String _currentDelivery = 'Loading';
-  Deliveries polyDeliveries;
-  List<Delivery> deliveryList;
-
   // Storage
   RouteLogging _routeLogging = RouteLogging();
+
+  // Navigation
+  int _route;
+  NavigationService _navigatorService = NavigationService();
+  String _directions = "LOADING...";
+  String _stepTimeRemaining = "LOADING...";
+  String _distance = "";
+  String _eta = "";
+  String _delivery = "LOADING...";
+  String _deliveryAddress = "";
+  String _directionIconPath = "assets/images/navigation_marker_white.png";
+  bool atDelivery = false;
 
   @override
   void initState() {
     super.initState();
     getCurrentLocation();
+    getCurrentRoute();
+    _createRoute();
+    _navigatorService.subscribe(this);
+  }
+
+  BorderRadiusGeometry radius = BorderRadius.only(
+    topLeft: Radius.circular(24.0),
+    topRight: Radius.circular(24.0),
+  );
+
+  final headingLabelStyle = TextStyle(
+    fontSize: 20,
+    fontFamily: 'OpenSans-Regular',
+  );
+
+  Widget _deliveryCards(String text) {
+    return Card(
+      elevation: 10,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        child: ListTile(
+          title: Text(
+            text,
+            style: headingLabelStyle,
+          ),
+        ),
+      ),
+    );
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Sets current location and Google maps polylines if not set.
    */
   getCurrentLocation() async {
     _currentPosition = await _geolocatorService.getPosition();
-    moveToCurrentLocation();
-    if (polylinePoints == null) {
-      _createRoute();
+    if (_currentPosition != null) {
+      moveToCurrentLocation();
     }
   }
 
+  getCurrentRoute() async {
+    FlutterSecureStorage storage = FlutterSecureStorage();
+    String currentRoute = await storage.read(key: 'current_route');
+    if (_route == -1 && currentRoute != null) {
+      _route = int.parse(currentRoute);
+    }
+  }
+
+  setDirection(String directions){
+    _directions = directions;
+  }
+
+  setTimeRemaining(String deliveryTimeRemaining){
+    _stepTimeRemaining = deliveryTimeRemaining;
+  }
+
+  setDistance(String distance){
+    _distance = distance;
+  }
+
+  setETA(String eta){
+    _eta = eta;
+  }
+
+  setDelivery(String delivery){
+    _delivery = delivery;
+  }
+
+  setDeliveryAddress(String deliveryAddress){
+    _deliveryAddress = deliveryAddress;
+  }
+
+  setDirectionIconPath(String directionIconPath){
+    _directionIconPath = directionIconPath;
+  }
+
+  setPolylines(Map<String, Polyline> poly){
+    _polylines = poly;
+  }
+
+  setCircles(Set<Circle> circles){
+    _circles = circles;
+  }
+
+  setMarkers(Set<Marker> markers){
+    _markers = markers;
+  }
+
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to current location.
@@ -93,51 +167,22 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to show entire route.
    */
   showEntireRoute() {
     // Define two position variables
-    Position _northeastCoordinates;
-    Position _southwestCoordinates;
+    LatLng northEast = _navigatorService.northEast;
+    LatLng southWest = _navigatorService.southWest;
 
-    // Calculating to check that
-    // southwest coordinate <= northeast coordinate
-    // Determines the screen bounds
-    double minLat = deliveries[0].latitude;
-    double minLong = deliveries[0].longitude;
-    double maxLat = deliveries[0].latitude;
-    double maxLong = deliveries[0].longitude;
-
-    for (int del = 0; del < deliveries.length; del++) {
-      if (minLat > deliveries[del].latitude) {
-        minLat = deliveries[del].latitude;
-      }
-      if (minLong > deliveries[del].longitude) {
-        minLong = deliveries[del].longitude;
-      }
-      if (maxLat < deliveries[del].latitude) {
-        maxLat = deliveries[del].latitude;
-      }
-      if (maxLong < deliveries[del].longitude) {
-        maxLong = deliveries[del].longitude;
-      }
+    if (northEast == null || southWest == null) {
+      return;
     }
 
-    _southwestCoordinates = new Position(latitude: minLat, longitude: minLong);
-    _northeastCoordinates = new Position(latitude: maxLat, longitude: maxLong);
-
     LatLngBounds routeBounds = new LatLngBounds(
-      northeast: LatLng(
-        _northeastCoordinates.latitude,
-        _northeastCoordinates.longitude,
-      ),
-      southwest: LatLng(
-        _southwestCoordinates.latitude,
-        _southwestCoordinates.longitude,
-      ),
+      northeast: northEast,
+      southwest: southWest,
     );
 
     // Center of route
@@ -152,7 +197,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Zooms in or out on Google map camera to show route within screen bounds.
@@ -189,7 +233,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to current location
@@ -198,20 +241,20 @@ class MapSampleState extends State<GMap> {
     final bool northEastLatitudeCheck = screenBounds.northeast.latitude >=
             markerBounds.northeast.latitude + 0.005 &&
         screenBounds.northeast.latitude <=
-            markerBounds.northeast.latitude + 0.04;
+            markerBounds.northeast.latitude + 0.05;
     final bool northEastLongitudeCheck = screenBounds.northeast.longitude >=
             markerBounds.northeast.longitude + 0.005 &&
         screenBounds.northeast.longitude <=
-            markerBounds.northeast.longitude + 0.04;
+            markerBounds.northeast.longitude + 0.05;
 
     final bool southWestLatitudeCheck = screenBounds.southwest.latitude <=
             markerBounds.southwest.latitude - 0.015 &&
         screenBounds.southwest.latitude >=
-            markerBounds.southwest.latitude - 0.04;
+            markerBounds.southwest.latitude - 0.05;
     final bool southWestLongitudeCheck = screenBounds.southwest.longitude <=
             markerBounds.southwest.longitude - 0.005 &&
         screenBounds.southwest.longitude >=
-            markerBounds.southwest.longitude - 0.04;
+            markerBounds.southwest.longitude - 0.05;
 
     return !(northEastLatitudeCheck &&
         northEastLongitudeCheck &&
@@ -237,119 +280,61 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
-   * Description: Gets the address of the delivery using coordinates.
-   */
-  getNextDelivery(Position position) async {
-    //String address = await _geolocatorService.getAddress(position);
-    setState(() {
-      //_currentDelivery = address;
-    });
-  }
-
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Adds markers to the list of markers displayed on the Google map.
-   */
-  addMarkers(List<Position> positions) async {
-    for (Position position in positions) {
-      String snippet = await getNextDelivery(position);
-      Marker marker = Marker(
-        markerId: MarkerId('$position'),
-        position: LatLng(
-          position.latitude,
-          position.longitude,
-        ),
-        infoWindow: InfoWindow(
-          title: 'Coffee Break',
-          snippet: snippet,
-        ),
-        icon: BitmapDescriptor.defaultMarker,
-      );
-      markers.add(marker);
-    }
-  }
-
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Creates polylines to be displayed on the Google Map.
-   */
-  _createPolylines(Position start, Position destination) async {
-    // Initializing PolylinePoints
-    polylinePoints = PolylinePoints();
-
-    // Create Coordinate List
-    // List<List<double>> coords;
-
-    // Generating the list of coordinates to be used for
-    // drawing the polylines
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      String.fromEnvironment('APP_MAP_API_KEY',
-          defaultValue: DotEnv().env['APP_MAP_API_KEY']), // Google Maps API Key
-      PointLatLng(start.latitude, start.longitude),
-      PointLatLng(destination.latitude, destination.longitude),
-      travelMode: TravelMode.driving,
-    );
-
-    // Adding the coordinates to the list
-    if (result.points.isNotEmpty) {
-      result.points.forEach((PointLatLng point) {
-        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-        //coords.add([point.latitude, point.longitude]);
-      });
-      // deliveryList.add(new Delivery(coordinates: coords, arrivalTime: "8:00",address: "The Address"));
-    }
-
-    // Defining an ID
-    PolylineId id = PolylineId('poly');
-
-    // Initializing Polyline
-    Polyline polyline = Polyline(
-      polylineId: id,
-      color: Colors.purple,
-      points: polylineCoordinates,
-      width: 5,
-    );
-
-    // adds polyline to the polylines to be displayed.
-    polylines[id] = polyline;
-  }
-
-  /*
-   * Author: Gian Geyser
-   * Parameters: none
-   * Returns: none
-   * Description: Creates the whole routes polylines.
+   * Description: Creates the whole routes polylines and sets markers.
    */
   _createRoute() async {
-    for (int position = 0; position < deliveries.length; position++) {
-      if (position == 0) {
-        await _createPolylines(_currentPosition, deliveries[position + 1]);
-      } else if (position == deliveries.length - 1) {
-        await _createPolylines(deliveries[position], deliveries[0]);
-      } else {
-        await _createPolylines(deliveries[position], deliveries[position + 1]);
-      }
+    /*TODO
+      - make new function to replace polylines.
+     */
+    await _navigatorService.initialisePolyPointsAndMarkers(_route);
+    _markers = _navigatorService.markers;
+  }
+
+  _updatePolyline() {
+    _route = _navigatorService.getRoute();
+    if (_route != null &&
+        _route >= 0 &&
+        _navigatorService.currentPolyline != null &&
+        _navigatorService.polylines["$_route"] != null) {
+      _polylines = {
+        "current": _navigatorService.currentPolyline,
+        "$_route": _navigatorService.polylines["$_route"]
+      };
     }
-    // _abnormalityService.setDeliveries(polyDeliveries);
+  }
+
+  setDeliveries() {
+    int number = _navigatorService.getNumberOfDeliveries();
+
+    for (int x = 0; x < number; x++) {
+      setState(() {
+        _deliveries1
+            .add(_deliveryCards(_navigatorService.getDeliveryAddress(x)));
+        _deliveries = _deliveries1;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // Stream of Position objects of current location.
     _currentPosition = Provider.of<Position>(context);
+    var html = """<h3 style='color:white;'>$_directions</h3>""";
+    double fontSize = MediaQuery.of(context).size.height * 0.027;
 
     // Calls abnormality service
     if (_currentPosition != null) {
+      _navigatorService.navigate(_currentPosition, context);
       _routeLogging.writeToFile(
-          _geolocatorService.convertPositionToString(_currentPosition) + "\n",
-          "locationFile");
+          _currentPosition.toString() + "\n", "locationFile");
+      setDeliveries();
+
+      _updatePolyline();
+      if (lockedOnPosition) {
+        moveToCurrentLocation();
+      }
     }
 
     BoxDecoration myBoxDecoration() {
@@ -367,123 +352,241 @@ class MapSampleState extends State<GMap> {
     }
 
     // Google Map View
-    return Container(
-      child: Column(
-        // Google map container with buttons stacked on top
+    return SlidingUpPanel(
+      color: Colors.white,
+      panel: Center(
+        child: Container(
+          padding: EdgeInsets.all(10),
+          child:
+              ListView(padding: const EdgeInsets.all(5), children: _deliveries),
+        ),
+      ),
+      collapsed: Container(
+        decoration: BoxDecoration(color: Colors.white, borderRadius: radius),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
+                    child: Center(
+                      child: Text(atDelivery ? "Arrived" : _stepTimeRemaining,
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
+                    child: Center(
+                      child: Text(atDelivery ? "at Destination" : "$_distance . $_eta",
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: fontSize - 5)),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 5, right: 5),
+                child: VerticalDivider(
+                  width: 10.0,
+                  color: Colors.grey,
+                  thickness: 1,
+                  indent: 10,
+                  endIndent: 10,
+                ),
+              ),
+              Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
+                    child: Center(
+                      child: Text(_delivery,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
+                    child: Center(
+                      child: Text(_deliveryAddress,
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: "OpenSans-Regular",
+                              fontSize: fontSize - 5)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: Column(
         children: <Widget>[
-          LocalNotifications(),
           Expanded(
-            flex: 5,
-            child: Stack(
+              child: Container(
+            child: Column(
+              // Google map container with buttons stacked on top
               children: <Widget>[
-                Container(
-                  child: GoogleMap(
-                    initialCameraPosition: _initialLocation,
-                    markers: markers != null ? Set<Marker>.from(markers) : null,
-                    polylines: Set<Polyline>.of(polylines.values),
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    mapType: MapType.normal,
-                    zoomGesturesEnabled: true,
-                    zoomControlsEnabled: false,
-                    onMapCreated: (GoogleMapController controller) {
-                      mapController = controller;
-                      addMarkers(deliveries);
-                    },
-                  ),
-                ),
-                // Design for current location button
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                      padding: const EdgeInsets.only(
-                          top: 20.0, left: 10.0, right: 10.0),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
+                Expanded(
+                  flex: 5,
+                  child: Stack(
+                    children: <Widget>[
+                      Container(
+                        child: GoogleMap(
+                          initialCameraPosition: _initialLocation,
+                          markers: _markers != null
+                              ? Set<Marker>.from(_markers)
+                              : null,
+                          polylines: Set<Polyline>.of(_polylines.values),
+                          circles: _circles != null
+                              ? Set<Circle>.from(_circles)
+                              : null,
+                          myLocationEnabled: true,
+                          myLocationButtonEnabled: false,
+                          mapType: MapType.normal,
+                          zoomGesturesEnabled: true,
+                          zoomControlsEnabled: false,
+                          onMapCreated: (GoogleMapController controller) {
+                            mapController = controller;
+                          },
                         ),
-                        color: Colors.green,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            const ListTile(
-                              leading: Icon(Icons.arrow_upward),
-                              title: Text('Justice Mahomed St',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: "OpenSans-Regular",
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.w600)),
-                              subtitle: Text("towards University Rd",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: "OpenSans-Regular",
-                                      fontSize: 15.0)),
-                            )
-                          ],
-                        ),
-                      )),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 110.0, right: 10.0),
-                    child: Container(
-                      decoration: myBoxDecoration(),
-                      child: ClipOval(
-                        child: Material(
-                          color: Colors.white, // button color
-                          child: InkWell(
-                            splashColor: Colors.white, // inkwell color
-                            child: SizedBox(
-                              width: 56,
-                              height: 56,
-                              child: Icon(Icons.my_location),
+                      ),
+                      // Design for current location button
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 20.0, left: 10.0, right: 10.0),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              color: Colors.green,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: Image(
+                                      image: AssetImage(_directionIconPath),
+                                      height: 40,
+                                    ),
+                                    title: new HtmlWidget(html),
+                                  )
+                                ],
+                              ),
+                            )),
+                      ),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.only(top: 110.0, right: 10.0),
+                          child: Container(
+                            decoration: myBoxDecoration(),
+                            child: ClipOval(
+                              child: Material(
+                                color: Colors.white, // button color
+                                child: InkWell(
+                                  splashColor: Colors.white, // inkwell color
+                                  child: SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: Icon(Icons.my_location),
+                                  ),
+                                  onTap: () {
+                                    _currentPosition != null
+                                        ? moveToCurrentLocation()
+                                        : getCurrentLocation();
+                                    lockedOnPosition = true;
+                                  },
+                                ),
+                              ),
                             ),
-                            onTap: () {
-                              _currentPosition != null
-                                  ? moveToCurrentLocation()
-                                  : getCurrentLocation();
-                            },
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 180.0, right: 10.0),
-                    child: Container(
-                      decoration: myBoxDecoration(),
-                      child: ClipOval(
-                        child: Material(
-                          color: Colors.white, // button color
-                          child: InkWell(
-                            splashColor: Colors.white, // inkwell color
-                            child: SizedBox(
-                              width: 56,
-                              height: 56,
-                              child: Icon(Icons.explore),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.only(top: 180.0, right: 10.0),
+                          child: Container(
+                            decoration: myBoxDecoration(),
+                            child: ClipOval(
+                              child: Material(
+                                color: Colors.white, // button color
+                                child: InkWell(
+                                  splashColor: Colors.white, // inkwell color
+                                  child: SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: Icon(Icons.explore),
+                                  ),
+                                  onTap: () {
+                                    _currentPosition != null
+                                        ? showEntireRoute()
+                                        : getCurrentLocation();
+                                    lockedOnPosition = false;
+                                  },
+                                ),
+                              ),
                             ),
-                            onTap: () {
-                              _currentPosition != null
-                                  ? moveToCurrentLocation()
-                                  : getCurrentLocation();
-                            },
                           ),
                         ),
                       ),
-                    ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 200.0),
+                          child: Container(
+                            child: atDelivery
+                                ? RaisedButton(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 12.0, horizontal: 40.0),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        side: BorderSide(
+                                            color: Colors.green, width: 3.0)),
+                                    child: Text(
+                                      "FINISH DELIVERY",
+                                      style: TextStyle(
+                                          fontSize: 30.0, color: Colors.white),
+                                    ),
+                                    color: Colors.green,
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pushNamed("/reportDelivery");
+                                      _navigatorService.moveToNextDelivery();
+                                    },
+                                  )
+                                : Container(),
+                          ),
+                        ),
+                      ),
+                      // Show zoom buttons
+                    ],
                   ),
                 ),
-                // Show zoom buttons
               ],
             ),
-          ),
+          )),
         ],
       ),
+      borderRadius: radius,
     );
   }
 }

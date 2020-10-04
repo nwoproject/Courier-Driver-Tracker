@@ -1,4 +1,4 @@
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
@@ -68,6 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: _buildBottomNavigationBar,
       backgroundColor: Colors.grey[900],
       body: Theme(
         data: Theme.of(context).copyWith(
@@ -85,17 +86,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 30.0),
                 Row(
                   children: <Widget>[
-                    Container(
-                      width: 60,
-                      height: 60,
-                    ),
                     const SizedBox(width: 10.0),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text(userData['name'] + " " + userData['surname'],
-                              style: headingLabelStyle),
+                          Text("Settings", style: headingLabelStyle),
                           Text(
                             "Driver",
                             style: TextStyle(
@@ -127,7 +123,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: textStyle,
                   ),
                   subtitle: Text(
-                    "Jane Doe",
+                    userData['name'] + " " + userData['surname'],
                     style: subtitle,
                   ),
                   trailing: Icon(
@@ -137,18 +133,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () {
                     Navigator.of(context).popAndPushNamed('/profile');
                   },
-                ),
-                SwitchListTile(
-                  title: Text(
-                    "Email Notifications",
-                    style: textStyle,
-                  ),
-                  subtitle: Text(
-                    "On",
-                    style: subtitle,
-                  ),
-                  value: true,
-                  onChanged: (val) {},
                 ),
                 ListTile(
                   title: Text(

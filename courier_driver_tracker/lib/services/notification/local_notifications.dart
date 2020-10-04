@@ -1,62 +1,57 @@
 import 'dart:async';
-import 'package:courier_driver_tracker/services/Abnormality/abnormality_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
 
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LocalNotifications(),
-    );
-  }
-}
-
-class LocalNotifications extends StatefulWidget {
-  @override
-  _LocalNotificationsState createState() => _LocalNotificationsState();
-}
-
-class _LocalNotificationsState extends State<LocalNotifications> {
+class LocalNotifications {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
   AndroidInitializationSettings androidInitializationSettings;
   IOSInitializationSettings iosInitializationSettings;
   InitializationSettings initializationSettings;
-  Position _currentPosition;
+  bool initialised = false;
+  String report = "";
+  BuildContext _notificationContext;
 
-  //Abnormality service
-  AbnormalityService _abnormalityService = AbnormalityService();
-
-  @override
-  void initState() {
-    super.initState();
-    initializing();
-
-  }
-
-  void initializing() async {
-    androidInitializationSettings = AndroidInitializationSettings('app_icon');
+  void initializing(BuildContext context) async {
+    setContext(context);
+    androidInitializationSettings = AndroidInitializationSettings('ic_stat_name');
     iosInitializationSettings = IOSInitializationSettings();
     initializationSettings = InitializationSettings(
         androidInitializationSettings, iosInitializationSettings);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings
-        );
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: onSelectNotification);
+    initialised = true;
   }
 
-  void _showNotifications(String header, String message) async {
-    await notification(header, message);
+  void showNotifications(String header, String message) async {
+    while(!initialised){
+      await Future.delayed(Duration(seconds: 5));
+      print("Dev: Notification initialisation failed.");
+    }
+    await _notification(header, message);
+
+    switch(header.toString()) {
+      case "Going Off Route!": {report = "offRoute"; }
+      break;
+      case "Sudden Stop!": {report = "sudden"; }
+      break;
+      case "You Stopped Moving!": {report = "long"; }
+      break;
+      case "You Are Speeding!": {report = "speeding"; }
+      break;
+      case "You are driving outside company hours!": {report = "companyCar"; }
+      break;
+//      case "offroute" {report = "offRoute"; }
+//      break;
+      default: {print("Invalid option");}
+      break;
+    }
+
   }
 
-  Future<void> notification(String header, String message) async {
+  Future<void> _notification(String header, String message) async {
     AndroidNotificationDetails androidNotificationDetails =
     AndroidNotificationDetails(
         'Channel ID', 'Channel title', 'channel body',
@@ -70,44 +65,42 @@ class _LocalNotificationsState extends State<LocalNotifications> {
     NotificationDetails(androidNotificationDetails, iosNotificationDetails);
     await flutterLocalNotificationsPlugin.show(
         0, header, message, notificationDetails);
+
   }
 
-  String report = "";
+  setContext(BuildContext context){
+    _notificationContext = context;
+  }
 
    Future onSelectNotification(String payLoad) async{
-
     if (payLoad != null) {
       print(payLoad);
     }
 
     if (report == "long") {
-      await  Navigator.of(context)
+      await  Navigator.of(_notificationContext)
           .pushNamed('/reportLong');
     }
     if (report == "sudden") {
-      await  Navigator.of(context)
+      await  Navigator.of(_notificationContext)
           .pushNamed('/reportSudden');
     }
-
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    _currentPosition = Provider.of<Position>(context);
-
-    // Calls abnormality service
-    if(_currentPosition != null){
-      _abnormalityService.setCurrentLocation(_currentPosition);
-      if(_abnormalityService.suddenStop()){
-        report = "sudden";
-        _showNotifications("Warning", "You stopped very quickly!");
-      }
-      if(_abnormalityService.stoppingTooLong()){
-          report = "long";
-          _showNotifications("Warning", "You haven't moved in a while!");
-      }
+    if (report == "speeding") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportSpeed');
     }
-
-    return Container();
+//    if (report == "slow") {
+//      await  Navigator.of(_notificationContext)
+//          .pushNamed('/reportSpeed');
+//    }
+    if (report == "offRoute") {
+      await  Navigator.of(_notificationContext)
+          .pushNamed('/reportOff');
+    }
+     if (report == "companyCar") {
+       await  Navigator.of(_notificationContext)
+           .pushNamed('/reportCompany');
+     }
   }
+
 }

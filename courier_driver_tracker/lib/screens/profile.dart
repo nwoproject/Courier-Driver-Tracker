@@ -1,4 +1,4 @@
-import 'package:courier_driver_tracker/services/location/route_logging.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
@@ -38,9 +38,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String get email {
     if (userData['email'] == null) {
-      return "Did not recieve email";
+      return "Error";
     } else {
       return userData['email'];
+    }
+  }
+
+  String get name {
+    if (userData['name'] == null ||
+        userData['name'].length < 1 ||
+        userData['surname'] == null ||
+        userData['surname'].length < 1) {
+      return "Error";
+    } else {
+      return userData['name'] + " " + userData['surname'];
     }
   }
 
