@@ -15,19 +15,23 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final storage = new FlutterSecureStorage();
   final loginResponse = List<Widget>();
+  
+  bool _clicked = false;
+  double _opacity = 1.0;
+  bool enableButton = true;
 
   TextEditingController email = new TextEditingController();
   TextEditingController password = new TextEditingController();
 
   final headingLabelStyle = TextStyle(
     color: Colors.white,
-    fontSize: 20,
+    fontSize: 25,
     fontFamily: 'OpenSans-Regular',
   );
   final hintLabelStyle = TextStyle(
-    color: Colors.black.withOpacity(0.2),
-    fontFamily: 'OpenSans-Regular',
-  );
+      color: Colors.white.withOpacity(0.8),
+      fontFamily: 'OpenSans-Regular',
+      fontSize: 20);
 
   void createLoginResponse(String response) {
     var errorWidget = Card(
@@ -48,9 +52,18 @@ class _LoginPageState extends State<LoginPage>
         ],
       ),
     );
-    
+
     setState(() {
       loginResponse.add(errorWidget);
+    });
+  }
+
+  void changeLoginButtonState()
+  {
+    setState(() {
+      _clicked = !_clicked;
+      _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+      enableButton = true;
     });
   }
 
@@ -59,32 +72,35 @@ class _LoginPageState extends State<LoginPage>
       loginResponse.clear();
     });
 
-    if(email.text.isEmpty)
-    {
+    if (email.text.isEmpty) {
       createLoginResponse('Please enter your email address.');
+      changeLoginButtonState();
       return;
     }
 
-    bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email.text.trim());
-    if(!emailValid)
-    {
+    bool emailValid = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email.text.trim());
+    if (!emailValid) {
       createLoginResponse('Email is invalid.');
+      changeLoginButtonState();
       return;
     }
 
-    if(password.text.isEmpty)
-    {
+    if (password.text.isEmpty) {
       createLoginResponse('Please enter a password.');
+      changeLoginButtonState();
       return;
     }
 
-    String bearerToken = String.fromEnvironment('BEARER_TOKEN', defaultValue: DotEnv().env['BEARER_TOKEN']);
-    
+    String bearerToken = String.fromEnvironment('BEARER_TOKEN',
+        defaultValue: DotEnv().env['BEARER_TOKEN']);
+
     await storage.deleteAll();
     Map data = {"email": email.text.trim(), "password": password.text.trim()};
     Map<String, String> requestHeaders = {
       'Accept': 'application/json',
-      'Authorization':'Bearer $bearerToken'
+      'Authorization': 'Bearer $bearerToken'
     };
 
     var response = await http.post(
@@ -97,16 +113,19 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'token', value: responseData['token']);
       await storage.write(key: 'name', value: responseData['name']);
       await storage.write(key: 'surname', value: responseData['surname']);
-
+      await storage.write(key: 'loginstatus', value: 'true');
+      await storage.write(key: 'email', value: email.text);
+     
+      changeLoginButtonState();
       Navigator.of(context)
-          .pushNamed('/home', arguments: responseData['token']);
+          .popAndPushNamed('/home', arguments: responseData['token']);
+      Navigator.of(context)
+          .pushNamed('/delivery', arguments: responseData['token']);
     } else //invalid credentials
     {
-      print(response.statusCode);
       String errorResponse = '';
 
-      switch(response.statusCode)
-      {
+      switch (response.statusCode) {
         case 401:
           errorResponse = 'Incorrect Email or password!';
           break;
@@ -118,7 +137,8 @@ class _LoginPageState extends State<LoginPage>
           break;
       }
 
-      createLoginResponse(errorResponse); 
+      changeLoginButtonState();
+      createLoginResponse(errorResponse);
     }
   }
 
@@ -134,12 +154,13 @@ class _LoginPageState extends State<LoginPage>
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-            color: Colors.white,
+            border: Border.all(color: Colors.grey[100], width: 4),
+            color: Colors.transparent,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(5),
-                topRight: Radius.circular(5),
-                bottomLeft: Radius.circular(5),
-                bottomRight: Radius.circular(5)),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
                   color: Colors.black.withOpacity(0.2),
@@ -153,16 +174,13 @@ class _LoginPageState extends State<LoginPage>
             controller: email,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.5),
-              fontFamily: "OpenSans-Regular",
-            ),
+                color: Colors.white,
+                fontFamily: "OpenSans-Regular",
+                fontSize: 22),
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 14.0),
-              prefixIcon: Icon(
-                Icons.email,
-                color: Colors.black,
-              ),
+              contentPadding: EdgeInsets.only(top: 9.0),
+              prefixIcon: Icon(Icons.email, color: Colors.grey[100], size: 30),
               hintStyle: hintLabelStyle,
               hintText: "Enter your Email",
             ),
@@ -184,12 +202,13 @@ class _LoginPageState extends State<LoginPage>
         Container(
           alignment: Alignment.centerLeft,
           decoration: new BoxDecoration(
-            color: Colors.white,
+            border: Border.all(color: Colors.grey[100], width: 4),
+            color: Colors.transparent,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(5),
-                topRight: Radius.circular(5),
-                bottomLeft: Radius.circular(5),
-                bottomRight: Radius.circular(5)),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -205,15 +224,17 @@ class _LoginPageState extends State<LoginPage>
             obscureText: true,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.white,
+              fontSize: 22,
               fontFamily: "OpenSans-Regular",
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 14.0),
+              contentPadding: EdgeInsets.only(top: 9.0),
               prefixIcon: Icon(
                 Icons.lock,
-                color: Colors.black,
+                color: Colors.grey[100],
+                size: 30,
               ),
               hintText: "Enter your Password",
               hintStyle: hintLabelStyle,
@@ -228,7 +249,7 @@ class _LoginPageState extends State<LoginPage>
     return Container(
       alignment: Alignment.centerRight,
       child: FlatButton(
-        onPressed: () => {"implementation missing"},
+        onPressed: () => {Navigator.of(context).pushNamed('/forgotPassword')},
         padding: EdgeInsets.only(right: 0.0),
         child: Text(
           "Forgot Password?",
@@ -242,88 +263,154 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Widget _button() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0),
-      width: double.infinity,
-      child: RaisedButton(
-        elevation: 5.0,
-        onPressed: () => {userLogin()},
-        padding: EdgeInsets.all(15.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
+    return Stack(
+      children: <Widget>[
+        AbsorbPointer(
+          absorbing: !enableButton,
+          child: InkWell(
+            onTap: () {
+                setState(() {
+                _clicked = !_clicked;
+                _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+                enableButton = false;
+              });
+            },
+            child: AnimatedContainer(
+              width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.80,
+              height: 55,
+              curve: Curves.fastOutSlowIn,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
+                color: Colors.white,
+              ),
+              duration: Duration(milliseconds: 700),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  AnimatedOpacity(
+                    duration: Duration(seconds: 1),
+                    child: Text(
+                      "LOGIN",
+                      style: TextStyle(
+                        color: Colors.black, 
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "OpenSans-Regular"
+                      ),
+                    ),
+                    opacity: _opacity,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        color: Colors.white,
-        child: Text(
-          "LOGIN",
-          style: TextStyle(
-              color: Colors.black,
-              letterSpacing: 1.5,
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-              fontFamily: "OpenSans-Regular"),
+        AbsorbPointer(
+          absorbing: !enableButton,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _clicked = !_clicked;
+                _opacity = _opacity == 1.0 ? 0.0 : 1.0;
+                enableButton = false;
+              });
+              userLogin();
+            },
+            child: AnimatedContainer(
+              width: _clicked ? 55 : MediaQuery.of(context).size.width * 0.80,
+              height: 55,
+              curve: Curves.fastOutSlowIn,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_clicked ? 70.0 : 30.0),
+              ),
+              duration: Duration(milliseconds: 700),
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 700),
+                child: Padding(
+                  child: CircularProgressIndicator(
+                      backgroundColor: Colors.greenAccent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          _clicked ? Colors.black : Colors.greenAccent),
+                          ),
+                  padding: EdgeInsets.all(1),
+                ),
+                opacity: _opacity == 0.0 ? 1.0 : 0.0,
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.4), BlendMode.darken),
-                image: AssetImage("assets/images/login.jpg"),
+    return new GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if(!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        body: Stack(
+          children: <Widget>[
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: AssetImage("assets/images/login.jpg"),
+                ),
               ),
             ),
-          ),
-          Container(
-            height: double.infinity,
-            child: SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(
-                horizontal: 40.0,
-                vertical: 100.0,
-              ),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: loginResponse +
-                      <Widget>[
-                        Text(
-                          "Sign In",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'OpenSans',
-                            fontSize: 30.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 30.0),
-                        _username(),
-                        SizedBox(height: 30.0),
-                        _password(),
-                        _forgetPassword(),
-                        _button(),
-                        Container(
-                          padding: EdgeInsets.only(bottom: 0.0),
-                          alignment: Alignment.bottomCenter,
-                          child: Text(
-                            "By CTRL-ALT-ELITE",
+            Container(
+              height: double.infinity,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 40.0,
+                  vertical: 100.0,
+                ),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: loginResponse +
+                        <Widget>[
+                          Text(
+                            "Sign In",
                             style: TextStyle(
                               color: Colors.white,
+                              fontFamily: 'OpenSans',
+                              fontSize: 35.0,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ]),
+                          SizedBox(height: 30.0),
+                          _username(),
+                          SizedBox(height: 30.0),
+                          _password(),
+                          _forgetPassword(),
+                          _button(),
+                          Container(
+                            padding: EdgeInsets.only(bottom: 0.0),
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 100.0),
+                              child: Text(
+                                "By CTRL-ALT-ELITE",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,13 +1,14 @@
-import 'package:courier_driver_tracker/services/location/RouteLogging.dart';
+import 'file:///D:/COS/COS301/CapstoneProject/Courier-Driver-Tracker/Courier-Driver-Tracker/courier_driver_tracker/lib/services/file_handling/route_logging.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PathProvider', () {
     TestWidgetsFlutterBinding.ensureInitialized();
+    RouteLogging logger = RouteLogging();
 
-    test('Local path should contain the path.', () async*{
+    test('Local path should contain the path.', () async{
       bool created = false;
-      String path = RouteLogging.localPath.toString();
+      String path = logger.localPath.toString();
       if (path.length > 0)
         {
           created = true;
@@ -19,7 +20,7 @@ void main() {
 
     test('Local file should contain the file.', () async*{
       bool created = false;
-      String file = RouteLogging.localFile.toString();
+      String file = logger.locationFile.toString();
       if (file.length > 0)
       {
         created = true;

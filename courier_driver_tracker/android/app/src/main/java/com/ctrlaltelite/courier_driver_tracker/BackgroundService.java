@@ -22,8 +22,6 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import com.ctrlaltelite.courier_driver_tracker.location_service.Common;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -262,19 +260,20 @@ public class BackgroundService extends Service {
         String title = "Courier Tracker";
         String message = "Application is running in the background.";
 
+
+
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
         PendingIntent servicePendingIntent = PendingIntent.getService(this, 0,intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelID)
                 .addAction(R.drawable.ic_baseline_launch_24, "Launch", activityPendingIntent)
                 .addAction(R.drawable.ic_baseline_cancel_24,"Remove",servicePendingIntent)
                 .setContentText(message)
                 .setContentTitle(title)
                 .setOngoing(true)
-                .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setTicker(message)
                 .setWhen(System.currentTimeMillis());
@@ -285,26 +284,6 @@ public class BackgroundService extends Service {
         }
         return builder.build();
     }
-
-
-    /*
-     * Author: Jordan Nijs
-     * Parameters: Context
-     * Returns: Boolean
-     * Description: Checks if application is running in the foreground.
-     */
-    private boolean serviceIsRunningInForeGround(Context context){
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for(ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
-            if(getClass().getName().equals(service.service.getClassName())){
-                if(service.foreground){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     /*
      * Author: Jordan Nijs
