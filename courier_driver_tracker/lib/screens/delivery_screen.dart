@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +36,18 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   @override
   void initState() {
-    getRoutes();
+    NavigationService navigationService = NavigationService();
+    if(!navigationService.isRouteInitialised()){
+      getRoutesFromAPI();
+    }
+    else{
+      getRoutesFromNavigation();
+    }
+
     super.initState();
   }
 
-  getRoutes() async{
+  getRoutesFromAPI() async{
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     String currentRoute = await storage.read(key: 'current_route');
@@ -211,6 +219,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     });
   }
 
+  getRoutesFromNavigation(){
+    NavigationService navigationService = NavigationService();
+    print("Deliveries: " + navigationService.getTotalDeliveries().toString());
+    /*
+    TODO
+      - get Routes
+     */
+  }
+
   String getTimeString(int time){
     int hours = 0;
     int minutes = time;
@@ -227,6 +244,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       return "$hours h $minutes min";
     }
   }
+
+
 
   drivingWithNoRoutes() async {
     await Future.delayed(Duration(minutes: 2));
