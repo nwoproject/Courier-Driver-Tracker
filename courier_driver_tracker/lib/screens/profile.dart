@@ -96,12 +96,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             userData['name'] + " " + userData['surname'],
                             style: TextStyle(
                                 color: Colors.white,
+                                fontFamily: "Montserrat",
                                 fontSize: 3 * SizeConfig.blockSizeVertical,
                                 fontWeight: FontWeight.bold),
                           ),
                           Text(
                             "Driver",
                             style: TextStyle(
+                                fontFamily: "Montserrat",
                                 color: Colors.white70,
                                 fontSize: 2 * SizeConfig.blockSizeVertical),
                           ),
@@ -118,6 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             "120", //Deliveries made *mockdata*
                             style: TextStyle(
+                                fontFamily: "Montserrat",
                                 color: Colors.white,
                                 fontSize: 3 * SizeConfig.blockSizeVertical,
                                 fontWeight: FontWeight.bold),
@@ -125,6 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             "Deliveries Made",
                             style: TextStyle(
+                                fontFamily: "Montserrat",
                                 color: Colors.white70,
                                 fontSize: 2 * SizeConfig.blockSizeVertical),
                           ),
@@ -135,6 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             "520", //Driver score *mockdata*
                             style: TextStyle(
+                                fontFamily: "Montserrat",
                                 color: Colors.white,
                                 fontSize: 3 * SizeConfig.blockSizeVertical,
                                 fontWeight: FontWeight.bold),
@@ -142,6 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             "score",
                             style: TextStyle(
+                                fontFamily: "Montserrat",
                                 color: Colors.white70,
                                 fontSize: 2 * SizeConfig.blockSizeVertical),
                           ),
@@ -178,6 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Text(
                           "Recent Deliveries",
                           style: TextStyle(
+                              fontFamily: "Montserrat",
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
                               fontSize: 2.5 * SizeConfig.blockSizeVertical),
@@ -346,7 +353,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           topLeft: Radius.circular(30),
         ),
         child: BottomNavigationBar(
-            backgroundColor: Colors.grey[800],
+            backgroundColor: Colors.black87,
             unselectedItemColor: Colors.grey[100],
             type: BottomNavigationBarType.fixed,
             items: [
