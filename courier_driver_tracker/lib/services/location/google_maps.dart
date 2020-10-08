@@ -62,7 +62,7 @@ class MapSampleState extends State<GMap> {
 
   final headingLabelStyle = TextStyle(
     fontSize: 20,
-    fontFamily: 'OpenSans-Regular',
+    fontFamily: 'Montserrat',
   );
 
   Widget _deliveryCards(String text) {
@@ -100,43 +100,43 @@ class MapSampleState extends State<GMap> {
     }
   }
 
-  setDirection(String directions){
+  setDirection(String directions) {
     _directions = directions;
   }
 
-  setTimeRemaining(String deliveryTimeRemaining){
+  setTimeRemaining(String deliveryTimeRemaining) {
     _stepTimeRemaining = deliveryTimeRemaining;
   }
 
-  setDistance(String distance){
+  setDistance(String distance) {
     _distance = distance;
   }
 
-  setETA(String eta){
+  setETA(String eta) {
     _eta = eta;
   }
 
-  setDelivery(String delivery){
+  setDelivery(String delivery) {
     _delivery = delivery;
   }
 
-  setDeliveryAddress(String deliveryAddress){
+  setDeliveryAddress(String deliveryAddress) {
     _deliveryAddress = deliveryAddress;
   }
 
-  setDirectionIconPath(String directionIconPath){
+  setDirectionIconPath(String directionIconPath) {
     _directionIconPath = directionIconPath;
   }
 
-  setPolylines(Map<String, Polyline> poly){
+  setPolylines(Map<String, Polyline> poly) {
     _polylines = poly;
   }
 
-  setCircles(Set<Circle> circles){
+  setCircles(Set<Circle> circles) {
     _circles = circles;
   }
 
-  setMarkers(Set<Marker> markers){
+  setMarkers(Set<Marker> markers) {
     _markers = markers;
   }
 
@@ -376,7 +376,7 @@ class MapSampleState extends State<GMap> {
                       child: Text(atDelivery ? "Arrived" : _stepTimeRemaining,
                           style: TextStyle(
                               color: Colors.green,
-                              fontFamily: "OpenSans-Regular",
+                              fontFamily: "Montserrat",
                               fontSize: fontSize,
                               fontWeight: FontWeight.w600)),
                     ),
@@ -385,10 +385,11 @@ class MapSampleState extends State<GMap> {
                     padding:
                         const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(atDelivery ? "at Destination" : "$_distance . $_eta",
+                      child: Text(
+                          atDelivery ? "at Destination" : "$_distance . $_eta",
                           style: TextStyle(
                               color: Colors.grey,
-                              fontFamily: "OpenSans-Regular",
+                              fontFamily: "Montserrat",
                               fontSize: fontSize - 5)),
                     ),
                   ),
@@ -412,7 +413,7 @@ class MapSampleState extends State<GMap> {
                       child: Text(_delivery,
                           style: TextStyle(
                               color: Colors.black,
-                              fontFamily: "OpenSans-Regular",
+                              fontFamily: "Montserrat",
                               fontSize: fontSize,
                               fontWeight: FontWeight.w600)),
                     ),
@@ -423,7 +424,7 @@ class MapSampleState extends State<GMap> {
                       child: Text(_deliveryAddress,
                           style: TextStyle(
                               color: Colors.grey,
-                              fontFamily: "OpenSans-Regular",
+                              fontFamily: "Montserrat",
                               fontSize: fontSize - 5)),
                     ),
                   ),
@@ -564,7 +565,9 @@ class MapSampleState extends State<GMap> {
                                     child: Text(
                                       "FINISH DELIVERY",
                                       style: TextStyle(
-                                          fontSize: 30.0, color: Colors.white),
+                                          fontSize: 30.0,
+                                          color: Colors.white,
+                                          fontFamily: "Montserrat"),
                                     ),
                                     color: Colors.green,
                                     onPressed: () {

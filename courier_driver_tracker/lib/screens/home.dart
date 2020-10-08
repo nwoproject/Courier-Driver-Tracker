@@ -50,7 +50,7 @@ class _HomePageViewState extends State<HomePageView> {
   }
 
   @override
-  void initState(){
+  void initState() {
     //readUserData();
     super.initState();
     startServiceInPlatform();
@@ -62,9 +62,7 @@ class _HomePageViewState extends State<HomePageView> {
       String data = await methodChannel.invokeMethod("startService");
       print(data);
       const seconds = const Duration(seconds: 45);
-      Timer.periodic(seconds, (Timer t) => 
-        api.updateDriverLocationNoCoords()
-      );
+      Timer.periodic(seconds, (Timer t) => api.updateDriverLocationNoCoords());
     }
   }
 
@@ -94,7 +92,7 @@ class _HomePageViewState extends State<HomePageView> {
           topLeft: Radius.circular(30),
         ),
         child: BottomNavigationBar(
-            backgroundColor: Colors.grey[800],
+            backgroundColor: Colors.black87,
             unselectedItemColor: Colors.grey[100],
             type: BottomNavigationBarType.fixed,
             currentIndex: _currentIndex,
@@ -135,11 +133,9 @@ class _HomePageViewState extends State<HomePageView> {
             onTap: (index) {
               if (index == 0) {
                 Navigator.of(context).pushNamed("/delivery");
-              }
-              else if (index == 2) {
+              } else if (index == 2) {
                 Navigator.of(context).pushNamed("/profile");
-              }
-              else if (index == 3) {
+              } else if (index == 3) {
                 Navigator.of(context).pushNamed("/settings");
               }
             }));
