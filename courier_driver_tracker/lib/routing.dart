@@ -1,6 +1,6 @@
 import 'package:courier_driver_tracker/screens/delivery.dart';
+import 'package:courier_driver_tracker/screens/delivery_page.dart';
 import 'package:courier_driver_tracker/screens/forgot_passsword_screen.dart';
-import 'package:courier_driver_tracker/screens/delivery_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
@@ -13,6 +13,7 @@ import 'screens/off_route.dart';
 import 'screens/company_car.dart';
 import 'screens/speed_exceeded.dart';
 import 'screens/change_password_screen.dart';
+import 'screens/delivery_page.dart';
 
 class Router {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -107,7 +108,7 @@ class Router {
 
       case '/delivery':
         return MaterialPageRoute(
-          builder: (_) => DeliveryScreen(),
+          builder: (_) => DeliveryPage(),
         );
         break;
 

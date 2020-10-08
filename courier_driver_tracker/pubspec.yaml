@@ -73,3 +73,15 @@ flutter:
     - family: OpenSans
       fonts:
         - asset: assets/fonts/OpenSans-Regular.ttf
+    
+    - family: Montserrat-regular
+      fonts:
+        - asset: assets/fonts/Montserrat-Regular.ttf
+    
+    - family: Montserrat-bold
+      fonts:
+        - asset: assets/fonts/Montserrat-Bold.ttf
+    
+    - family: Montserrat-thin
+      fonts:
+        - asset: assets/fonts/Montserrat-Thin.ttf
