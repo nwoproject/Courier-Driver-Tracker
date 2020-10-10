@@ -225,5 +225,115 @@ const addAbnormality = async (abnormality)=>
     });
 }
 
+const getRecentDriverAbnormalities = (driverID,res) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT 5 "datetime","latitude","longitude","description" FROM public."abnormality" WHERE "driver_id"=($1)',[driverID],(err,results)=>{
+            if(err)
+            {
+                if(res.writableEnded)
+                {
+                    DB.dbErrorHandler(res,err);
+                    resolve();
+                }
+                else
+                {
+                    DB.dbErrorHandlerNoResponse(err);
+                    resolve();
+                }
+            }
+            else
+            {
+                let abnormalities = [];
+                for(let k=0; k<results.rowCount;k++)
+                {
+                    abnormalities.push({
+                        "datetime":results.rows[k].datetime,
+                        "latitude":results.rows[k].latitude,
+                        "longitude":results.rows[k].longitude,
+                        "description":results.rows[k].description,
+                        "score_impact":"negative"
+                    });
+                }
+
+                resolve(abnormalities);
+            }
+        });
+    });
+}
+
+const getRecentDriverDeliveries = (driverID,res) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT 5 "timestamp_completed","latitude","longitude" FROM log."location_log" WHERE "driver_id"=($1) AND "timestamp" IS NOT NULL',[driverID],(err,results)=>{
+            if(err)
+            {
+                if(res.writableEnded)
+                {
+                    DB.dbErrorHandler(res,err);
+                    resolve();
+                }
+                else
+                {
+                    DB.dbErrorHandlerNoResponse(err);
+                    resolve();
+                }
+            }
+            else
+            {
+                let deliveries = [];
+                for(let k=0; k<results.rowCount;k++)
+                {
+                    deliveries.push({
+                        "datetime":results.rows[k].timestamp_completed,
+                        "latitude":results.rows[k].latitude,
+                        "longitude":results.rows[k].longitude,
+                        "description":"delivery",
+                        "score_impact":"positive"
+                    });
+                }
+
+                resolve(abnormalities);
+            }
+        });
+    });
+} 
+
+const getRecentCompletedRoutes = (driverID,res) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT 5 "timestamp_completed","route_id" FROM log."route_log" WHERE "driver_id"=($1) AND "completed"=($2)',[driverID,true],(err,results)=>{
+            if(err)
+            {
+                if(res.writableEnded)
+                {
+                    DB.dbErrorHandler(res,err);
+                    resolve();
+                }
+                else
+                {
+                    DB.dbErrorHandlerNoResponse(err);
+                    resolve();
+                }
+            }
+            else
+            {
+                let completed_routes = [];
+                for(let k=0; k<results.rowCount;k++)
+                {
+                    completed_routes.push({
+                        "datetime":results.rows[k].timestamp_completed,
+                        "description":"route completion",
+                        "score_impact":"positive"
+                    });
+                }
+
+                resolve(abnormalities);
+            }
+        });
+    });
+}
+
 module.exports = {addRoute,getCenterPoints,getTodaysRoutes,getDriver,addRepeatingRoute,addAbnormality,getAllDrivers,
-    updateTimeLastAssignedRepeatingRoute,getRepeatingRoute,getRepeatingLocations,getDriverCenterPoint};
+    updateTimeLastAssignedRepeatingRoute,getRepeatingRoute,getRepeatingLocations,getDriverCenterPoint, getRecentCompletedRoutes,
+getRecentDriverAbnormalities,getRecentDriverDeliveries};
