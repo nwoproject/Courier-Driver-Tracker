@@ -20,6 +20,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
   int _totalDistance = 0;
   int _totalDuration = 0;
   String _durationString;
+  String currentRoute = "-1";
   String _selectedRoute = "LOADING...";
   List pictures = [
     "assets/images/delivery-Icon-1.png",
@@ -85,6 +86,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     String currentRoute = await storage.read(key: 'current_route');
+    this.currentRoute = currentRoute;
 
     int currentActiveRoute;
     if (currentRoute == null) {
@@ -111,7 +113,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
         _durationString = "";
         _loadingDeliveries.add(Padding(
           padding: const EdgeInsets.all(2.0),
-          child: _buildRoute("assets\images\delivery-Icon-1.png",
+          child: _buildNoRoute("assets\images\delivery-Icon-6.png",
               "No Routes Available", "", "You have no routes.", "", -1),
         ));
 
@@ -133,7 +135,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
           _durationString = "";
           _loadingDeliveries.add(Padding(
             padding: const EdgeInsets.all(2.0),
-            child: _buildRoute(
+            child: _buildNoRoute(
                 "assets\images\delivery-Icon-6.png",
                 "No Routes Available",
                 "",
@@ -274,6 +276,32 @@ class _DeliveryPageState extends State<DeliveryPage> {
     notificationManager.showNotifications(
         "You are driving outside company hours!",
         "You are using the application for personal use.");
+  }
+
+  void checkCurrentRoute(BuildContext context, int route) async {
+    if (this.currentRoute == null ||
+        this.currentRoute == "-1" ||
+        this.currentRoute == route.toString()) {
+      await storage.write(key: 'current_route', value: '$route');
+      Navigator.of(context).pop();
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("You already have a route in progress"),
+              content: Text("Please complete your current route."),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          });
+    }
   }
 
   @override
@@ -421,11 +449,46 @@ class _DeliveryPageState extends State<DeliveryPage> {
                 IconButton(
                     icon: Icon(Icons.add),
                     color: Colors.black,
-                    onPressed: () async {
-                      await storage.write(
-                          key: 'current_route', value: '$route');
-                      Navigator.of(context).pop();
-                    })
+                    onPressed: () => checkCurrentRoute(context, route))
+              ],
+            )));
+  }
+
+  Widget _buildNoRoute(String imagePath, String routeNum, String distance,
+      String time, String del, int route) {
+    return Padding(
+        padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
+        child: InkWell(
+            onTap: () {},
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Container(
+                    child: Row(children: [
+                  Hero(
+                      tag: getTag(),
+                      child: Image(
+                          image:
+                              AssetImage("assets/images/delivery-Icon-6.png"),
+                          fit: BoxFit.cover,
+                          height: 100.0,
+                          width: 100.0)),
+                  SizedBox(width: 10.0),
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(routeNum,
+                            style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.bold)),
+                        Text("$distance\n$time\n$del",
+                            style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 15.0,
+                                color: Colors.grey)),
+                      ])
+                ])),
               ],
             )));
   }
