@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const DB = require('../services/db_config');
 const format =  require('../utility/json_formatter');
+const db_query = require('../utility/common_queries');
 
 const objectConvertor = (results) =>
 {
@@ -83,6 +84,27 @@ const abnormalitiesObjectCovertor = (results,k) =>
             "timestamp": results.rows[k].datetime};
 }
 
+const getdriverScoreMulitplier = (code) =>
+{
+    switch(code)
+    {
+        case 100: 
+            return 0.99;
+        case 101:
+            return 0.99;
+        case 102:
+            return 0.98;
+        case 103:
+            return 0.99;
+        case 104:
+            return 0.98;
+        case 105:
+            return 0.90;
+        case 106:
+            return 0.95;
+    }
+}
+
 // POST /api/abnormalities/:driverid    
 router.post('/:driverid',(req,res)=>{
     const driverID = req.params.driverid;
@@ -116,6 +138,8 @@ router.post('/:driverid',(req,res)=>{
                             }
                             else
                             {
+                                let mulitplier = getdriverScoreMulitplier(req.body.code);
+                                db_query.updateDriverScore(mulitplier,driverID);
                                 res.status(201).end();
                             }
                         });

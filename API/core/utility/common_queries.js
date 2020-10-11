@@ -220,6 +220,14 @@ const addAbnormality = async (abnormality)=>
             {
                 DB.dbErrorHandlerNoResponse(insertErr);
             }
+            if(abnormality.code==105)
+            {
+                updateDriverScore(0.90,abnormality.driver_id);
+            }
+            if(abnormality.code==106)
+            {
+                updateDriverScore(0.95,abnormality.driver_id);
+            }
             resolve();
         });
     });
@@ -339,6 +347,36 @@ const getRecentCompletedRoutes = async (driverID,res) =>
     });
 }
 
+const updateDriverScore = async (scoreMultiplier,driver_id) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT "score" FROM public."driver" WHERE "id"=($1)',[driver_id],(err,results)=>{
+            if(err)
+            {
+                DB.dbErrorHandlerNoResponse(err);
+                resolve();
+            }
+            else
+            {
+                if(results.rowCount > 0)
+                {
+                    DB.pool.query('UPDATE public."driver" SET "score"=($1) WHERE "id"=($2)',[results.rows[0].score * scoreMultiplier,driver_id],(error,updateRes)=>{
+                        if(error)
+                        {
+                            DB.dbErrorHandlerNoResponse(error);
+                        }
+                        resolve();
+                    });
+                }
+                else
+                {
+                    resolve();
+                }
+            }   
+        });
+    });
+}
+
 module.exports = {addRoute,getCenterPoints,getTodaysRoutes,getDriver,addRepeatingRoute,addAbnormality,getAllDrivers,
-    updateTimeLastAssignedRepeatingRoute,getRepeatingRoute,getRepeatingLocations,getDriverCenterPoint, getRecentCompletedRoutes,
-getRecentDriverAbnormalities,getRecentDriverDeliveries};
+updateTimeLastAssignedRepeatingRoute,getRepeatingRoute,getRepeatingLocations,getDriverCenterPoint, getRecentCompletedRoutes,
+getRecentDriverAbnormalities,getRecentDriverDeliveries,updateDriverScore};

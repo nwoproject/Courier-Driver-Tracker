@@ -4,7 +4,6 @@ const DB = require('../services/db_config');
 const checks = require('../utility/database_checks');
 const async = require('async');
 const db_query = require('../utility/common_queries');
-const { route } = require('./drivers');
 
 router.get('/:driverid', async (req, res)=>{
     const driver_id = req.params.driverid;
@@ -98,7 +97,7 @@ router.post('/recent', async (req, res) =>{
                 {
                     responseArray.push(events[k]);
 
-                    if(k = (responseSizeLimit)-1)
+                    if(k == (responseSizeLimit)-1)
                     {
                         break;
                     }
