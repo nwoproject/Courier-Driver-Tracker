@@ -3,6 +3,8 @@ const router = express.Router();
 const DB = require('../services/db_config');
 const checks = require('../utility/database_checks');
 const async = require('async');
+const db_query = require('../utility/common_queries');
+const { route } = require('./drivers');
 
 router.get('/:driverid', async (req, res)=>{
     const driver_id = req.params.driverid;
@@ -62,17 +64,49 @@ router.post('/all', async (req,res)=>{
     }
 });
 
-router.post('/recent', async (req,res)=>{
-    if(!req.body.id || !req.body.token)
+router.post('/recent', async (req, res) =>{
+    if(!req.body.token || !req.body.id)
     {
-        res.status(400).end()
+        res.status(400).end();
     }
     else
     {
-        await checks.driverCheck(req.body.id,req.body.token,res);
+        await checks.driverCheck(req.body.id,req.body.token, res);
         if(!res.writableEnded)
         {
-            
+            let [abnormalities, deliveries,routes] = await Promise.all([
+                db_query.getRecentDriverAbnormalities(req.body.id,res), 
+                db_query.getRecentDriverDeliveries(req.body.id,res),
+                db_query.getRecentCompletedRoutes(req.body.id,res)
+            ]);
+
+            if(!res.writableEnded)
+            {
+                let events = [];
+                events.push.apply(events, abnormalities);
+                events.push.apply(events, deliveries);
+                events.push.apply(events, routes);
+                
+                events.sort((x, y)=>{
+                    return new Date(y.datetime) - new Date(x.datetime);
+                })
+
+                let responseArray = [];
+                let responseSizeLimit = 5;
+
+                for(let k=0;k < events.length;k++)
+                {
+                    responseArray.push(events[k]);
+
+                    if(k = (responseSizeLimit)-1)
+                    {
+                        break;
+                    }
+                }
+
+                res.status(200).json(responseArray).end();
+            }
+
         }
     }
 });

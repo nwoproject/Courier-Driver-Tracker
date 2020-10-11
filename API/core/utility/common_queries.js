@@ -225,15 +225,15 @@ const addAbnormality = async (abnormality)=>
     });
 }
 
-const getRecentDriverAbnormalities = (driverID,res) =>
+const getRecentDriverAbnormalities =  async (driverID,res) =>
 {
     return await new Promise((resolve)=>{
-        DB.pool.query('SELECT 5 "datetime","latitude","longitude","description" FROM public."abnormality" WHERE "driver_id"=($1)',[driverID],(err,results)=>{
+        DB.pool.query('SELECT "datetime","latitude","longitude","description" FROM public."abnormality" WHERE "driver_id"=($1) ORDER BY "datetime" DESC LIMIT 5',[driverID],(err,results)=>{
             if(err)
             {
-                if(res.writableEnded)
+                if(!res.writableEnded)
                 {
-                    DB.dbErrorHandler(res,err);
+                    DB.dbErrorHandlerNoResponse(res,err);
                     resolve();
                 }
                 else
@@ -248,9 +248,8 @@ const getRecentDriverAbnormalities = (driverID,res) =>
                 for(let k=0; k<results.rowCount;k++)
                 {
                     abnormalities.push({
+                        "type": "abnormality",
                         "datetime":results.rows[k].datetime,
-                        "latitude":results.rows[k].latitude,
-                        "longitude":results.rows[k].longitude,
                         "description":results.rows[k].description,
                         "score_impact":"negative"
                     });
@@ -262,13 +261,20 @@ const getRecentDriverAbnormalities = (driverID,res) =>
     });
 }
 
-const getRecentDriverDeliveries = (driverID,res) =>
+const getRecentDriverDeliveries = async (driverID,res) =>
 {
     return await new Promise((resolve)=>{
-        DB.pool.query('SELECT 5 "timestamp_completed","latitude","longitude" FROM log."location_log" WHERE "driver_id"=($1) AND "timestamp" IS NOT NULL',[driverID],(err,results)=>{
+        DB.pool.query(`SELECT log."route_log"."driver_id",log."location_log"."latitude",log."location_log"."longitude",log."location_log"."address",log."location_log"."timestamp_completed"
+        FROM log."location_log"
+        JOIN log."route_log"
+        ON log."location_log"."route_id" = log."route_log"."route_id"
+        WHERE log."route_log"."driver_id"=($1)
+        AND log."location_log"."timestamp_completed" IS NOT NULL
+        ORDER BY "timestamp_completed" DESC LIMIT 5`
+        ,[driverID],(err,results)=>{
             if(err)
             {
-                if(res.writableEnded)
+                if(!res.writableEnded)
                 {
                     DB.dbErrorHandler(res,err);
                     resolve();
@@ -285,27 +291,26 @@ const getRecentDriverDeliveries = (driverID,res) =>
                 for(let k=0; k<results.rowCount;k++)
                 {
                     deliveries.push({
+                        "type": "delivery",
                         "datetime":results.rows[k].timestamp_completed,
-                        "latitude":results.rows[k].latitude,
-                        "longitude":results.rows[k].longitude,
-                        "description":"delivery",
+                        "address":results.rows[k].address,
                         "score_impact":"positive"
                     });
                 }
 
-                resolve(abnormalities);
+                resolve(deliveries);
             }
         });
     });
 } 
 
-const getRecentCompletedRoutes = (driverID,res) =>
+const getRecentCompletedRoutes = async (driverID,res) =>
 {
     return await new Promise((resolve)=>{
-        DB.pool.query('SELECT 5 "timestamp_completed","route_id" FROM log."route_log" WHERE "driver_id"=($1) AND "completed"=($2)',[driverID,true],(err,results)=>{
+        DB.pool.query('SELECT "timestamp_completed","route_id" FROM log."route_log" WHERE "driver_id"=($1) AND "completed"=($2) ORDER BY "timestamp_completed" DESC LIMIT 5',[driverID,true],(err,results)=>{
             if(err)
             {
-                if(res.writableEnded)
+                if(!res.writableEnded)
                 {
                     DB.dbErrorHandler(res,err);
                     resolve();
@@ -322,13 +327,13 @@ const getRecentCompletedRoutes = (driverID,res) =>
                 for(let k=0; k<results.rowCount;k++)
                 {
                     completed_routes.push({
+                        "type":"route_completion",
                         "datetime":results.rows[k].timestamp_completed,
-                        "description":"route completion",
                         "score_impact":"positive"
                     });
                 }
 
-                resolve(abnormalities);
+                resolve(completed_routes);
             }
         });
     });

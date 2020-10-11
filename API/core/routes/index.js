@@ -34,5 +34,6 @@ router.use('/abnormalities', require('./abnormalities'));
 router.use('/reports', require('./reports'));
 router.use('/google-maps', require('../services/google_maps'));
 router.use('/patterns', require('./patterns'));
+router.use('/driver-score', require('./driver_score'));
 
 module.exports = router;
