@@ -43,6 +43,10 @@ The following header field should be present in each request: `Authorization: Be
         8.1     [Get all Drivers](#getDrivers)  
         8.2     [Get all abnormalities](getAbnormalities)  
         8.3     [Get all Deliveries](getDeliveries)  
+9.  [Driver Score](#driver-score)  
+        9.1     [Get driver score](#get-driver-score)  
+        9.2     [Get all driver scores (manager only)](#get-all-driver-scores-manager-only)  
+        9.3     [Get recent events that influenced driver score](#get-recent-events-that-influenced-driver-score)  
 
 # Endpoint Summary
 
@@ -100,6 +104,15 @@ The following header field should be present in each request: `Authorization: Be
 |---------|-----------------------------------------|------------------|
 | `POST` | `/api/abnormalities/:driverid` | Logs a new abnormality for a specific driver |
 | `GET` | `/api/abnormalities/:driverid` | Gets all abnormality entries of a specific driver |
+
+## Driver Score Endpoint Summary
+
+| Method | Path | Usage |
+|---------|-----------------------------------------|------------------|
+| `GET` | `/api/driver-score/:driverid` | Returns the specified driver's score |
+| `POST` | `/api/driver-score/all` | Returns a list of all drivers with their respective score |
+| `POST` | `/api/driver-score/recent` | Returns 5 of the most recent events that influenced driver score |
+
 
 # Driver Endpoints
 
@@ -1326,5 +1339,145 @@ This request does not expect a Body, but you must spesify in the request if you 
 | Status Code | Description |
 |-------------|-------------|
 | `200` | Query ran and all deliveries have been returned |
-| `400` | No time parameter was spesified of the spesefied parameter is inccorect | 
+| `400` | No time parameter was specified of the specified parameter is incorrect | 
+| `500` | Server error |
+
+# Driver Score
+
+## Get Driver Score
+
+Returns the driver's current score. Each driver starts with an initial score of 50. This score is changed each time a driver makes a delivery, completes a route or when an abnormality is logged.
+
+
+##### Http Request
+
+`GET /api/driver-score/:driverid`
+
+##### Request Body
+
+This request does not expect a Body.
+
+##### Response Body
+
+```json
+{
+    "name": "John",
+    "surname": "Doe",
+    "score": 50
+}
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Driver score was successfully returned |
+| `404` | No driver exists with that :driverid | 
+| `500` | Server Error |
+
+## Get all driver scores (manager only)
+
+Returns a list of all drivers with their respective scores.
+>**NOTE:** This call requires a manager id and token in the request body, thus this list can only be retrieved by a manager.
+
+##### Http Request
+
+`POST /api/driver-score/all`
+
+##### Request Body
+
+```json
+{
+    "id" : 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+}
+```
+
+##### Response Body
+
+```json
+[
+    {
+        "id": "1",
+        "name": "John",
+        "surname": "Doe",
+        "score": 50
+    },
+    {
+        "id": "2",
+        "name": "Ctrl",
+        "surname": "Alt",
+        "score": 50
+    },
+    {
+        "id": "3",
+        "name": "ALT",
+        "surname": "Delete",
+        "score": 50
+    },
+]
+```
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | List of drivers and scores returned successfully |
+| `400` | Invalid request body | 
+| `401` | Invalid manager credentials |
+| `500` | Server error |
+
+## Get recent events that influenced driver score
+
+Returns at most 5 recent events that had an effect on the driver score. Meaning they either increased or decreased his score. Each event wil have a type and in the case of an abnormality, it will have an description as well. The request expects a driver id and token in the body request body.
+
+##### Request Body
+
+```json
+{
+    "id" : 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+}
+```
+##### Response Body
+
+```json
+[
+    {
+        "type": "abnormality",
+        "datetime": "2020-10-08 21:59:00",
+        "description": "Driver never embarked on the route that was assigned to him.",
+        "score_impact": "negative"
+    },
+    {
+        "type": "abnormality",
+        "datetime": "2020-10-07 21:59:00",
+        "description": "Driver skipped a delivery on his route.",
+        "score_impact": "negative"
+    },
+    {
+        "type": "route_completion",
+        "datetime": "2020-10-07 21:59:00",
+        "score_impact": "positive"
+    },
+    {
+        "type": "delivery",
+        "datetime": "2020-10-07 11:59:00",
+        "name": "University of pretoria",
+        "score_impact": "positive"
+    },
+    {
+        "type": "delivery",
+        "datetime": "2020-10-07 11:59:00",
+        "name": "Menlyn",
+        "score_impact": "positive"
+    }
+]
+```
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Recent events returned successfully |
+| `400` | Invalid request body | 
+| `401` | Invalid driver credentials |
 | `500` | Server error |

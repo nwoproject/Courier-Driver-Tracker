@@ -272,7 +272,7 @@ const getRecentDriverAbnormalities =  async (driverID,res) =>
 const getRecentDriverDeliveries = async (driverID,res) =>
 {
     return await new Promise((resolve)=>{
-        DB.pool.query(`SELECT log."route_log"."driver_id",log."location_log"."latitude",log."location_log"."longitude",log."location_log"."address",log."location_log"."timestamp_completed"
+        DB.pool.query(`SELECT log."route_log"."driver_id",log."location_log"."latitude",log."location_log"."longitude",log."location_log"."name",log."location_log"."timestamp_completed"
         FROM log."location_log"
         JOIN log."route_log"
         ON log."location_log"."route_id" = log."route_log"."route_id"
@@ -301,7 +301,7 @@ const getRecentDriverDeliveries = async (driverID,res) =>
                     deliveries.push({
                         "type": "delivery",
                         "datetime":results.rows[k].timestamp_completed,
-                        "address":results.rows[k].address,
+                        "address":results.rows[k].name,
                         "score_impact":"positive"
                     });
                 }
