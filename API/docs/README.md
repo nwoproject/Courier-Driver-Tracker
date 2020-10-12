@@ -1428,7 +1428,7 @@ Returns a list of all drivers with their respective scores.
 
 ## Get recent events that influenced driver score
 
-Returns at most 5 recent events that had an effect on the driver score. Meaning they either increased or decreased his score. Each event wil have a type and in the case of an abnormality, it will have an description as well. The request expects a driver id and token in the body request body.
+Returns at most 5 recent events that had an effect on the driver score. Meaning they either increased or decreased their score. Each event wil have a type and in the case of an abnormality, it will have an description as well. The request expects a driver id and token in the body request body.
 
 ##### Request Body
 
