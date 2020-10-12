@@ -220,10 +220,163 @@ const addAbnormality = async (abnormality)=>
             {
                 DB.dbErrorHandlerNoResponse(insertErr);
             }
+            if(abnormality.code==105)
+            {
+                updateDriverScore(0.90,abnormality.driver_id);
+            }
+            if(abnormality.code==106)
+            {
+                updateDriverScore(0.95,abnormality.driver_id);
+            }
             resolve();
         });
     });
 }
 
+const getRecentDriverAbnormalities =  async (driverID,res) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT "datetime","latitude","longitude","description" FROM public."abnormality" WHERE "driver_id"=($1) ORDER BY "datetime" DESC LIMIT 5',[driverID],(err,results)=>{
+            if(err)
+            {
+                if(!res.writableEnded)
+                {
+                    DB.dbErrorHandlerNoResponse(res,err);
+                    resolve();
+                }
+                else
+                {
+                    DB.dbErrorHandlerNoResponse(err);
+                    resolve();
+                }
+            }
+            else
+            {
+                let abnormalities = [];
+                for(let k=0; k<results.rowCount;k++)
+                {
+                    abnormalities.push({
+                        "type": "abnormality",
+                        "datetime":results.rows[k].datetime,
+                        "description":results.rows[k].description,
+                        "score_impact":"negative"
+                    });
+                }
+
+                resolve(abnormalities);
+            }
+        });
+    });
+}
+
+const getRecentDriverDeliveries = async (driverID,res) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query(`SELECT log."route_log"."driver_id",log."location_log"."latitude",log."location_log"."longitude",log."location_log"."name",log."location_log"."timestamp_completed"
+        FROM log."location_log"
+        JOIN log."route_log"
+        ON log."location_log"."route_id" = log."route_log"."route_id"
+        WHERE log."route_log"."driver_id"=($1)
+        AND log."location_log"."timestamp_completed" IS NOT NULL
+        ORDER BY "timestamp_completed" DESC LIMIT 5`
+        ,[driverID],(err,results)=>{
+            if(err)
+            {
+                if(!res.writableEnded)
+                {
+                    DB.dbErrorHandler(res,err);
+                    resolve();
+                }
+                else
+                {
+                    DB.dbErrorHandlerNoResponse(err);
+                    resolve();
+                }
+            }
+            else
+            {
+                let deliveries = [];
+                for(let k=0; k<results.rowCount;k++)
+                {
+                    deliveries.push({
+                        "type": "delivery",
+                        "datetime":results.rows[k].timestamp_completed,
+                        "address":results.rows[k].name,
+                        "score_impact":"positive"
+                    });
+                }
+
+                resolve(deliveries);
+            }
+        });
+    });
+} 
+
+const getRecentCompletedRoutes = async (driverID,res) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT "timestamp_completed","route_id" FROM log."route_log" WHERE "driver_id"=($1) AND "completed"=($2) ORDER BY "timestamp_completed" DESC LIMIT 5',[driverID,true],(err,results)=>{
+            if(err)
+            {
+                if(!res.writableEnded)
+                {
+                    DB.dbErrorHandler(res,err);
+                    resolve();
+                }
+                else
+                {
+                    DB.dbErrorHandlerNoResponse(err);
+                    resolve();
+                }
+            }
+            else
+            {
+                let completed_routes = [];
+                for(let k=0; k<results.rowCount;k++)
+                {
+                    completed_routes.push({
+                        "type":"route_completion",
+                        "datetime":results.rows[k].timestamp_completed,
+                        "score_impact":"positive"
+                    });
+                }
+
+                resolve(completed_routes);
+            }
+        });
+    });
+}
+
+const updateDriverScore = async (scoreMultiplier,driver_id) =>
+{
+    return await new Promise((resolve)=>{
+        DB.pool.query('SELECT "score" FROM public."driver" WHERE "id"=($1)',[driver_id],(err,results)=>{
+            if(err)
+            {
+                DB.dbErrorHandlerNoResponse(err);
+                resolve();
+            }
+            else
+            {
+                if(results.rowCount > 0)
+                {
+                    DB.pool.query('UPDATE public."driver" SET "score"=($1) WHERE "id"=($2)',[results.rows[0].score * scoreMultiplier,driver_id],(error,updateRes)=>{
+                        if(error)
+                        {
+                            DB.dbErrorHandlerNoResponse(error);
+                        }
+                        resolve();
+                    });
+                }
+                else
+                {
+                    resolve();
+                }
+            }   
+        });
+    });
+}
+
 module.exports = {addRoute,getCenterPoints,getTodaysRoutes,getDriver,addRepeatingRoute,addAbnormality,getAllDrivers,
-    updateTimeLastAssignedRepeatingRoute,getRepeatingRoute,getRepeatingLocations,getDriverCenterPoint};
+updateTimeLastAssignedRepeatingRoute,getRepeatingRoute,getRepeatingLocations,getDriverCenterPoint, getRecentCompletedRoutes,
+getRecentDriverAbnormalities,getRecentDriverDeliveries,updateDriverScore};

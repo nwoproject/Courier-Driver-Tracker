@@ -183,6 +183,7 @@ router.put('/location/:locationid',async(req,res)=>{
                     }
                     else
                     {
+                        db_query.updateDriverScore(1.01,req.body.id);
                         res.status(204).end();
                     }
                 }
@@ -223,6 +224,7 @@ router.put('/completed/:routeid',async(req,res)=>{
                             let route = results.rows[0].route_id;
                             if(completed)
                             {
+                                db_query.updateDriverScore(1.015,req.body.id);
                                 res.status(204).end();
                             }
                             else // Driver potentially missed a delivery
