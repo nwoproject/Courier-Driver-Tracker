@@ -399,12 +399,14 @@ class _DeliveryPageState extends State<DeliveryPage> {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
 
-    NavigationService navigationService = NavigationService();
-    if(!navigationService.isRouteInitialised()){
-      getRoutesFromAPI();
-    }
-    else{
-      getRoutesFromNavigation();
+    if(_deliveries.length == 0){
+      NavigationService navigationService = NavigationService();
+      if(!navigationService.isRouteInitialised()){
+        getRoutesFromAPI();
+      }
+      else{
+        getRoutesFromNavigation();
+      }
     }
 
     return Scaffold(

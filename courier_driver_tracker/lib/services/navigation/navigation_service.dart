@@ -261,9 +261,11 @@ class NavigationService {
       while (currentPolyline.points.length > 0 &&
           currentPolyline.points.length > newLength) {
         if(_lengthRemainingAfterNextStep == null){
+          print("at null");
           calculateNextStepPoint();
         }
-        else if(_lengthRemainingAfterNextStep >= currentPolyline.points.length){
+        else if(_currentStep != _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1 && _lengthRemainingAfterNextStep >= currentPolyline.points.length){
+          print("Length remaining: $_lengthRemainingAfterNextStep");
           _currentStep++;
           calculateNextStepPoint();
           // call update functions
@@ -282,6 +284,10 @@ class NavigationService {
         }
 
       }
+
+      print("Total steps: " + _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length.toString());
+      print("Current step: $_currentStep");
+
       // re-add current position
       currentPolyline.points.insert(0, positionOnPoly);
       notifyMapInfoChange();
