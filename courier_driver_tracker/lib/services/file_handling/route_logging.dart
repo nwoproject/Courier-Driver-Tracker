@@ -173,6 +173,9 @@ class RouteLogging{
     File file;
     if(fileType == "locationFile") {
       file = await locationFile;
+      if(file == null){
+        return null;
+      }
       return file.writeAsString(data, mode: FileMode.append);
     }
     else if(fileType == "deliveriesFile"){

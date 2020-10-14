@@ -22,6 +22,7 @@ class NavigationService {
   static final NavigationService _navigationService = NavigationService._construct();
 
   DeliveryRoute _deliveryRoutes;
+  bool _routesInitialised = false;
   int _currentRoute;
   int _currentLeg; // delivery
   int _currentStep; // directions
@@ -103,6 +104,7 @@ class NavigationService {
   initialiseRoutes() async {
     String initialised = await _storage.read(key: 'route_initialised');
     if (initialised != "true") {
+      _routesInitialised = false;
       return;
     }
 
@@ -110,10 +112,12 @@ class NavigationService {
     String jsonString = await logger.readFileContents("deliveries");
     if (jsonString == null || jsonString.length == 0) {
       print("Dev: Error initialising routes from json file. [Navigation Service:initialiseRoutes]");
+      _routesInitialised = false;
       return;
     }
     Map<String, dynamic> json = jsonDecode(jsonString);
     _deliveryRoutes = DeliveryRoute.fromJson(json);
+    _routesInitialised = true;
   }
 
   initialisePolyPointsAndMarkers(int route) async {
@@ -562,6 +566,10 @@ class NavigationService {
   //__________________________________________________________________________________________________
   //                            Getters
   //__________________________________________________________________________________________________
+
+  bool isRouteInitialised(){
+    return _routesInitialised;
+  }
 
   int getRoute() {
     return _currentRoute;

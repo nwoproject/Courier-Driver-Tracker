@@ -44,10 +44,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToHome() async{
     FlutterSecureStorage storage = FlutterSecureStorage();
     String token = await storage.read(key: 'token');
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
     Navigator.of(context)
-        .pushNamed('/delivery', arguments: token);
+        .popAndPushNamed('/delivery', arguments: token);
   }
 
   void _changeActiveWidget() async {
