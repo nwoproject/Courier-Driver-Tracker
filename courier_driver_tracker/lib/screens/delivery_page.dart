@@ -320,20 +320,6 @@ class _DeliveryPageState extends State<DeliveryPage> {
         body: Container(
           child: Column(
             children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(top: 15.0, left: 10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Container(
-                        width: 125.0,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[],
-                        ))
-                  ],
-                ),
-              ),
               SizedBox(height: 25.0),
               Padding(
                 padding: EdgeInsets.only(left: 40.0),
@@ -391,31 +377,33 @@ class _DeliveryPageState extends State<DeliveryPage> {
                 ]),
               ),
               SizedBox(height: 20),
-              Container(
-                height: MediaQuery.of(context).size.height - 244,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius:
-                      BorderRadius.only(topLeft: Radius.circular(75.0)),
-                ),
-                child: ListView(
-                  primary: false,
-                  padding: EdgeInsets.only(left: 25.0, right: 20.0),
-                  children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.only(top: 45.0),
-                        child: Container(
-                            height: MediaQuery.of(context).size.height - 380.0,
-                            child: ListView(children: _deliveries))),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: FloatingActionButton(
-                        onPressed: getRoutesFromAPI,
-                        tooltip: 'refresh',
-                        child: new Icon(Icons.refresh),
+              Expanded(
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.only(topLeft: Radius.circular(75.0)),
+                  ),
+                  child: Stack(
+                    children: <Widget>[
+                      Padding(
+                          padding: EdgeInsets.only(top: 45.0),
+                          child: ListView(children: _deliveries)),
+                      Padding(
+                        padding:
+                            const EdgeInsets.only(right: 20.0, bottom: 20.0),
+                        child: Align(
+                          alignment: Alignment.bottomRight,
+                          child: FloatingActionButton(
+                            onPressed: getRoutesFromAPI,
+                            tooltip: 'refresh',
+                            child: new Icon(Icons.refresh),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
