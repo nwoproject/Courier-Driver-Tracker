@@ -50,13 +50,13 @@ class ApiHandler {
     return response.body;
   }
 
-  Future<int> getDriverScore() async {
+  Future<double> getDriverScore() async {
     var driverID = await storage.read(key: 'id');
 
     var response = await http.get("$apiUrl/api/driver-score/$driverID",
         headers: requestHeaders);
     Map<String, dynamic> json = jsonDecode(response.body);
-    return json['score'];
+    return json['score'].toDouble();
   }
 
   Future<dynamic> getDriverAbnormalities() async {
