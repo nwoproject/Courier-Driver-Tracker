@@ -6,6 +6,7 @@ import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
 
 import DriverProfile from "./DriverProfile";
+import ManageRepeatRoutes from "./ManageRepeatRoutes";
 
 import './style/style.css'
 
@@ -38,8 +39,15 @@ function DriverList(){
     }
 
     function ShowDriver(someID){
-        setID(DriverList[someID].id);
-        ToggleSelected(true);
+        if(DriverID===DriverList[someID].id){
+            ToggleSelected(false);
+            setID(0);
+        }
+        else{
+            setID(DriverList[someID].id);
+            ToggleSelected(true);
+        }
+        
     }
 
     return(
@@ -58,7 +66,7 @@ function DriverList(){
                         </ListGroup>    
                         </Col>
                         <Col xs={8}>
-                            {DriverSelected ? <DriverProfile DriverID={DriverID}/>: null}
+                            {DriverSelected ? <DriverProfile DriverID={DriverID}/>: <ManageRepeatRoutes />}
                         </Col>
                     </Row>
                 }
