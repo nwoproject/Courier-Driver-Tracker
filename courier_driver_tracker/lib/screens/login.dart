@@ -117,7 +117,7 @@ class _LoginPageState extends State<LoginPage>
 
       changeLoginButtonState();
       Navigator.of(context)
-          .pushReplacementNamed('/delivery', arguments: responseData['token']);
+          .popAndPushNamed('/delivery', arguments: responseData['token']);
       storage.write(key: 'loginstatus', value: 'true');
     } else //invalid credentials
     {

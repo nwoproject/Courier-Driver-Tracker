@@ -300,9 +300,9 @@ class _DeliveryPageState extends State<DeliveryPage> {
     int totalDuration = 0;
     int totalDistance = 0;
     for(var route in deliveries.routes) {
-      int distance = navigationService.getRouteDistance();
+      int distance = navigationService.getRouteDistance(del - 1);
       totalDistance += distance;
-      int duration = navigationService.getRouteDuration();
+      int duration = navigationService.getRouteDuration(del - 1);
       totalDuration += duration;
       int numDeliveries = navigationService.getTotalDeliveries();
 
