@@ -127,60 +127,64 @@ class _HomePageViewState extends State<HomePageView> {
   }
 
   Widget get _buildBottomNavigationBar {
-    return ClipRRect(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(30),
-          topLeft: Radius.circular(30),
-        ),
-        child: BottomNavigationBar(
-            backgroundColor: Colors.grey[800],
-            unselectedItemColor: Colors.grey[100],
-            type: BottomNavigationBarType.fixed,
-            currentIndex: _currentIndex,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.home,
-                    size: 30, color: Colors.grey[100]),
-                title: SizedBox(
-                  width: 0,
-                  height: 0,
+    return AnimatedOpacity(
+      opacity: _visible ? 1.0 : 0.0,
+      duration: Duration(milliseconds: 500),
+      child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(30),
+            topLeft: Radius.circular(30),
+          ),
+          child: BottomNavigationBar(
+              backgroundColor: Colors.grey[800],
+              unselectedItemColor: Colors.grey[100],
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              items: [
+                BottomNavigationBarItem(
+                  icon: Icon(FontAwesomeIcons.home,
+                      size: 30, color: Colors.grey[100]),
+                  title: SizedBox(
+                    width: 0,
+                    height: 0,
+                  ),
                 ),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.mapMarkerAlt,
-                    size: 30, color: Colors.blue),
-                title: SizedBox(
-                  width: 0,
-                  height: 0,
+                BottomNavigationBarItem(
+                  icon: Icon(FontAwesomeIcons.mapMarkerAlt,
+                      size: 30, color: Colors.blue),
+                  title: SizedBox(
+                    width: 0,
+                    height: 0,
+                  ),
                 ),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.userAlt,
-                    size: 30, color: Colors.grey[100]),
-                title: SizedBox(
-                  width: 0,
-                  height: 0,
+                BottomNavigationBarItem(
+                  icon: Icon(FontAwesomeIcons.userAlt,
+                      size: 30, color: Colors.grey[100]),
+                  title: SizedBox(
+                    width: 0,
+                    height: 0,
+                  ),
                 ),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(FontAwesomeIcons.cog,
-                    size: 30, color: Colors.grey[100]),
-                title: SizedBox(
-                  width: 0,
-                  height: 0,
-                ),
-              )
-            ],
-            onTap: (index) {
-              if (index == 0) {
-                Navigator.of(context).pushNamed("/delivery");
-              }
-              else if (index == 2) {
-                Navigator.of(context).pushNamed("/profile");
-              }
-              else if (index == 3) {
-                Navigator.of(context).pushNamed("/settings");
-              }
-            }));
+                BottomNavigationBarItem(
+                  icon: Icon(FontAwesomeIcons.cog,
+                      size: 30, color: Colors.grey[100]),
+                  title: SizedBox(
+                    width: 0,
+                    height: 0,
+                  ),
+                )
+              ],
+              onTap: (index) {
+                if (index == 0) {
+                  Navigator.of(context).pushNamed("/delivery");
+                }
+                else if (index == 2) {
+                  Navigator.of(context).pushNamed("/profile");
+                }
+                else if (index == 3) {
+                  Navigator.of(context).pushNamed("/settings");
+                }
+              })),
+    );
   }
 }

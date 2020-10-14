@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
 import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
@@ -221,14 +222,39 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     });
   }
 
-  getRoutesFromNavigation(){
+  getRoutesFromNavigation() async {
     NavigationService navigationService = NavigationService();
     print("Deliveries: " + navigationService.getTotalDeliveries().toString());
-    /*
-    TODO
-      - get Routes
-     */
+
+    if(!navigationService.isRouteInitialised()){
+      await navigationService.initialiseRoutes();
+    }
+
+    DeliveryRoute deliveries = navigationService.getDeliveryRoutes();
+
+    if(deliveries == null && this.mounted){
+      setState(() {
+        _durationString = "";
+        _loadingDeliveries.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _deliveryCards("Failed to load Routes", "",
+              "Could not load route. Contact your manager for assistance." , "", -1),
+        ));
+
+        _deliveries = _loadingDeliveries;
+      });
+
+      print("Dev: error while retrieving active calculated route locally.");
+      return;
+    }
+
+
+
+    for(var route in deliveries.routes) {
+      // create delivery cards
+    }
   }
+
 
   String getTimeString(int time){
     int hours = 0;

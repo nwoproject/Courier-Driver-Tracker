@@ -168,7 +168,7 @@ class NavigationService {
       // Initializing Polyline
       Polyline polyline = Polyline(
           polylineId: id,
-          color: Colors.deepPurple[200],
+          color: Colors.lightBlue[100],
           points: polylineCoordinates,
           width: 10);
 
@@ -451,7 +451,7 @@ class NavigationService {
       currentPolyline = Polyline(
           polylineId: PolylineId("current"),
           points: currentPoints,
-          color: Colors.deepPurple[400],
+          color: Colors.blueAccent,
           width: 8,
           zIndex: 1000
       );

@@ -397,40 +397,43 @@ class MapSampleState extends State<GMap> {
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 5, right: 5),
-                child: VerticalDivider(
-                  width: 10.0,
+              VerticalDivider(
+                  width: 20.0,
                   color: Colors.grey,
                   thickness: 1,
                   indent: 10,
                   endIndent: 10,
-                ),
               ),
-              Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
-                    child: Center(
-                      child: Text(_delivery,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: "OpenSans-Regular",
-                              fontSize: fontSize,
-                              fontWeight: FontWeight.w600)),
+
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Center(
+                        child: Text(_delivery,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "OpenSans-Regular",
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.w600)),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
-                    child: Center(
-                      child: Text(_deliveryAddress,
-                          style: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: "OpenSans-Regular",
-                              fontSize: fontSize - 5)),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Center(
+                        child: Text(_deliveryAddress,
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontFamily: "OpenSans-Regular",
+                                fontSize: fontSize - 5)),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
