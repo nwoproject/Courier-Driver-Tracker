@@ -33,6 +33,7 @@ The following header field should be present in each request: `Authorization: Be
         5.4     [Get Driver Route (uncalculated)](#get-driver-route-uncalculated)  
         5.5     [Timestamp Delivery Location](#timestamp-delivery-location)  
         5.6     [Complete Route](#complete-route)  
+        5.7     [Delete non-repeating route](#delete-non-repeating-route)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
         6.2     [Calculate route](#calculate-route)  
@@ -90,6 +91,7 @@ The following header field should be present in each request: `Authorization: Be
 | `GET` | `/api/routes/:driverid` | Returns a driver's active delivery routes |
 | `PUT` | `api/routes/location/:locationid` | Stores a timestamp of when a driver reached a delivery on his route |
 | `PUT` | `api/routes/completed/:routeid` | Stores a timestamp of when a route was completed by a driver |
+| `DELETE` | `api/routes/:routeid` | Deletes a once off route that was only asgined for a specific day |
 
 ## Google Maps Endpoint Summary
 
@@ -884,6 +886,36 @@ This request returns no body.
 | `400` | Bad request (missing parameters in request body). | 
 | `401` | Unauthorized (incorrect id and token combination). |
 | `404` | There is no route with that :routeid assigned to the driver. |
+| `500` | Server error |
+
+## Delete non-repeating route
+
+Deletes a once-off non-repeating route that was scheduled for a particular day.
+
+##### Http Request
+
+`DELETE api/routes/:routeid`
+
+##### Request Body
+
+```json
+ {   
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+ }
+```
+### Response body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Route was deleted |
+| `400` | Bad request (missing parameters in request body). | 
+| `401` | Invalid manager credentials |
+| `404` | There is no route with that :routeid |
 | `500` | Server error |
 
 ## Google Maps

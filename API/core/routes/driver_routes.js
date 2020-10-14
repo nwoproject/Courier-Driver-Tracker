@@ -309,4 +309,37 @@ router.post('/repeating',async(req,res)=>{
     }
 });
 
+router.delete('/:routeid', (req,res)=>
+{
+    let route_id=req.params.routeid;
+
+    if(!req.body.id || !req.body.token)
+    {
+        res.status(400).end();
+    }  
+    else
+    {
+        checks.managerCheck(req.body.id, req.body.token, res);
+        if(!res.writableEnded)
+        {
+            
+            DB.pool.query('DELETE FROM route."route" WHERE route_id=($1)',[route_id],(deleterr,deleteRes)=>
+            {
+                if(deleterr)
+                {
+                    DB.dbErrorHandlerNoResponse(deleterr);
+                }
+                if(deleteRes.rowCount==0)
+                {
+                    res.status(404).end();
+                }
+                else
+                {
+                    res.status(200).end();
+                }
+            });
+        }
+    } 
+});
+
 module.exports = router;
