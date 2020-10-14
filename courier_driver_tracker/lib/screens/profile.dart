@@ -54,7 +54,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   getAbnormalities() async {
-    List<int> abnorm = [];
+    List<dynamic> abnorm = await _api.getDriverAbnormalities();
+    print(abnorm);
 
     if (abnorm.length <= 0) {
       setState(() {
@@ -200,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                        padding: const EdgeInsets.only(left: 16.0),
                         child: Text(
                           "Statistics", //Deliveries made *mockdata*
                           style: TextStyle(
@@ -239,21 +240,33 @@ class _ProfileScreenState extends State<ProfileScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          "Abnormalities", //Deliveries made *mockdata*
-                          style: TextStyle(
-                              fontFamily: "Montserrat",
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 2.5 * SizeConfig.blockSizeVertical),
+                      Column(children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            "Driving History", //Deliveries made *mockdata*
+                            style: TextStyle(
+                                fontFamily: "Montserrat",
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 2.5 * SizeConfig.blockSizeVertical),
+                          ),
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            "commendment & Violations", //Deliveries made *mockdata*
+                            style: TextStyle(
+                                fontFamily: "Montserrat",
+                                color: Colors.grey,
+                                fontSize: 2.0 * SizeConfig.blockSizeVertical),
+                          ),
+                        ),
+                      ]),
                     ],
                   ),
                   Container(
-                    height: MediaQuery.of(context).size.height - 244,
+                    height: MediaQuery.of(context).size.height,
                     decoration: BoxDecoration(
                       color: Colors.white,
                     ),
