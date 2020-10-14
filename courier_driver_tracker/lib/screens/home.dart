@@ -54,22 +54,20 @@ class _HomePageViewState extends State<HomePageView> {
       };
     });
   }
+
   var _backgroundChannel = MethodChannel("com.ctrlaltelite/background_service");
   var callbackHandle = PluginUtilities.getCallbackHandle(backgroundMain);
 
   bool _visible = false;
 
-
-
-
   @override
   void initState() {
     //readUserData();
     super.initState();
-    _backgroundChannel.invokeMethod('startService', callbackHandle.toRawHandle());
+    _backgroundChannel.invokeMethod(
+        'startService', callbackHandle.toRawHandle());
 
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _pushScreens(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _pushScreens(context));
   }
 
   _pushScreens(BuildContext context) {
@@ -113,17 +111,13 @@ class _HomePageViewState extends State<HomePageView> {
             return Future.value(true);
           }
         },
-    child:Scaffold(
-
-        bottomNavigationBar: _buildBottomNavigationBar,
-        body: AnimatedOpacity(
-          opacity: _visible ? 1.0 : 0.0,
-          duration: Duration(milliseconds: 200),
-          child: GMap(),
-        )
-
-      )
-    );
+        child: Scaffold(
+            bottomNavigationBar: _buildBottomNavigationBar,
+            body: AnimatedOpacity(
+              opacity: _visible ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 200),
+              child: GMap(),
+            )));
   }
 
   Widget get _buildBottomNavigationBar {
@@ -136,7 +130,7 @@ class _HomePageViewState extends State<HomePageView> {
             topLeft: Radius.circular(30),
           ),
           child: BottomNavigationBar(
-              backgroundColor: Colors.grey[800],
+              backgroundColor: Colors.black87,
               unselectedItemColor: Colors.grey[100],
               type: BottomNavigationBarType.fixed,
               currentIndex: _currentIndex,
@@ -177,11 +171,9 @@ class _HomePageViewState extends State<HomePageView> {
               onTap: (index) {
                 if (index == 0) {
                   Navigator.of(context).pushNamed("/delivery");
-                }
-                else if (index == 2) {
+                } else if (index == 2) {
                   Navigator.of(context).pushNamed("/profile");
-                }
-                else if (index == 3) {
+                } else if (index == 3) {
                   Navigator.of(context).pushNamed("/settings");
                 }
               })),

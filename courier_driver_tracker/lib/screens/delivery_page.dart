@@ -92,7 +92,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
     if (this.currentRoute == null || this.currentRoute == '-1') {
       return "Current Route: none";
     } else {
-      int routeNum = int.parse(this.currentRoute) +1;
+      int routeNum = int.parse(this.currentRoute) + 1;
       return "Current Route: $routeNum";
     }
   }
@@ -276,15 +276,14 @@ class _DeliveryPageState extends State<DeliveryPage> {
   getRoutesFromNavigation() async {
     NavigationService navigationService = NavigationService();
     this.currentRoute = await storage.read(key: 'current_route');
-    if(!navigationService.isRouteInitialised()){
+    if (!navigationService.isRouteInitialised()) {
       await navigationService.initialiseRoutes();
     }
 
     DeliveryRoute deliveries = navigationService.getDeliveryRoutes();
 
-    if(deliveries == null && this.mounted){
+    if (deliveries == null && this.mounted) {
       setState(() {
-
         _durationString = "";
         _loadingDeliveries.add(Padding(
           padding: const EdgeInsets.all(2.0),
@@ -292,7 +291,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
               "assets/images/delivery-Icon-1.png",
               "Failed to load Routes",
               "",
-              "Could not load route. Contact your manager for assistance." ,
+              "Could not load route. Contact your manager for assistance.",
               "",
               -1),
         ));
@@ -304,11 +303,10 @@ class _DeliveryPageState extends State<DeliveryPage> {
       return;
     }
 
-
     int del = 1;
     int totalDuration = 0;
     int totalDistance = 0;
-    for(var route in deliveries.routes) {
+    for (var route in deliveries.routes) {
       int distance = navigationService.getRouteDistance(del - 1);
       totalDistance += distance;
       int duration = navigationService.getRouteDuration(del - 1);
@@ -326,7 +324,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
             del - 1),
       ));
     }
-    if(this.mounted) {
+    if (this.mounted) {
       setState(() {
         _distanceString = getDeliveryDistanceString(totalDistance);
         _durationString = getTimeString(totalDuration);
@@ -452,7 +450,6 @@ class _DeliveryPageState extends State<DeliveryPage> {
                                 fontFamily: 'Montserrat',
                                 color: Colors.white,
                                 fontSize: height * 0.025)),
-
                         WidgetSpan(
                           child: Icon(FontAwesomeIcons.clock,
                               color: Colors.grey[100]),
@@ -511,9 +508,9 @@ class _DeliveryPageState extends State<DeliveryPage> {
 
   Widget _buildRoute(String imagePath, String routeNum, String distance,
       String time, String del, int route) {
-
     return Padding(
-        padding: EdgeInsets.only(left: width * 0.1, right: width * 0.1, top: 10.0),
+        padding:
+            EdgeInsets.only(left: width * 0.1, right: width * 0.1, top: 10.0),
         child: InkWell(
             onTap: () {},
             child: Row(
@@ -555,7 +552,10 @@ class _DeliveryPageState extends State<DeliveryPage> {
   Widget _buildNoRoute(String imagePath, String routeNum, String distance,
       String time, String del, int route) {
     return Padding(
-        padding: EdgeInsets.only(left: width * 0.1, right: width * 0.1, top: 10.0),
+        padding: EdgeInsets.only(
+          left: width * 0.04,
+          right: width * 0.1,
+        ),
         child: InkWell(
             onTap: () {},
             child: Row(
@@ -578,7 +578,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
                         Text(routeNum,
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
-                                fontSize: height * 0.035,
+                                fontSize: height * 0.028,
                                 fontWeight: FontWeight.bold)),
                         Text("$distance\n$time\n$del",
                             style: TextStyle(

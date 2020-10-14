@@ -55,29 +55,92 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   getAbnormalities() async {
     List<dynamic> abnorm = await _api.getDriverAbnormalities();
-    print(abnorm);
 
     if (abnorm.length <= 0) {
       setState(() {
         _abnormalitiesLoadingg.add(Padding(
           padding: const EdgeInsets.all(2.0),
-          child: _buildAbnorm("assets/images/medal.png", "No abnormalities", "",
-              "We are watching you", "", -1),
+          child: _buildAbnorm(
+            "assets/images/medal.png",
+            "No abnormalities",
+            "We are watching you",
+            "",
+          ),
         ));
 
         _abnormalities = _abnormalitiesLoadingg;
       });
     } else {
       for (int i = 0; i < abnorm.length; i++) {
-        setState(() {
-          _abnormalitiesLoadingg.add(Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: _buildAbnorm("assets/images/medal.png",
-                "No Routes Available", "", "Could not load route. ", "", -1),
-          ));
+        if (abnorm[i]['type'] == "abnormality") {
+          //Abnormality
+          String description = "";
+          if (abnorm[i]['description'] == "Standing still for too long.") {
+            description = "Standing still";
+          }
+          if (abnorm[i]['description'] == "Driver came to a sudden stop.") {
+            description = "Sudden stop";
+          }
+          if (abnorm[i]['description'] == "Driver exceeded the speed limit.") {
+            description = "Driving to fast";
+          }
+          if (abnorm[i]['description'] ==
+              "Driver took a diffrent route than what was prescribed.") {
+            description = "Off route";
+          }
+          if (abnorm[i]['description'] ==
+              "Driver was driving with the company car when no deliveries were scheduled.") {
+            description = "driving company car";
+          }
+          if (abnorm[i]['description'] ==
+              "Driver never embarked on the route that was assigned to him.") {
+            description = "Never started your route";
+          }
+          if (abnorm[i]['description'] ==
+              "Driver skipped a delivery on his route.") {
+            description = "Skipped a delivery";
+          }
+          if (abnorm[i]['description'] == "error") {
+            description = "DataBase eror!";
+          }
+          setState(() {
+            _abnormalitiesLoadingg.add(Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: _buildAbnorm("assets/images/violation.png", "Violation",
+                  description, abnorm[i]['datetime']),
+            ));
 
-          _abnormalities = _abnormalitiesLoadingg;
-        });
+            _abnormalities = _abnormalitiesLoadingg;
+          });
+        }
+        if (abnorm[i]['type'] == "route_completion") {
+          //Route completion
+          setState(() {
+            _abnormalitiesLoadingg.add(Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: _buildAbnorm("assets/images/routeComplete.png",
+                  "Route completed", "", abnorm[i]['datetime']),
+            ));
+
+            _abnormalities = _abnormalitiesLoadingg;
+          });
+        }
+
+        if (abnorm[i]['type'] == "delivery") {
+          //Route completion
+          setState(() {
+            _abnormalitiesLoadingg.add(Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: _buildAbnorm(
+                  "assets/images/deliveryComplete.png",
+                  "Delivery completed",
+                  abnorm[i]['name'],
+                  abnorm[i]['datetime']),
+            ));
+
+            _abnormalities = _abnormalitiesLoadingg;
+          });
+        }
       }
     }
   }
@@ -164,7 +227,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           Padding(
             padding: EdgeInsets.only(top: 20 * SizeConfig.blockSizeVertical),
             child: Container(
-              width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -208,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               fontFamily: "Montserrat",
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
-                              fontSize: 2.5 * SizeConfig.blockSizeVertical),
+                              fontSize: 2.7 * SizeConfig.blockSizeVertical),
                         ),
                       ),
                     ],
@@ -249,32 +311,22 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 fontFamily: "Montserrat",
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 2.5 * SizeConfig.blockSizeVertical),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(
-                            "commendment & Violations", //Deliveries made *mockdata*
-                            style: TextStyle(
-                                fontFamily: "Montserrat",
-                                color: Colors.grey,
-                                fontSize: 2.0 * SizeConfig.blockSizeVertical),
+                                fontSize: 2.7 * SizeConfig.blockSizeVertical),
                           ),
                         ),
                       ]),
                     ],
                   ),
                   Container(
+                    width: MediaQuery.of(context).size.width * 0.8,
                     height: MediaQuery.of(context).size.height,
                     decoration: BoxDecoration(
                       color: Colors.white,
                     ),
                     child: Padding(
-                        padding: EdgeInsets.only(top: 0.0),
-                        child: Container(
-                            height: MediaQuery.of(context).size.height - 300.0,
-                            child: Column(children: _abnormalities))),
+                        padding: EdgeInsets.only(top: 5.0),
+                        child:
+                            Container(child: Column(children: _abnormalities))),
                   ),
                 ],
               ),
@@ -340,8 +392,8 @@ class _ProfileScreenState extends State<ProfileScreen>
             }));
   }
 
-  Widget _buildAbnorm(String imagePath, String routeNum, String distance,
-      String time, String del, int route) {
+  Widget _buildAbnorm(
+      String imagePath, String type, String discription, String time) {
     return Padding(
         padding: EdgeInsets.only(right: 10.0, top: 10.0),
         child: InkWell(
@@ -350,30 +402,35 @@ class _ProfileScreenState extends State<ProfileScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Container(
+                    width: MediaQuery.of(context).size.width * 0.9,
                     child: Row(children: [
-                  Hero(
-                      tag: "1",
-                      child: Image(
-                          image: AssetImage("assets/images/medal.png"),
-                          fit: BoxFit.cover,
-                          height: 100.0,
-                          width: 100.0)),
-                  SizedBox(width: 10.0),
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(routeNum,
-                            style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 17.0,
-                                fontWeight: FontWeight.bold)),
-                        Text("$distance\n$time\n$del",
-                            style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 15.0,
-                                color: Colors.grey)),
-                      ])
-                ])),
+                      Hero(
+                          tag: time,
+                          child: Image(
+                              image: AssetImage(imagePath),
+                              fit: BoxFit.cover,
+                              height: 100.0,
+                              width: 100)),
+                      SizedBox(width: 10.0),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(type,
+                                style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 17.0,
+                                    fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: true),
+                            Text(
+                              "$discription\n$time",
+                              style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 14,
+                                  color: Colors.grey),
+                            ),
+                          ])
+                    ])),
               ],
             )));
   }
