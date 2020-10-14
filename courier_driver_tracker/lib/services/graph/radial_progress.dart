@@ -14,7 +14,7 @@ class _RadialProgressState extends State<RadialProgress>
   final Duration fadeInDuration = Duration(milliseconds: 500);
   final Duration fillDuration = Duration(seconds: 2);
   ApiHandler _api = ApiHandler();
-  int score = 0;
+  double score = 0;
   String message = '';
   Color color1 = Colors.black;
   Color color2 = Colors.black;
@@ -47,16 +47,16 @@ class _RadialProgressState extends State<RadialProgress>
 
   setScore() async {
     this.score = await _api.getDriverScore();
-    if (this.score < 25) {
+    if (this.score < 25.0) {
       this.message = "bad";
       this.color1 = Colors.red;
-    } else if (this.score >= 25 && this.score <= 50) {
+    } else if (this.score >= 25.0 && this.score <= 50.0) {
       this.message = "average";
       this.color1 = Colors.orange;
-    } else if (this.score > 50 && this.score < 75) {
+    } else if (this.score > 50.0 && this.score < 75.0) {
       this.message = "good";
       this.color1 = Colors.green;
-    } else if (this.score >= 75) {
+    } else if (this.score >= 75.0) {
       this.message = "Excellent";
       this.color1 = Colors.blue;
     }
@@ -124,30 +124,11 @@ class _RadialProgressState extends State<RadialProgress>
 
 class RadialPainter extends CustomPainter {
   RadialPainter(double progressInDegrees) {
-    getColors();
     this.progressInDegrees = progressInDegrees;
   }
   double progressInDegrees;
-  ApiHandler _api = ApiHandler();
-  Color colore = Colors.red;
-
-  getColors() async {
-    int score = await _api.getDriverScore();
-
-    if (score < 25) {
-      this.colore = Colors.red;
-    } else if (score >= 25 && score <= 50) {
-      this.colore = Colors.orange;
-    } else if (score > 50 && score < 75) {
-      this.colore = Colors.green;
-    } else if (score >= 75) {
-      this.colore = Colors.blue;
-    }
-    return;
-  }
 
   void paint(Canvas canvas, Size size) async {
-    getColors();
     Paint paint = Paint()
       ..color = Colors.black12
       ..strokeCap = StrokeCap.round
