@@ -3,6 +3,8 @@ import 'package:courier_driver_tracker/services/file_handling/route_logging.dart
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart'
     as delivery;
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
   int _totalDistance = 0;
   int _totalDuration = 0;
   String _durationString;
+  String _distanceString;
   String currentRoute = "-1";
   String _selectedRoute = "LOADING...";
   List pictures = [
@@ -38,9 +41,11 @@ class _DeliveryPageState extends State<DeliveryPage> {
   ApiHandler _api = ApiHandler();
   FlutterSecureStorage storage = FlutterSecureStorage();
 
+  double width;
+  double height;
+
   @override
   void initState() {
-    getRoutesFromAPI();
     super.initState();
     getOrder();
   }
@@ -83,10 +88,11 @@ class _DeliveryPageState extends State<DeliveryPage> {
   }
 
   String getCurrentRoute() {
-    if (this.currentRoute == '-1') {
+    if (this.currentRoute == null || this.currentRoute == '-1') {
       return "Current Route: none";
     } else {
-      return "Current Route: " + this.currentRoute;
+      int routeNum = int.parse(this.currentRoute) +1;
+      return "Current Route: $routeNum";
     }
   }
 
@@ -121,7 +127,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
           _durationString = "";
           _loadingDeliveries.add(Padding(
             padding: const EdgeInsets.all(2.0),
-            child: _buildNoRoute("assets\images\delivery-Icon-6.png",
+            child: _buildNoRoute("assets/images/delivery-Icon-6.png",
                 "No Routes Available", "", "You have no routes.", "", -1),
           ));
 
@@ -144,7 +150,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
           _durationString = "";
           _loadingDeliveries.add(Padding(
             padding: const EdgeInsets.all(2.0),
-            child: _buildNoRoute("assets\images\delivery-Icon-6.png",
+            child: _buildNoRoute("assets/images/delivery-Icon-6.png",
                 "No Routes Available", "", "Could not load route.", "", -1),
           ));
 
@@ -231,7 +237,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
         _loadingDeliveries.add(Padding(
           padding: const EdgeInsets.all(2.0),
           child: _buildRoute(
-              "assets\images\delivery-Icon-1.png",
+              "assets/images/delivery-Icon-1.png",
               "Route $routeNum",
               "Distance: $distance Km",
               "Time: " + getTimeString(duration),
@@ -258,9 +264,71 @@ class _DeliveryPageState extends State<DeliveryPage> {
     });
   }
 
+  getRoutesFromNavigation() async {
+    NavigationService navigationService = NavigationService();
+    this.currentRoute = await storage.read(key: 'current_route');
+    if(!navigationService.isRouteInitialised()){
+      await navigationService.initialiseRoutes();
+    }
+
+    DeliveryRoute deliveries = navigationService.getDeliveryRoutes();
+
+    if(deliveries == null && this.mounted){
+      setState(() {
+
+        _durationString = "";
+        _loadingDeliveries.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _buildNoRoute(
+              "assets/images/delivery-Icon-1.png",
+              "Failed to load Routes",
+              "",
+              "Could not load route. Contact your manager for assistance." ,
+              "",
+              -1),
+        ));
+
+        _deliveries = _loadingDeliveries;
+      });
+
+      print("Dev: error while retrieving active calculated route locally.");
+      return;
+    }
+
+
+    int del = 1;
+    int totalDuration = 0;
+    int totalDistance = 0;
+    for(var route in deliveries.routes) {
+      int distance = navigationService.getRouteDistance();
+      totalDistance += distance;
+      int duration = navigationService.getRouteDuration();
+      totalDuration += duration;
+      int numDeliveries = navigationService.getTotalDeliveries();
+
+      _loadingDeliveries.add(Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: _buildRoute(
+            "assets/images/delivery-Icon-1.png",
+            "Route $del",
+            "Distance: " + getDeliveryDistanceString(distance),
+            "Time: " + getTimeString(duration),
+            "Deliveries: $numDeliveries",
+            del - 1),
+      ));
+    }
+    if(this.mounted) {
+      setState(() {
+        _distanceString = getDeliveryDistanceString(totalDistance);
+        _durationString = getTimeString(totalDuration);
+        _deliveries = _loadingDeliveries;
+      });
+    }
+  }
+
   String getTimeString(int time) {
     int hours = 0;
-    int minutes = time;
+    int minutes = (time / 60).round();
 
     while (minutes > 60) {
       hours += 1;
@@ -272,6 +340,24 @@ class _DeliveryPageState extends State<DeliveryPage> {
     } else {
       return "$hours h $minutes min";
     }
+  }
+
+  String getDeliveryDistanceString(int dist) {
+    int distance = dist;
+
+    if (distance > 1000) {
+      int km = 0;
+      int m = (distance / 100).round() * 100;
+      while (m > 1000) {
+        m -= 1000;
+        km += 1;
+      }
+      m = (m / 100).round();
+
+      return "$km,$m km";
+    }
+
+    return "$distance m";
   }
 
   drivingWithNoRoutes() async {
@@ -310,6 +396,17 @@ class _DeliveryPageState extends State<DeliveryPage> {
 
   @override
   Widget build(BuildContext context) {
+    width = MediaQuery.of(context).size.width;
+    height = MediaQuery.of(context).size.height;
+
+    NavigationService navigationService = NavigationService();
+    if(!navigationService.isRouteInitialised()){
+      getRoutesFromAPI();
+    }
+    else{
+      getRoutesFromNavigation();
+    }
+
     return Scaffold(
         bottomNavigationBar: Container(
             decoration: BoxDecoration(
@@ -331,13 +428,13 @@ class _DeliveryPageState extends State<DeliveryPage> {
                               fontFamily: 'Montserrat',
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 30.0)),
+                              fontSize: height * 0.04)),
                       SizedBox(width: 10.0),
                       Text('Routes',
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               color: Colors.white,
-                              fontSize: 25.0))
+                              fontSize: height * 0.03))
                     ],
                   ),
                   SizedBox(height: 10.0),
@@ -350,11 +447,12 @@ class _DeliveryPageState extends State<DeliveryPage> {
                               color: Colors.grey[100]),
                         ),
                         TextSpan(
-                            text: "  Total KM : $_totalDistance KM\n",
+                            text: "  Total KM : $_distanceString\n",
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
                                 color: Colors.white,
-                                fontSize: 16.0)),
+                                fontSize: height * 0.025)),
+
                         WidgetSpan(
                           child: Icon(FontAwesomeIcons.clock,
                               color: Colors.grey[100]),
@@ -364,13 +462,13 @@ class _DeliveryPageState extends State<DeliveryPage> {
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
                                 color: Colors.white,
-                                fontSize: 16.0)),
+                                fontSize: height * 0.025)),
                         TextSpan(
                             text: getCurrentRoute(),
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
                                 color: Colors.white,
-                                fontSize: 16.0))
+                                fontSize: height * 0.02))
                       ]))
                     ],
                   ),
@@ -379,7 +477,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
               SizedBox(height: 20),
               Expanded(
                 child: Container(
-                  height: MediaQuery.of(context).size.height * 0.6,
+                  height: height * 0.6,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius:
@@ -413,8 +511,9 @@ class _DeliveryPageState extends State<DeliveryPage> {
 
   Widget _buildRoute(String imagePath, String routeNum, String distance,
       String time, String del, int route) {
+
     return Padding(
-        padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
+        padding: EdgeInsets.only(left: width * 0.1, right: width * 0.1, top: 10.0),
         child: InkWell(
             onTap: () {},
             child: Row(
@@ -427,8 +526,8 @@ class _DeliveryPageState extends State<DeliveryPage> {
                       child: Image(
                           image: AssetImage(getPicPath()),
                           fit: BoxFit.cover,
-                          height: 100.0,
-                          width: 100.0)),
+                          height: width * 0.30,
+                          width: width * 0.30)),
                   SizedBox(width: 10.0),
                   Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,12 +535,12 @@ class _DeliveryPageState extends State<DeliveryPage> {
                         Text(routeNum,
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
-                                fontSize: 17.0,
+                                fontSize: height * 0.035,
                                 fontWeight: FontWeight.bold)),
                         Text("$distance\n$time\n$del",
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
-                                fontSize: 15.0,
+                                fontSize: height * 0.02,
                                 color: Colors.grey)),
                       ])
                 ])),
@@ -456,7 +555,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
   Widget _buildNoRoute(String imagePath, String routeNum, String distance,
       String time, String del, int route) {
     return Padding(
-        padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
+        padding: EdgeInsets.only(left: width * 0.1, right: width * 0.1, top: 10.0),
         child: InkWell(
             onTap: () {},
             child: Row(
@@ -470,8 +569,8 @@ class _DeliveryPageState extends State<DeliveryPage> {
                           image:
                               AssetImage("assets/images/delivery-Icon-6.png"),
                           fit: BoxFit.cover,
-                          height: 100.0,
-                          width: 100.0)),
+                          height: width * 0.3,
+                          width: width * 0.3)),
                   SizedBox(width: 10.0),
                   Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,12 +578,12 @@ class _DeliveryPageState extends State<DeliveryPage> {
                         Text(routeNum,
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
-                                fontSize: 17.0,
+                                fontSize: height * 0.035,
                                 fontWeight: FontWeight.bold)),
                         Text("$distance\n$time\n$del",
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
-                                fontSize: 15.0,
+                                fontSize: height * 0.02,
                                 color: Colors.grey)),
                       ])
                 ])),

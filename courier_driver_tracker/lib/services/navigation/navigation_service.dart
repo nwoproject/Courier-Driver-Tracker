@@ -240,7 +240,6 @@ class NavigationService {
         throw "Route error";
       }
       LatLng positionOnPoly = calculatePointOnPolyline();
-
       // remove previous position from polyline
       currentPolyline.points.removeAt(0);
 
@@ -563,6 +562,18 @@ class NavigationService {
     });
   }
 
+  notifyNearDelivery(){
+    subscribers.forEach((element) {
+      element.setNearDelivery(true);
+    });
+  }
+
+  notifyNotNearDelivery(){
+    subscribers.forEach((element) {
+      element.setNearDelivery(false);
+    });
+  }
+
   //__________________________________________________________________________________________________
   //                            Getters
   //__________________________________________________________________________________________________
@@ -655,6 +666,24 @@ class NavigationService {
     return (_deliveryRoutes.getStepDistance(
         _currentRoute, _currentLeg, _currentStep) /
         10).round() * 10;
+  }
+
+  int getRouteDistance() {
+    if (_deliveryRoutes == null) {
+      return null;
+    }
+
+    return (_deliveryRoutes.getRouteDistance(_currentRoute) / 10)
+            .round() * 10;
+
+  }
+
+  int getRouteDuration(){
+    if (_deliveryRoutes == null) {
+      return null;
+    }
+
+    return _deliveryRoutes.getRouteDuration(_currentRoute);
   }
 
   String getDeliveryDistance() {
@@ -932,15 +961,18 @@ class NavigationService {
             currentPolyline.points[0], currentPolyline.points.last);
         if (dist < 50) {
           nearDelivery = true;
+          notifyNearDelivery();
           isAtDelivery();
         } else {
           nearDelivery = false;
+          notifyNotNearDelivery();
         }
         showDeliveryRadiusOnMap();
         return nearDelivery;
       } catch (error) {
         print("Failed to determine if near delivery.[$error]");
         nearDelivery = false;
+        notifyNotNearDelivery();
         return nearDelivery;
       }
     }
@@ -951,12 +983,12 @@ class NavigationService {
       } else {
         circles = {};
       }
+      notifyCircleChange();
     }
 
     bool isAtDelivery() {
-      if (calculateDistanceBetween(
-          currentPolyline.points[0], currentPolyline.points.last) <
-          _position.accuracy + 50) {
+      if (currentPolyline.points.length < 3 || calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last) < 40) {
+        notifyNearDelivery();
         atDelivery = true;
       }
       return atDelivery;
@@ -986,6 +1018,9 @@ class NavigationService {
     }
 
     sendCompletedRouteAPICall() async {
+      if(_currentLeg != _deliveryRoutes.routes.length -1){
+        return;
+      }
       ApiHandler api = ApiHandler();
       var id = await api.getActiveRouteID(_currentRoute);
       api.completeRoute(id, _position);
@@ -1003,6 +1038,11 @@ class NavigationService {
         _currentStep = 0;
         nearDelivery = false;
         atDelivery = false;
+        notifyCircleChange();
+        notifyNotNearDelivery();
+        notifyMapInfoChange();
+        notifyDeliveryInfoChange();
+        notifyDeliveryChange();
         return;
       }
 
@@ -1017,6 +1057,7 @@ class NavigationService {
       setCurrentPolyline();
       clearAllSetVariables();
       initialiseInfoVariables();
+      notifyDeliveryChange();
     }
 
     //__________________________________________________________________________________________________
@@ -1098,7 +1139,7 @@ class NavigationService {
           return;
         }
       }
-      if (currentPolyline.points.length < 4) {
+      if (currentPolyline.points.length < 10) {
         isNearDelivery();
       }
 
@@ -1168,11 +1209,6 @@ class NavigationService {
       }
     }
   }
-
-/*
-TODO
-  - see if old route is still saved, meaning incomplete. create abnormality
- */
 /*
  TODO
   navigation

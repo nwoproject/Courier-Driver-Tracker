@@ -39,6 +39,22 @@ class Route{
     return legs[leg].getDeliveryDistance();
   }
 
+  int getRouteDistance(){
+    int totalDist = 0;
+    for(var leg in legs){
+      totalDist += leg.distance;
+    }
+    return totalDist;
+  }
+
+  int getRouteDuration(){
+    int totalDuration = 0;
+    for(var leg in legs){
+      totalDuration += leg.duration;
+    }
+    return totalDuration;
+  }
+
   String getDeliveryAddress(int leg){
     return legs[leg].getDeliveryAddress();
   }

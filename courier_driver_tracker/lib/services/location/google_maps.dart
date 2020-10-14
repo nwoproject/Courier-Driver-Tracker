@@ -44,7 +44,7 @@ class MapSampleState extends State<GMap> {
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
   String _directionIconPath = "assets/images/navigation_marker_white.png";
-  bool atDelivery = false;
+  bool _atDelivery = false;
 
   @override
   void initState() {
@@ -138,6 +138,10 @@ class MapSampleState extends State<GMap> {
 
   setMarkers(Set<Marker> markers) {
     _markers = markers;
+  }
+
+  setNearDelivery(bool near){
+    _atDelivery = near;
   }
 
   /*
@@ -376,7 +380,7 @@ class MapSampleState extends State<GMap> {
                     padding:
                         const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(atDelivery ? "Arrived" : _stepTimeRemaining,
+                      child: Text(_atDelivery ? "Arrived" : _stepTimeRemaining,
                           style: TextStyle(
                               color: Colors.green,
                               fontFamily: "Montserrat",
@@ -389,7 +393,7 @@ class MapSampleState extends State<GMap> {
                         const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
                       child: Text(
-                          atDelivery ? "at Destination" : "$_distance . $_eta",
+                          _atDelivery ? "at Destination" : "$_distance . $_eta",
                           style: TextStyle(
                               color: Colors.grey,
                               fontFamily: "Montserrat",
@@ -559,7 +563,7 @@ class MapSampleState extends State<GMap> {
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 200.0),
                           child: Container(
-                            child: atDelivery
+                            child: _atDelivery
                                 ? RaisedButton(
                                     padding: EdgeInsets.symmetric(
                                         vertical: 12.0, horizontal: 40.0),
@@ -579,7 +583,7 @@ class MapSampleState extends State<GMap> {
                                     onPressed: () {
                                       Navigator.of(context)
                                           .pushNamed("/reportDelivery");
-                                      _navigatorService.moveToNextDelivery();
+
                                     },
                                   )
                                 : Container(),
