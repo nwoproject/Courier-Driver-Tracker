@@ -73,7 +73,7 @@ function ReportSelection(props){
                 <Card>
                     {DriverNotFound ? 
                     <Card.Body>
-                        <Alert variant="danger">A driver matching that ID was not found. You can search select a Driver in Manage Drivers to see his ID.</Alert>
+                        <Alert variant="danger">You have not selected a Driver.</Alert>
                     </Card.Body>
                     :
                     <div>

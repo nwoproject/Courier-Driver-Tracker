@@ -24,10 +24,12 @@ function SendReport(props){
     const [DMade, setMade] = useState(false);
     const [DMissed, setMissed] = useState(false);
     const [DLate, setLate] = useState(false);
+    const [DScore, setDS] = useState(false);
     const [MostMade, setMM] = useState([]);
     const [MostAbnot, setMA] = useState([]);
     const [MostMissed, setMMiss] = useState([]);
     const [LeastAbb, setLA] = useState([]);
+    const [DriverScore, setDriverScore] = useState([]);
     const [Time, setT] = useState(true);
     const [Loading, setLoad] = useState(true);
     const [AbnorPie, setAP] = useState(false);
@@ -232,6 +234,34 @@ function SendReport(props){
         setDA(Drivers);     
     }
 
+    function SortDriverByScore(){
+        let Drivers = DriverArray;
+        fetch(process.env.REACT_APP_API_SERVER+"/api/driver-score/all",{
+            method: 'POST',
+            headers:{
+                'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                'Content-Type' : 'application/json'    
+            },
+            body: JSON.stringify({
+                id:localStorage.ID,
+                token:localStorage.Token
+            }) 
+        })
+        .then(response=>response.json())
+        .then(result=>{
+            Drivers.map((item, index)=>{
+                let Position = result.findIndex(element=>element.id === item.id);
+                Drivers[index].Score = result[Position].score
+            });
+            Drivers.sort((a,b)=>{
+                return b.Score - a.Score;
+            });
+            setDA(Drivers);
+            setDS(false);
+            setDS(true);
+        });
+    } 
+
     function HandleSort(event){
         if(event.target.name==="Abnor"){
             sortDriversByAb();
@@ -239,7 +269,8 @@ function SendReport(props){
             setAS(true);
             setMade(false);
             setMissed(false);
-            setLate(false);    
+            setLate(false);
+            setDS(false);    
         }
         else if(event.target.name==="Made"){
             SortDriverByMade();
@@ -248,6 +279,7 @@ function SendReport(props){
             setMade(true);
             setMissed(false);
             setLate(false);
+            setDS(false);
         }
         else if(event.target.name==="Missed"){
             SortDriversByMissed();
@@ -256,6 +288,7 @@ function SendReport(props){
             setMade(false);
             setMissed(true);
             setLate(false);
+            setDS(false);
         }
         else if(event.target.name==="Late"){
             SortDriverByLate();
@@ -264,6 +297,16 @@ function SendReport(props){
             setMade(false);
             setMissed(false);
             setLate(true);
+            setDS(false);
+        }
+        else if(event.target.name==="Score"){
+            SortDriverByScore();
+            setST("Driver Score :");
+            setAS(false);
+            setMade(false);
+            setMissed(false);
+            setLate(false);
+            setDS(true);
         }
     }
 
@@ -379,17 +422,20 @@ function SendReport(props){
                             <Card.Body>
                                 <hr className="BorderLine"/>
                                 <Row>
-                                    <Col xs={3}>
-                                        <Button name="Abnor" onClick={HandleSort}>Sort by Abnormality Count</Button>
+                                    <Col xs={2}>
+                                        <Button name="Abnor" onClick={HandleSort}>Abnormality Count</Button>
                                     </Col>
-                                    <Col xs={3}>
-                                        <Button name="Made" onClick={HandleSort}>Sort by Deliveries Made</Button>
+                                    <Col xs={2}>
+                                        <Button name="Made" onClick={HandleSort}>Deliveries Made</Button>
                                     </Col>
-                                    <Col xs={3}>
-                                        <Button name="Missed" onClick={HandleSort}>Sort by Deliveries Missed</Button>
+                                    <Col xs={2}>
+                                        <Button name="Missed" onClick={HandleSort}>Deliveries Missed</Button>
                                     </Col>
-                                    <Col xs={3}>
-                                        <Button name="Late" onClick={HandleSort}>Sort by Deliveries Late</Button>
+                                    <Col xs={2}>
+                                        <Button name="Late" onClick={HandleSort}>Deliveries Late</Button>
+                                    </Col>
+                                    <Col xs={2}>
+                                        <Button name="Score" onClick={HandleSort}>Driver Score</Button>
                                     </Col>
                                 </Row>
                                 <hr className="BorderLine"/>
@@ -406,6 +452,7 @@ function SendReport(props){
                                             {DMade ? item.DeliveryMade:null}
                                             {DMissed ? item.DeliverMissed:null}
                                             {DLate ? item.DeliveryLate:null}
+                                            {DScore ? item.Score:null}
                                         </Col>
                                     </Row>
                                 )}
@@ -463,6 +510,7 @@ function SendReport(props){
                         <Col xs={11}>
                             <Pattern time={props.Time}/>
                         </Col>
+                        
                     </Row>
                 </Card.Body>
             </div>
