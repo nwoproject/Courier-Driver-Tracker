@@ -57,7 +57,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               FlatButton(
                 child: Text('Accept'),
                 onPressed: () {
-                  Navigator.popUntil(context, ModalRoute.withName('/login'));
+                  storage.deleteAll();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed("/login");
                 },
               ),
             ],
