@@ -54,18 +54,30 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   getAbnormalities() async {
-    List<int> abnorm = [1];
+    List<int> abnorm = [];
 
-    for (int i = 0; i < abnorm.length; i++) {
+    if (abnorm.length <= 0) {
       setState(() {
         _abnormalitiesLoadingg.add(Padding(
           padding: const EdgeInsets.all(2.0),
-          child: _buildAbnorm("assets/images/delivery-Icon-6.png",
-              "No Routes Available", "", "Could not load route. ", "", -1),
+          child: _buildAbnorm("assets/images/medal.png", "No abnormalities", "",
+              "We are watching you", "", -1),
         ));
 
         _abnormalities = _abnormalitiesLoadingg;
       });
+    } else {
+      for (int i = 0; i < abnorm.length; i++) {
+        setState(() {
+          _abnormalitiesLoadingg.add(Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: _buildAbnorm("assets/images/medal.png",
+                "No Routes Available", "", "Could not load route. ", "", -1),
+          ));
+
+          _abnormalities = _abnormalitiesLoadingg;
+        });
+      }
     }
   }
 
@@ -163,44 +175,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                     child: Column(
                       children: <Widget>[
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 20.0),
-                              child: Column(children: <Widget>[
-                                Text(
-                                  "Profile", //Deliveries made *mockdata*
-                                  style: TextStyle(
-                                      fontFamily: "Montserrat",
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          4 * SizeConfig.blockSizeVertical),
-                                ),
-                              ]),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 160.0),
-                              child: Column(
-                                children: <Widget>[
-                                  Text(
-                                    "120", //Deliveries made *mockdata*
-                                    style: TextStyle(
-                                        fontFamily: "Montserrat",
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            2.5 * SizeConfig.blockSizeVertical),
-                                  ),
-                                  Text(
-                                    "Deliveries Made",
-                                    style: TextStyle(
-                                        fontFamily: "Montserrat",
-                                        color: Colors.black,
-                                        fontSize:
-                                            2 * SizeConfig.blockSizeVertical),
-                                  ),
-                                ],
-                              ),
+                            Text(
+                              "Profile",
+                              style: TextStyle(
+                                  fontFamily: "Montserrat",
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 4 * SizeConfig.blockSizeVertical),
                             ),
                           ],
                         ),
@@ -213,8 +196,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                     indent: 20,
                     endIndent: 20,
                   ),
-                  SizedBox(
-                    height: 3 * SizeConfig.blockSizeVertical,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          "Statistics", //Deliveries made *mockdata*
+                          style: TextStyle(
+                              fontFamily: "Montserrat",
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 2.5 * SizeConfig.blockSizeVertical),
+                        ),
+                      ),
+                    ],
                   ),
                   Container(
                     height: 35 * SizeConfig.blockSizeVertical,
@@ -228,7 +224,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             style: TextStyle(
                                 fontFamily: "Montserrat",
                                 color: Colors.black,
-                                fontWeight: FontWeight.bold,
                                 fontSize: 2.5 * SizeConfig.blockSizeVertical),
                           ),
                         ),
@@ -240,6 +235,22 @@ class _ProfileScreenState extends State<ProfileScreen>
                     color: Colors.grey,
                     indent: 20,
                     endIndent: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          "Abnormalities", //Deliveries made *mockdata*
+                          style: TextStyle(
+                              fontFamily: "Montserrat",
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 2.5 * SizeConfig.blockSizeVertical),
+                        ),
+                      ),
+                    ],
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height - 244,
@@ -330,8 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   Hero(
                       tag: "1",
                       child: Image(
-                          image:
-                              AssetImage("assets/images/delivery-Icon-1.png"),
+                          image: AssetImage("assets/images/medal.png"),
                           fit: BoxFit.cover,
                           height: 100.0,
                           width: 100.0)),

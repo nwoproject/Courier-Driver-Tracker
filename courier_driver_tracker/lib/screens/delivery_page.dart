@@ -40,7 +40,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
 
   @override
   void initState() {
-    getRoutes();
+    getRoutesFromAPI();
     super.initState();
     getOrder();
   }
@@ -82,7 +82,15 @@ class _DeliveryPageState extends State<DeliveryPage> {
     return this.pictures[num1];
   }
 
-  getRoutes() async {
+  String getCurrentRoute() {
+    if (this.currentRoute == '-1') {
+      return "Current Route: none";
+    } else {
+      return "Current Route: " + this.currentRoute;
+    }
+  }
+
+  getRoutesFromAPI() async {
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     String currentRoute = await storage.read(key: 'current_route');
@@ -108,18 +116,19 @@ class _DeliveryPageState extends State<DeliveryPage> {
     // check to see if he has no routes
     if (routes == null) {
       //write deliveries to file
+      if (this.mounted) {
+        setState(() {
+          _durationString = "";
+          _loadingDeliveries.add(Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: _buildNoRoute("assets\images\delivery-Icon-6.png",
+                "No Routes Available", "", "You have no routes.", "", -1),
+          ));
 
-      setState(() {
-        _durationString = "";
-        _loadingDeliveries.add(Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: _buildNoRoute("assets\images\delivery-Icon-6.png",
-              "No Routes Available", "", "You have no routes.", "", -1),
-        ));
-
-        _deliveries = _loadingDeliveries;
-      });
-      print("Dev: Error while retrieving uncalculated routes");
+          _deliveries = _loadingDeliveries;
+        });
+        print("Dev: Error while retrieving uncalculated routes");
+      }
       return;
     }
 
@@ -371,7 +380,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
                                 color: Colors.white,
                                 fontSize: 16.0)),
                         TextSpan(
-                            text: "Current Route: $_selectedRoute",
+                            text: getCurrentRoute(),
                             style: TextStyle(
                                 fontFamily: 'Montserrat',
                                 color: Colors.white,
@@ -396,9 +405,16 @@ class _DeliveryPageState extends State<DeliveryPage> {
                     Padding(
                         padding: EdgeInsets.only(top: 45.0),
                         child: Container(
-                            height: MediaQuery.of(context).size.height - 300.0,
+                            height: MediaQuery.of(context).size.height - 380.0,
                             child: ListView(children: _deliveries))),
-                    Row()
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FloatingActionButton(
+                        onPressed: getRoutesFromAPI,
+                        tooltip: 'refresh',
+                        child: new Icon(Icons.refresh),
+                      ),
+                    ),
                   ],
                 ),
               ),
