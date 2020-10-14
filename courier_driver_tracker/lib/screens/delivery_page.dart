@@ -47,6 +47,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
   @override
   void initState() {
     super.initState();
+    getRoutesFromAPI();
     getOrder();
   }
 
@@ -98,6 +99,14 @@ class _DeliveryPageState extends State<DeliveryPage> {
 
   getRoutesFromAPI() async {
     // see if driver has routes still stored
+    NavigationService navigationService = NavigationService();
+    if(navigationService.isRouteInitialised()){
+      await getRoutesFromNavigation();
+      return;
+    }
+    _totalDuration = 0;
+    _totalDistance = 0;
+
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     String currentRoute = await storage.read(key: 'current_route');
     this.currentRoute = currentRoute;
@@ -113,6 +122,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
     if (routes != null && currentActiveRoute == -1) {
       // notify abnormality about not completing a route
       print("You have an unfinished route!!");
+
     }
 
     // if not initialise his routes
@@ -124,7 +134,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
       //write deliveries to file
       if (this.mounted) {
         setState(() {
-          _durationString = "";
+          _durationString = "N/A";
           _loadingDeliveries.add(Padding(
             padding: const EdgeInsets.all(2.0),
             child: _buildNoRoute("assets/images/delivery-Icon-6.png",
@@ -147,7 +157,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
 
       if (activeRoute == null) {
         setState(() {
-          _durationString = "";
+          _durationString = "N/A";
           _loadingDeliveries.add(Padding(
             padding: const EdgeInsets.all(2.0),
             child: _buildNoRoute("assets/images/delivery-Icon-6.png",
@@ -232,14 +242,13 @@ class _DeliveryPageState extends State<DeliveryPage> {
         // create delivery cards
 
         int routeNum = i + 1;
-        distance = (distance / 1000).ceil();
-        duration = (duration / 60).ceil();
+
         _loadingDeliveries.add(Padding(
           padding: const EdgeInsets.all(2.0),
           child: _buildRoute(
               "assets/images/delivery-Icon-1.png",
               "Route $routeNum",
-              "Distance: $distance Km",
+              "Distance: " + getDeliveryDistanceString(distance),
               "Time: " + getTimeString(duration),
               "Deliveries: $numDeliveries",
               i),
@@ -256,10 +265,10 @@ class _DeliveryPageState extends State<DeliveryPage> {
     storage.write(key: 'route_initialised', value: 'true');
     // set info variables
     setState(() {
-      _totalDistance = (_totalDistance / 1000).ceil();
-      _totalDuration = (_totalDuration / 60).ceil();
-
       _durationString = getTimeString(_totalDuration);
+      _distanceString = getDeliveryDistanceString(_totalDistance);
+      print("Dist: $_distanceString");
+      print("Dur: $_durationString");
       _deliveries = _loadingDeliveries;
     });
   }
@@ -398,17 +407,6 @@ class _DeliveryPageState extends State<DeliveryPage> {
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
-
-    if(_deliveries.length == 0){
-      NavigationService navigationService = NavigationService();
-      if(!navigationService.isRouteInitialised()){
-        getRoutesFromAPI();
-      }
-      else{
-        getRoutesFromNavigation();
-      }
-    }
-
     return Scaffold(
         bottomNavigationBar: Container(
             decoration: BoxDecoration(

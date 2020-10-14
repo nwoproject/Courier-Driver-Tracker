@@ -265,7 +265,6 @@ class NavigationService {
           calculateNextStepPoint();
         }
         else if(_currentStep != _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1 && _lengthRemainingAfterNextStep >= currentPolyline.points.length){
-          print("Length remaining: $_lengthRemainingAfterNextStep");
           _currentStep++;
           calculateNextStepPoint();
           // call update functions
@@ -582,6 +581,10 @@ class NavigationService {
 
   bool isRouteInitialised(){
     return _routesInitialised;
+  }
+
+  Position getPosition(){
+    return _position;
   }
 
   int getRoute() {

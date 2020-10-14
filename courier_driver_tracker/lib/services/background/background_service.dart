@@ -1,4 +1,5 @@
-import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
+import 'package:courier_driver_tracker/services/abnormality/abnormality_service.dart';
+import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/location/geolocator_service.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -9,15 +10,17 @@ class BackgroundService {
 
   static final _instance = BackgroundService._internal();
 
-  GeolocatorService _geolocatorService = GeolocatorService();
-  NavigationService _navigationService = NavigationService();
+  static final GeolocatorService _geolocatorService = GeolocatorService();
+  static final AbnormalityService _abnormalityService = AbnormalityService();
+  static final RouteLogging _logger = RouteLogging();
 
   void trackDriver() async{
-    print("Doing something");
     while(true){
-      Position current = await _geolocatorService.getPosition();
-      print("Tracking at ${current.longitude} - ${current.latitude}");
-      await Future.delayed(Duration(milliseconds: 5000), (){});
+      await Future.delayed(Duration(milliseconds: 5000), () async {
+          Position current = await _geolocatorService.getPosition();
+          _abnormalityService.setCurrentLocation(current);
+          _logger.writeToFile(current.toString(), "locationFile");
+      });
     }
   }
 }

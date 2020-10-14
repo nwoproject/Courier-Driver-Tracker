@@ -52,6 +52,9 @@ dependencies:
   #navigation directions
   flutter_widget_from_html_core: ^0.4.3
 
+  #background
+  shared_preferences: ^0.5.4+3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
