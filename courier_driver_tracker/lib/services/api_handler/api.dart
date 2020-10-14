@@ -70,7 +70,6 @@ class ApiHandler {
 
     var response = await http.post("$apiUrl/api/driver-score/recent",
         headers: requestHeaders, body: data);
-    print(response.body);
 
     List<dynamic> json = jsonDecode(response.body);
     return json;

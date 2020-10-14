@@ -140,7 +140,7 @@ class RadialPainter extends CustomPainter {
 
     Paint progressPaint = Paint()
       ..shader = LinearGradient(
-              colors: [Colors.green, Colors.orange, Colors.red])
+              colors: [Colors.green, Colors.green[200], Colors.green])
           .createShader(Rect.fromCircle(center: center, radius: size.width / 3))
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
