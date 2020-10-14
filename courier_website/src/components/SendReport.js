@@ -226,13 +226,13 @@ function SendReport(props){
         setDA(Drivers);    
     }
 
-    function SortDriverByLate(){
+    /*function SortDriverByLate(){
         let Drivers = DriverArray;
         Drivers.sort((a,b)=>{
             return b.DeliveryLate - a.DeliveryLate;
         });
         setDA(Drivers);     
-    }
+    }*/
 
     function SortDriverByScore(){
         let Drivers = DriverArray;
@@ -290,7 +290,7 @@ function SendReport(props){
             setLate(false);
             setDS(false);
         }
-        else if(event.target.name==="Late"){
+        /*else if(event.target.name==="Late"){
             SortDriverByLate();
             setST("Deliveries Late Count: ");
             setAS(false);
@@ -298,7 +298,7 @@ function SendReport(props){
             setMissed(false);
             setLate(true);
             setDS(false);
-        }
+        }*/
         else if(event.target.name==="Score"){
             SortDriverByScore();
             setST("Driver Score :");
@@ -402,14 +402,14 @@ function SendReport(props){
                                             {DeliveryArray.Missed}
                                         </Col>
                                     </Row>
-                                    <Row>
+                                    {false ? <Row>
                                         <Col xs={6}>
                                             Total Deliveries Late: 
                                         </Col>
                                         <Col xs={3}>
                                             {DeliveryArray.Late}
                                         </Col>
-                                    </Row>
+                                    </Row>:null}
                                 </div>
                                 }
                                 <hr className="BorderLine"/>
@@ -422,19 +422,19 @@ function SendReport(props){
                             <Card.Body>
                                 <hr className="BorderLine"/>
                                 <Row>
-                                    <Col xs={2}>
+                                    <Col xs={3}>
                                         <Button name="Abnor" onClick={HandleSort}>Abnormality Count</Button>
                                     </Col>
-                                    <Col xs={2}>
+                                    <Col xs={3}>
                                         <Button name="Made" onClick={HandleSort}>Deliveries Made</Button>
                                     </Col>
-                                    <Col xs={2}>
+                                    <Col xs={3}>
                                         <Button name="Missed" onClick={HandleSort}>Deliveries Missed</Button>
                                     </Col>
-                                    <Col xs={2}>
+                                    {false ?<Col xs={2}>
                                         <Button name="Late" onClick={HandleSort}>Deliveries Late</Button>
-                                    </Col>
-                                    <Col xs={2}>
+                                    </Col>:null}
+                                    <Col xs={3}>
                                         <Button name="Score" onClick={HandleSort}>Driver Score</Button>
                                     </Col>
                                 </Row>
