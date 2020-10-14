@@ -59,28 +59,25 @@ function Pattern(props){
 
     function AbnormalityName(code){
         if(code==100){
-            return("Standing Still for too long");
+            return(<div>Standing Still for too long<b /></div>);
         }
         else if(code==101){
-            return("Driver came to a Sudden Stop");
+            return(<div>Driver came to a Sudden Stop<b /></div>);
         }
         else if(code==102){
-            return("Driver exceeded the speed limit");
+            return(<div>Driver exceeded the speed limit<b /></div>);
         }
         else if(code==103){
-            return("Driver took a diffrent route than what prescribed");
+            return(<div>Driver took a diffrent route than what prescribed<b /></div>);
         }
         else if(code==104){
-            return("Driver was driving with the company car when no deliveries were scheduled");
+            return(<div>Driver was driving with the company car when no deliveries were scheduled<b /></div>);
         }
         else if(code==105){
-            return("Driver never embarked on the route that was assigned to him");
+            return(<div>Driver never embarked on the route that was assigned to him<b /></div>);
         }
         else if(code==106){
-            return("Driver skipped a delivery on his route");
-        }
-        else{
-            return("eh?");
+            return(<div>Driver skipped a delivery on his route<b /></div>);
         }
     }
 
@@ -102,7 +99,7 @@ function Pattern(props){
                                             {item.pattern_detected}
                                         </Col>
                                         <Col xs={3}>
-                                            Abnormality List : {item.abnormality.map((item, index)=><div>{AbnormalityName(item)}<br /></div>)}
+                                            Abnormality List : {item.abnormality.map((item, index)=><div>{AbnormalityName(item)}</div>)}
                                         </Col>
                                         <Col xs={2}>
                                             Occured on : {item.date.substring(0,10)}
