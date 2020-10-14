@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +12,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
+
+import 'package:courier_driver_tracker/services/background/background_main.dart';
+import 'package:courier_driver_tracker/services/background/background_service.dart';
+import 'package:courier_driver_tracker/services/background/background_widget.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -48,18 +54,33 @@ class _HomePageViewState extends State<HomePageView> {
       };
     });
   }
+  var _backgroundChannel = MethodChannel("com.ctrlaltelite/background_service");
+  var callbackHandle = PluginUtilities.getCallbackHandle(backgroundMain);
+
+  bool _visible = false;
+
 
   @override
   void initState(){
     //readUserData();
     super.initState();
-    startServiceInPlatform();
+    _backgroundChannel.invokeMethod('startService', callbackHandle.toRawHandle());
+
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _pushScreens(context));
+  }
+
+  _pushScreens(BuildContext context) {
+    Navigator.of(context).pushNamed('/splash');
+    setState(() {
+      _visible = true;
+    });
   }
 
   void startServiceInPlatform() async {
     if (Platform.isAndroid) {
-      var methodChannel = MethodChannel("com.ctrlaltelite.messages");
-      String data = await methodChannel.invokeMethod("startService");
+      var _backgroundChannel = MethodChannel("com.ctrlaltelite.background");
+      String data = await _backgroundChannel.invokeMethod("startService");
       print(data);
       const seconds = const Duration(seconds: 45);
       Timer.periodic(seconds, (Timer t) => 
@@ -79,11 +100,29 @@ class _HomePageViewState extends State<HomePageView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
+    return WillPopScope(
+        onWillPop: () {
+          if (Platform.isAndroid) {
+            if (Navigator.of(context).canPop()) {
+              return Future.value(true);
+            } else {
+              _backgroundChannel.invokeMethod("sendToBackground");
+              return Future.value(false);
+            }
+          } else {
+            return Future.value(true);
+          }
+        },
+    child:Scaffold(
+
         bottomNavigationBar: _buildBottomNavigationBar,
-        body: GMap(),
-      ),
+        body: AnimatedOpacity(
+          opacity: _visible ? 1.0 : 0.0,
+          duration: Duration(milliseconds: 200),
+          child: GMap(),
+        )
+
+      )
     );
   }
 

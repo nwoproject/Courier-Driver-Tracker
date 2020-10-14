@@ -75,17 +75,19 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       //write deliveries to file
 
 
-      setState(() {
-        _durationString = "";
-        _loadingDeliveries.add(Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: _deliveryCards("No Routes Available", "",
-              "You have no routes for the day. Ensure to exit app completely." , "", -1),
-        ));
+      if(this.mounted){
+        setState(() {
+          _durationString = "";
+          _loadingDeliveries.add(Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: _deliveryCards("No Routes Available", "",
+                "You have no routes for the day. Ensure to exit app completely." , "", -1),
+          ));
 
-        _deliveries = _loadingDeliveries;
-      });
-      print("Dev: Error while retrieving uncalculated routes");
+          _deliveries = _loadingDeliveries;
+        });
+        print("Dev: Error while retrieving uncalculated routes");
+      }
       return;
     }
 

@@ -118,9 +118,8 @@ class _LoginPageState extends State<LoginPage>
      
       changeLoginButtonState();
       Navigator.of(context)
-          .popAndPushNamed('/home', arguments: responseData['token']);
-      Navigator.of(context)
-          .pushNamed('/delivery', arguments: responseData['token']);
+          .pushReplacementNamed('/delivery', arguments: responseData['token']);
+      storage.write(key: 'loginstatus', value: 'true');
     } else //invalid credentials
     {
       String errorResponse = '';

@@ -147,6 +147,9 @@ class MapSampleState extends State<GMap> {
    */
   moveToCurrentLocation() {
     // Move camera to the specified latitude & longitude
+    if(_currentPosition == null || mapController == null){
+      return;
+    }
     mapController
         .animateCamera(
       CameraUpdate.newCameraPosition(

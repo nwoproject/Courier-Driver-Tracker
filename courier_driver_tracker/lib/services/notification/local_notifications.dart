@@ -5,7 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:courier_driver_tracker/routing.dart';
-import 'package:courier_driver_tracker/screens/deliveryScreen.dart';
+import 'package:courier_driver_tracker/screens/delivery_screen.dart';
 import 'package:courier_driver_tracker/screens/home.dart';
 
 
