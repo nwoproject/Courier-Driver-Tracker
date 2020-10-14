@@ -61,7 +61,7 @@ class _HomePageViewState extends State<HomePageView> {
 
 
   @override
-  void initState(){
+  void initState() {
     //readUserData();
     super.initState();
     _backgroundChannel.invokeMethod('startService', callbackHandle.toRawHandle());
@@ -83,9 +83,7 @@ class _HomePageViewState extends State<HomePageView> {
       String data = await _backgroundChannel.invokeMethod("startService");
       print(data);
       const seconds = const Duration(seconds: 45);
-      Timer.periodic(seconds, (Timer t) => 
-        api.updateDriverLocationNoCoords()
-      );
+      Timer.periodic(seconds, (Timer t) => api.updateDriverLocationNoCoords());
     }
   }
 

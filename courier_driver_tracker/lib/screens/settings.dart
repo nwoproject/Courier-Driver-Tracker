@@ -12,11 +12,11 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final headingLabelStyle = TextStyle(
-      fontSize: 25, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+      fontSize: 25, fontFamily: 'Montserrat', color: Colors.grey[100]);
   final textStyle = TextStyle(
-      fontSize: 20, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+      fontSize: 20, fontFamily: 'Montserrat', color: Colors.grey[100]);
   final subtitle = TextStyle(
-      fontSize: 18, fontFamily: 'OpenSans-Regular', color: Colors.grey[500]);
+      fontSize: 18, fontFamily: 'Montserrat', color: Colors.grey[500]);
   final RouteLogging routeLogging = RouteLogging();
 
   final storage = new FlutterSecureStorage();
@@ -57,10 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               FlatButton(
                 child: Text('Accept'),
                 onPressed: () {
-                  storage.deleteAll();
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  Navigator.of(context).popAndPushNamed('/login');
+                  Navigator.popUntil(context, ModalRoute.withName('/login'));
                 },
               ),
             ],
@@ -159,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           topLeft: Radius.circular(30),
         ),
         child: BottomNavigationBar(
-            backgroundColor: Colors.grey[800],
+            backgroundColor: Colors.black87,
             unselectedItemColor: Colors.grey[100],
             type: BottomNavigationBarType.fixed,
             items: [

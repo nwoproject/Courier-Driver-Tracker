@@ -50,6 +50,24 @@ class ApiHandler {
     return response.body;
   }
 
+  Future<int> getDriverScore() async {
+    var driverID = await storage.read(key: 'id');
+
+    var response = await http.get("$apiUrl/api/driver-score/$driverID",
+        headers: requestHeaders);
+    Map<String, dynamic> json = jsonDecode(response.body);
+    return json['score'];
+  }
+
+  Future<dynamic> getDriverAbnormalities() async {
+    var driverID = await storage.read(key: 'id');
+
+    var response = await http.get("$apiUrl/api/driver-score/$driverID",
+        headers: requestHeaders);
+    Map<String, dynamic> json = jsonDecode(response.body);
+    return json;
+  }
+
   Future<File> initDriverRoute() async {
     var route = await callUncalulatedRoute();
     final file = await getFile("routes-uncalculated.txt");
@@ -88,11 +106,8 @@ class ApiHandler {
       "token": token,
       "route_id": routeID
     };
-    var response = await http.post(
-      "$apiUrl/api/google-maps/navigation",
-      headers: requestHeaders,
-      body: data
-    );
+    var response = await http.post("$apiUrl/api/google-maps/navigation",
+        headers: requestHeaders, body: data);
 
     return response;
   }
@@ -103,8 +118,7 @@ class ApiHandler {
       var responseData = response.body;
       final file = await getFile("active-calculated-route.txt");
       return file.writeAsString(responseData.toString());
-    } 
-    else {
+    } else {
       return null;
     }
   }
@@ -146,8 +160,7 @@ class ApiHandler {
   }
 
   // PUT /api/location/:driverid
-  Future<dynamic> updateDriverLocation(LatLng position) async
-  {
+  Future<dynamic> updateDriverLocation(LatLng position) async {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
@@ -163,14 +176,13 @@ class ApiHandler {
     return response.statusCode;
   }
 
-    Future<dynamic> updateDriverLocationNoCoords() async
-  {
+  Future<dynamic> updateDriverLocationNoCoords() async {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
     position = await geolocatorService.getPosition();
     String lat = position.latitude.toString();
     String long = position.longitude.toString();
-    
+
     Map<String, dynamic> data = {
       "token": token,
       "latitude": lat,
@@ -184,15 +196,14 @@ class ApiHandler {
   }
 
   //TODO double check uct timestamp value in database
-  Future<dynamic> completeDelivery(String locationID, Position position) async
-  {
+  Future<dynamic> completeDelivery(String locationID, Position position) async {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
     Map<String, dynamic> data = {
       "token": token,
       "id": driverID,
-      "timestamp": DateTime.now().toString().substring(0,19)
+      "timestamp": DateTime.now().toString().substring(0, 19)
     };
 
     var response = await http.put("$apiUrl/api/routes/location/$locationID",
@@ -202,8 +213,7 @@ class ApiHandler {
   }
 
   //TODO double check uct timestamp value in database
-  Future<dynamic> completeRoute(String routeID, Position position) async
-  {
+  Future<dynamic> completeRoute(String routeID, Position position) async {
     var driverID = await storage.read(key: 'id');
     var token = await storage.read(key: 'token');
 
@@ -219,15 +229,13 @@ class ApiHandler {
     return response.statusCode;
   }
 
-  Future<String> getActiveRouteID(int currentRoute) async{
+  Future<String> getActiveRouteID(int currentRoute) async {
     List<Route> routes = await getUncalculatedRoute();
-    if(currentRoute < routes.length -1){
+    if (currentRoute < routes.length - 1) {
       return routes[currentRoute].routeID;
-    }
-    else{
+    } else {
       print("Dev: error retrieving route id. Out of bounds.");
       return "";
     }
   }
-
 }

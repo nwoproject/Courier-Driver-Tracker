@@ -1,8 +1,8 @@
 import 'package:courier_driver_tracker/screens/change_password_screen.dart';
 import 'package:courier_driver_tracker/screens/company_car.dart';
 import 'package:courier_driver_tracker/screens/delivery.dart';
+import 'package:courier_driver_tracker/screens/delivery_page.dart';
 import 'package:courier_driver_tracker/screens/forgot_passsword_screen.dart';
-import 'package:courier_driver_tracker/screens/delivery_screen.dart';
 import 'package:courier_driver_tracker/screens/long_stop.dart';
 import 'package:courier_driver_tracker/screens/off_route.dart';
 import 'package:courier_driver_tracker/screens/profile.dart';
@@ -14,6 +14,15 @@ import 'package:flutter/material.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
 import 'screens/splash_screen.dart';
+import 'screens/profile.dart';
+import 'screens/settings.dart';
+import 'screens/long_stop.dart';
+import 'screens/sudden_stop.dart';
+import 'screens/off_route.dart';
+import 'screens/company_car.dart';
+import 'screens/speed_exceeded.dart';
+import 'screens/change_password_screen.dart';
+import 'screens/delivery_page.dart';
 
 class Router {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -31,7 +40,7 @@ class Router {
 
       case '/home':
         return MaterialPageRoute(
-            builder: (_) => BackgroundWidget(child: HomePage()),
+          builder: (_) => BackgroundWidget(child: HomePage()),
         );
         break;
 
@@ -101,7 +110,7 @@ class Router {
 
       case '/delivery':
         return MaterialPageRoute(
-          builder: (_) => DeliveryScreen(),
+          builder: (_) => DeliveryPage(),
         );
         break;
 
