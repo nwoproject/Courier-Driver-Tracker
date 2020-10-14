@@ -135,13 +135,8 @@ class _DeliveryPageState extends State<DeliveryPage> {
           _durationString = "";
           _loadingDeliveries.add(Padding(
             padding: const EdgeInsets.all(2.0),
-            child: _buildNoRoute(
-                "assets\images\delivery-Icon-6.png",
-                "No Routes Available",
-                "",
-                "Could not load route. Contact your manager for assistance.",
-                "",
-                -1),
+            child: _buildNoRoute("assets\images\delivery-Icon-6.png",
+                "No Routes Available", "", "Could not load route.", "", -1),
           ));
 
           _deliveries = _loadingDeliveries;
@@ -406,7 +401,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
                     Row()
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ));

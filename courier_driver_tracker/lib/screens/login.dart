@@ -15,7 +15,7 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final storage = new FlutterSecureStorage();
   final loginResponse = List<Widget>();
-  
+
   bool _clicked = false;
   double _opacity = 1.0;
   bool enableButton = true;
@@ -58,8 +58,7 @@ class _LoginPageState extends State<LoginPage>
     });
   }
 
-  void changeLoginButtonState()
-  {
+  void changeLoginButtonState() {
     setState(() {
       _clicked = !_clicked;
       _opacity = _opacity == 1.0 ? 0.0 : 1.0;
@@ -115,7 +114,7 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'surname', value: responseData['surname']);
       await storage.write(key: 'loginstatus', value: 'true');
       await storage.write(key: 'email', value: email.text);
-     
+
       changeLoginButtonState();
       Navigator.of(context)
           .popAndPushNamed('/home', arguments: responseData['token']);
@@ -269,7 +268,7 @@ class _LoginPageState extends State<LoginPage>
           absorbing: !enableButton,
           child: InkWell(
             onTap: () {
-                setState(() {
+              setState(() {
                 _clicked = !_clicked;
                 _opacity = _opacity == 1.0 ? 0.0 : 1.0;
                 enableButton = false;
@@ -293,11 +292,10 @@ class _LoginPageState extends State<LoginPage>
                     child: Text(
                       "LOGIN",
                       style: TextStyle(
-                        color: Colors.black, 
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "OpenSans-Regular"
-                      ),
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "OpenSans-Regular"),
                     ),
                     opacity: _opacity,
                   ),
@@ -329,10 +327,10 @@ class _LoginPageState extends State<LoginPage>
                 duration: Duration(milliseconds: 700),
                 child: Padding(
                   child: CircularProgressIndicator(
-                      backgroundColor: Colors.greenAccent,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          _clicked ? Colors.black : Colors.greenAccent),
-                          ),
+                    backgroundColor: Colors.blue,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        _clicked ? Colors.black : Colors.blue),
+                  ),
                   padding: EdgeInsets.all(1),
                 ),
                 opacity: _opacity == 0.0 ? 1.0 : 0.0,
@@ -349,7 +347,7 @@ class _LoginPageState extends State<LoginPage>
     return new GestureDetector(
       onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
-        if(!currentFocus.hasPrimaryFocus) {
+        if (!currentFocus.hasPrimaryFocus) {
           currentFocus.unfocus();
         }
       },

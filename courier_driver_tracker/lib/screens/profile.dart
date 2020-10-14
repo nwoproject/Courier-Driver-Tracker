@@ -5,14 +5,25 @@ import "dart:ui";
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:courier_driver_tracker/services/UniversalFunctions.dart';
+import 'package:courier_driver_tracker/services/graph/blocs/home_page_bloc.dart';
+import 'package:courier_driver_tracker/services/graph/radial_progress.dart';
+import 'package:courier_driver_tracker/services/graph/show_graph.dart';
+import 'package:courier_driver_tracker/services/api_handler/api.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen>
+    with SingleTickerProviderStateMixin {
+  HomePageBloc _homePageBloc;
+  AnimationController _iconAnimationController;
   final RouteLogging routeLogging = RouteLogging();
+
+  List<Widget> _abnormalities = [];
+  List<Widget> _abnormalitiesLoadingg = [];
+  ApiHandler _api = ApiHandler();
 
   final storage = new FlutterSecureStorage();
   var userData = {'name': 'name', 'surname': 'surname', 'email': 'email'};
@@ -33,7 +44,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     readUserData();
+
+    getAbnormalities();
+    ShowGraph();
+    _homePageBloc = HomePageBloc();
+    _iconAnimationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     super.initState();
+  }
+
+  getAbnormalities() async {
+    List<int> abnorm = [1];
+
+    for (int i = 0; i < abnorm.length; i++) {
+      setState(() {
+        _abnormalitiesLoadingg.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _buildAbnorm("assets/images/delivery-Icon-6.png",
+              "No Routes Available", "", "Could not load route. ", "", -1),
+        ));
+
+        _abnormalities = _abnormalitiesLoadingg;
+      });
+    }
   }
 
   String get email {
@@ -66,12 +99,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: <Widget>[
           Container(
             color: Colors.blue[600],
-            height: 40 * SizeConfig.blockSizeVertical,
+            height: 25 * SizeConfig.blockSizeVertical,
             child: Padding(
               padding: EdgeInsets.only(
                   left: 30.0,
                   right: 30.0,
-                  top: 10 * SizeConfig.blockSizeVertical),
+                  top: 5 * SizeConfig.blockSizeVertical),
               child: Column(
                 children: <Widget>[
                   Row(
@@ -111,237 +144,119 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )
                     ],
                   ),
-                  SizedBox(height: 3 * SizeConfig.blockSizeVertical),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Column(
-                        children: <Widget>[
-                          Text(
-                            "120", //Deliveries made *mockdata*
-                            style: TextStyle(
-                                fontFamily: "Montserrat",
-                                color: Colors.white,
-                                fontSize: 3 * SizeConfig.blockSizeVertical,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            "Deliveries Made",
-                            style: TextStyle(
-                                fontFamily: "Montserrat",
-                                color: Colors.white70,
-                                fontSize: 2 * SizeConfig.blockSizeVertical),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: <Widget>[
-                          Text(
-                            "520", //Driver score *mockdata*
-                            style: TextStyle(
-                                fontFamily: "Montserrat",
-                                color: Colors.white,
-                                fontSize: 3 * SizeConfig.blockSizeVertical,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            "score",
-                            style: TextStyle(
-                                fontFamily: "Montserrat",
-                                color: Colors.white70,
-                                fontSize: 2 * SizeConfig.blockSizeVertical),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: <Widget>[
-                          Container(
-                            width: 10 * SizeConfig.blockSizeVertical,
-                          )
-                        ],
-                      ),
-                    ],
-                  )
                 ],
               ),
             ),
           ),
           Padding(
-              padding: EdgeInsets.only(top: 35 * SizeConfig.blockSizeVertical),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(30.0),
-                        topLeft: Radius.circular(30.0))),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 30.0, top: 3 * SizeConfig.blockSizeVertical),
-                        child: Text(
-                          "Recent Deliveries",
-                          style: TextStyle(
-                              fontFamily: "Montserrat",
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 2.5 * SizeConfig.blockSizeVertical),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 3 * SizeConfig.blockSizeVertical,
-                      ),
-                      Container(
-                        height: 35 * SizeConfig.blockSizeVertical,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: <Widget>[],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ))
-        ],
-      ),
-    );
-  }
-
-  _route(delivery, location, time) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 40.0),
-      child: Container(
-        height: 37 * SizeConfig.blockSizeVertical,
-        width: 60 * SizeConfig.blockSizeHorizontal,
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20.0),
-            border: Border.all(color: Colors.grey, width: 0.2)),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
+            padding: EdgeInsets.only(top: 20 * SizeConfig.blockSizeVertical),
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(30.0),
+                      topLeft: Radius.circular(30.0))),
+              child: ListView(
                 children: <Widget>[
-                  ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                            color: Colors.grey,
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 7.0, left: 7.0, right: 7.0),
-                                  child: Text(
-                                    "Delivery 1",
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 7.0, left: 7.0, right: 7.0),
-                                    child: Text("Pretoria Boys HighSchool 1")),
-                                Text("14:35")
-                              ],
-                            ),
-                          ),
-                        ],
-                      )),
-                ],
-              ),
-              SizedBox(
-                height: 1 * SizeConfig.blockSizeVertical,
-              ),
-              Row(
-                children: <Widget>[
-                  ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                            color: Colors.grey,
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 7.0, left: 7.0, right: 7.0),
-                                  child: Text(
-                                    "Delivery 1",
-                                    style: TextStyle(
-                                      fontSize: 15,
+                  Container(
+                    child: Column(
+                      children: <Widget>[
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 20.0),
+                              child: Column(children: <Widget>[
+                                Text(
+                                  "Profile", //Deliveries made *mockdata*
+                                  style: TextStyle(
+                                      fontFamily: "Montserrat",
+                                      color: Colors.black,
                                       fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                      fontSize:
+                                          4 * SizeConfig.blockSizeVertical),
                                 ),
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 7.0, left: 7.0, right: 7.0),
-                                    child: Text("Pretoria Boys HighSchool 1")),
-                                Text("14:35")
-                              ],
+                              ]),
                             ),
-                          ),
-                        ],
-                      )),
-                  Spacer(),
-                ],
-              ),
-              SizedBox(
-                height: 1 * SizeConfig.blockSizeVertical,
-              ),
-              Row(
-                children: <Widget>[
-                  ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                            color: Colors.grey,
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 7.0, left: 7.0, right: 7.0),
-                                  child: Text(
-                                    "Delivery 1",
+                            Padding(
+                              padding: const EdgeInsets.only(left: 160.0),
+                              child: Column(
+                                children: <Widget>[
+                                  Text(
+                                    "120", //Deliveries made *mockdata*
                                     style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold),
+                                        fontFamily: "Montserrat",
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize:
+                                            2.5 * SizeConfig.blockSizeVertical),
                                   ),
-                                ),
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 7.0, left: 7.0, right: 7.0),
-                                    child: Text("Pretoria Boys HighSchool 1")),
-                                Text("14:35")
-                              ],
+                                  Text(
+                                    "Deliveries Made",
+                                    style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        color: Colors.black,
+                                        fontSize:
+                                            2 * SizeConfig.blockSizeVertical),
+                                  ),
+                                ],
+                              ),
                             ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    thickness: 0.8,
+                    color: Colors.grey,
+                    indent: 20,
+                    endIndent: 20,
+                  ),
+                  SizedBox(
+                    height: 3 * SizeConfig.blockSizeVertical,
+                  ),
+                  Container(
+                    height: 35 * SizeConfig.blockSizeVertical,
+                    child: Column(
+                      children: <Widget>[
+                        RadialProgress(),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: Text(
+                            "Performance",
+                            style: TextStyle(
+                                fontFamily: "Montserrat",
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 2.5 * SizeConfig.blockSizeVertical),
                           ),
-                        ],
-                      )),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    thickness: 0.8,
+                    color: Colors.grey,
+                    indent: 20,
+                    endIndent: 20,
+                  ),
+                  Container(
+                    height: MediaQuery.of(context).size.height - 244,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                    ),
+                    child: Padding(
+                        padding: EdgeInsets.only(top: 0.0),
+                        child: Container(
+                            height: MediaQuery.of(context).size.height - 300.0,
+                            child: Column(children: _abnormalities))),
+                  ),
                 ],
               ),
-              Padding(
-                padding: EdgeInsets.only(
-                    left: 10.0, top: 2 * SizeConfig.blockSizeVertical),
-                child: Text(
-                  "Route 1",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 2 * SizeConfig.blockSizeVertical,
-                      fontWeight: FontWeight.bold),
-                ),
-              )
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -399,5 +314,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.of(context).popAndPushNamed("/settings");
               }
             }));
+  }
+
+  Widget _buildAbnorm(String imagePath, String routeNum, String distance,
+      String time, String del, int route) {
+    return Padding(
+        padding: EdgeInsets.only(right: 10.0, top: 10.0),
+        child: InkWell(
+            onTap: () {},
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Container(
+                    child: Row(children: [
+                  Hero(
+                      tag: "1",
+                      child: Image(
+                          image:
+                              AssetImage("assets/images/delivery-Icon-1.png"),
+                          fit: BoxFit.cover,
+                          height: 100.0,
+                          width: 100.0)),
+                  SizedBox(width: 10.0),
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(routeNum,
+                            style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.bold)),
+                        Text("$distance\n$time\n$del",
+                            style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 15.0,
+                                color: Colors.grey)),
+                      ])
+                ])),
+              ],
+            )));
   }
 }
