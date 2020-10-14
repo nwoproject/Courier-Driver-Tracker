@@ -282,11 +282,7 @@ class NavigationService {
         else{
           currentPolyline.points.removeAt(0);
         }
-
       }
-
-      print("Total steps: " + _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length.toString());
-      print("Current step: $_currentStep");
 
       // re-add current position
       currentPolyline.points.insert(0, positionOnPoly);
@@ -674,22 +670,22 @@ class NavigationService {
         10).round() * 10;
   }
 
-  int getRouteDistance() {
+  int getRouteDistance(int route) {
     if (_deliveryRoutes == null) {
       return null;
     }
 
-    return (_deliveryRoutes.getRouteDistance(_currentRoute) / 10)
+    return (_deliveryRoutes.getRouteDistance(route) / 10)
             .round() * 10;
 
   }
 
-  int getRouteDuration(){
+  int getRouteDuration(int route){
     if (_deliveryRoutes == null) {
       return null;
     }
 
-    return _deliveryRoutes.getRouteDuration(_currentRoute);
+    return _deliveryRoutes.getRouteDuration(route);
   }
 
   String getDeliveryDistance() {
