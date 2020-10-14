@@ -360,7 +360,7 @@ const updateDriverScore = async (scoreMultiplier,driver_id) =>
             {
                 if(results.rowCount > 0)
                 {
-                    DB.pool.query('UPDATE public."driver" SET "score"=($1) WHERE "id"=($2)',[results.rows[0].score * scoreMultiplier,driver_id],(error,updateRes)=>{
+                    DB.pool.query('UPDATE public."driver" SET "score"=($1) WHERE "id"=($2)',[(results.rows[0].score * scoreMultiplier).toFixed(4),driver_id],(error,updateRes)=>{
                         if(error)
                         {
                             DB.dbErrorHandlerNoResponse(error);

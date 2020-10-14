@@ -50,7 +50,7 @@ router.post('/', (req, res) =>{
                 };
                 tokenGenerator();
                 bcrypt.hash(driverPassword, 10, (hasherr, hash)=>{
-                    DB.pool.query('INSERT INTO public."driver"("email","password","name","surname","token","epoch")VALUES($1,$2,$3,$4,$5,$6) RETURNING *',[req.body.email,hash,req.body.name,req.body.surname,token,Math.floor(new Date() / 1000)],(error,insertResult)=>{
+                    DB.pool.query('INSERT INTO public."driver"("email","password","name","surname","token","epoch","score")VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',[req.body.email,hash,req.body.name,req.body.surname,token,Math.floor(new Date() / 1000),50],(error,insertResult)=>{
                         if(error)
                         {
                             dbErrorHandler(res,error);
