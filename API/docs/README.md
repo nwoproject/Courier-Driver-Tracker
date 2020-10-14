@@ -35,7 +35,7 @@ The following header field should be present in each request: `Authorization: Be
         5.6     [Complete Route](#complete-route)  
         5.7     [Delete non-repeating route](#delete-non-repeating-route)  
         5.8     [Delete repeating route](#delete-repeating-route)  
-        5.9     [Get repeating routes](#get-repeating-route)  
+        5.9     [Get repeating routes](#get-repeating-routes)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
         6.2     [Calculate route](#calculate-route)  
@@ -959,7 +959,7 @@ Returns all repeating routes along with each location name and address that form
 
 ##### Http Request
 
-`POST api/routes//repeating/all`
+`POST api/routes/repeating/all`
 
 ##### Request Body
 

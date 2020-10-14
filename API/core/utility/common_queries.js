@@ -301,7 +301,7 @@ const getRecentDriverDeliveries = async (driverID,res) =>
                     deliveries.push({
                         "type": "delivery",
                         "datetime":results.rows[k].timestamp_completed,
-                        "address":results.rows[k].name,
+                        "name":results.rows[k].name,
                         "score_impact":"positive"
                     });
                 }
