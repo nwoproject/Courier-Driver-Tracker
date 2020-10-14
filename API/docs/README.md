@@ -34,6 +34,8 @@ The following header field should be present in each request: `Authorization: Be
         5.5     [Timestamp Delivery Location](#timestamp-delivery-location)  
         5.6     [Complete Route](#complete-route)  
         5.7     [Delete non-repeating route](#delete-non-repeating-route)  
+        5.8     [Delete repeating route](#delete-repeating-route)  
+        5.9     [Get repeating routes](#get-repeating-route)  
 6.  [Google Maps](#google-maps)  
         6.1     [Search place and get coordinates](#search-place-and-get-coordinates)  
         6.2     [Calculate route](#calculate-route)  
@@ -92,6 +94,8 @@ The following header field should be present in each request: `Authorization: Be
 | `PUT` | `api/routes/location/:locationid` | Stores a timestamp of when a driver reached a delivery on his route |
 | `PUT` | `api/routes/completed/:routeid` | Stores a timestamp of when a route was completed by a driver |
 | `DELETE` | `api/routes/:routeid` | Deletes a once off route that was only asgined for a specific day |
+| `DELETE` | `api/routes/repeating/:routeid` | Deletes a repeating route |
+| `POST` | `api/routes/repeating/all` | Returns all repeating routes |
 
 ## Google Maps Endpoint Summary
 
@@ -918,6 +922,105 @@ This request returns no body.
 | `404` | There is no route with that :routeid |
 | `500` | Server error |
 
+##### Delete repeating route
+
+Deletes repeating route along with all the deliveries that formed part of that route.
+
+##### Http Request
+
+`DELETE api/routes/repeating/:routeid`
+
+##### Request Body
+
+```json
+ {   
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+ }
+```
+
+### Response body
+
+This request returns no body.
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `204` | Route was deleted |
+| `400` | Bad request (missing parameters in request body). | 
+| `401` | Invalid manager credentials |
+| `404` | There is no route with that :routeid |
+| `500` | Server error |
+
+##### Get repeating routes
+
+Returns all repeating routes along with each location name and address that formed part of the route.
+
+##### Http Request
+
+`POST api/routes//repeating/all`
+
+##### Request Body
+
+```json
+ {   
+    "id": 1,
+    "token": "37q9juQljxhHno8OWpr0fDqIRQJmkBgw",
+ }
+```
+
+### Response body
+
+```json
+[
+    [
+        {
+            "route_id": 3,
+            "locations": [
+                {
+                    "location_id": 8,
+                    "name": "University of Pretoria",
+                    "address": "Lynnwood Rd, Hatfield, Pretoria, 0002, South Africa"
+                },
+                {
+                    "location_id": 9,
+                    "name": "Die Hoërskool Menlopark",
+                    "address": "412 Atterbury Rd, Menlo Park, Pretoria, 0081, South Africa"
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "route_id": 4,
+            "locations": [
+                {
+                    "location_id": 11,
+                    "name": "University of Pretoria",
+                    "address": "Lynnwood Rd, Hatfield, Pretoria, 0002, South Africa"
+                },
+                {
+                    "location_id": 12,
+                    "name": "123 Derp St",
+                    "address": "123 Derp St, Pretoria, 0081, South Africa"
+                }
+            ]
+        }
+    ]
+]
+```
+
+##### Response status codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Repeating routes was sucessfully returned |
+| `204` | There are currently no repeating routes |
+| `400` | Bad request (missing parameters in request body). | 
+| `401` | Invalid manager credentials |
+| `500` | Server error |
+
 ## Google Maps
 
 ## Search place and get coordinates
@@ -1461,6 +1564,10 @@ Returns a list of all drivers with their respective scores.
 ## Get recent events that influenced driver score
 
 Returns at most 5 recent events that had an effect on the driver score. Meaning they either increased or decreased their score. Each event wil have a type and in the case of an abnormality, it will have an description as well. The request expects a driver id and token in the body request body.
+
+##### Http Request
+
+`POST /api/driver-score/recent`
 
 ##### Request Body
 

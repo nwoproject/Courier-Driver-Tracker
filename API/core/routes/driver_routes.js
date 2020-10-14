@@ -342,4 +342,113 @@ router.delete('/:routeid', (req,res)=>
     } 
 });
 
+router.post('/repeating/all', async (req,res)=>{
+    if(!req.body.id || !req.body.token)
+    {
+        res.status(400).end();
+    }
+    else
+    {
+        await checks.managerCheck(req.body.id,req.body.token,res);
+        if(!res.writableEnded)
+        {
+            DB.pool.query(`SELECT route."repeating_location"."route_id",route."repeating_location"."location_id",route."repeating_location"."address",route."repeating_location"."name"
+            FROM route."repeating_route"
+            JOIN route."repeating_location"
+            ON route."repeating_route"."repeating_route_id" = route."repeating_location"."route_id"
+            ORDER BY "route_id" ASC`
+            ,[],(err,results)=>{
+                if(err)
+                {
+                    DB.dbErrorHandler(res,err);
+                }
+                else
+                {
+                    if(results.rowCount > 0)
+                    {
+                        let routes=[];
+                        let route=[];
+                        let locations =[];
+                        let route_id = results.rows[0].route_id;
+    
+                        for(let k=0; k < results.rowCount;k++)
+                        {
+                            locations.push({
+                                "location_id": results.rows[k].location_id,
+                                "name" : results.rows[k].name,
+                                "address": results.rows[k].address
+                            });
+
+                            if(k+1 < results.rowCount)
+                            {
+                                if(results.rows[k+1].route_id != route_id)
+                                {
+    
+                                    route.push({
+                                        "route_id" : route_id,
+                                        "locations" : locations
+                                    });
+    
+                                    routes.push(route);
+                                    route = [];
+                                    locations = [];
+    
+                                    route_id = results.rows[k+1].route_id;
+                                }
+                            }
+                            else
+                            {
+                                route.push({
+                                    "route_id" : route_id,
+                                    "locations" : locations
+                                });
+                                routes.push(route);
+                            }
+                        }
+
+                        res.status(200).json(routes).end();
+                    }
+                    else
+                    {
+                        res.status(204).end();
+                    }
+                }
+            });
+        }
+    }
+});
+
+router.delete('/repeating/:routeid', (req,res)=>
+{
+    let route_id=req.params.routeid;
+
+    if(!req.body.id || !req.body.token)
+    {
+        res.status(400).end();
+    }  
+    else
+    {
+        checks.managerCheck(req.body.id, req.body.token, res);
+        if(!res.writableEnded)
+        {
+            
+            DB.pool.query('DELETE FROM route."repeating_route" WHERE repeating_route_id=($1)',[route_id],(deleterr,deleteRes)=>
+            {
+                if(deleterr)
+                {
+                    DB.dbErrorHandlerNoResponse(deleterr);
+                }
+                if(deleteRes.rowCount==0)
+                {
+                    res.status(404).end();
+                }
+                else
+                {
+                    res.status(200).end();
+                }
+            });
+        }
+    } 
+});
+
 module.exports = router;
