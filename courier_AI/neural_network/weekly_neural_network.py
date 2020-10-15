@@ -100,9 +100,6 @@ class NeuralNetwork:
         return output
 
 
-nn = NeuralNetwork()
-
-nn.train()
 
 # test_loss, test_acc = model.evaluate(test, verbose=1)
 
