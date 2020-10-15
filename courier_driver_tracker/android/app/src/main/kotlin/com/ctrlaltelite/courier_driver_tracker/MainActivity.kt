@@ -18,7 +18,8 @@ class MainActivity : FlutterActivity() {
                     val callbackRawHandle = method.arguments as Long
                     BackgroundService.startService(this@MainActivity, callbackRawHandle)
                     result.success(null)
-                } else {
+                }
+                else {
                     result.notImplemented()
                 }
             }

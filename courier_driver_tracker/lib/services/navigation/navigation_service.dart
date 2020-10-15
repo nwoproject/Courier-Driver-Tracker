@@ -215,13 +215,13 @@ class NavigationService {
   }
 
   clearAllSetVariables() {
-    directions = null;
-    deliveryTimeRemaining = null;
-    distance = null;
-    eta = null;
-    delivery = null;
-    deliveryAddress = null;
-    directionIconPath = null;
+    directions = "";
+    deliveryTimeRemaining = "";
+    distance = 0;
+    eta = "N/A";
+    delivery = "N/A";
+    deliveryAddress ="";
+    directionIconPath = "assets/images/navigation_marker_white.png";
   }
 
   //__________________________________________________________________________________________________
@@ -261,7 +261,6 @@ class NavigationService {
       while (currentPolyline.points.length > 0 &&
           currentPolyline.points.length > newLength) {
         if(_lengthRemainingAfterNextStep == null){
-          print("at null");
           calculateNextStepPoint();
         }
         else if(_currentStep != _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1 && _lengthRemainingAfterNextStep >= currentPolyline.points.length){
@@ -284,7 +283,11 @@ class NavigationService {
       }
 
       // re-add current position
-      currentPolyline.points.insert(0, positionOnPoly);
+      if(calculateDistanceBetween(currentPolyline.points[0], positionOnPoly) <
+          calculateDistanceBetween(currentPolyline.points[0], previousPoint) * 2){
+        currentPolyline.points.insert(0, positionOnPoly);
+      }
+
       notifyMapInfoChange();
     } catch (error) {
       print("Failed to update current polyline.[$error]");
@@ -960,7 +963,18 @@ class NavigationService {
     bool isNearDelivery() {
       try {
         if(currentPolyline.points.length < 2){
-          throw "Not enough points on polyline to calculate";
+          LatLng current = LatLng(_position.latitude, _position.longitude);
+          print(getNextDeliveryLocation());
+          if(calculateDistanceBetween(current, getNextDeliveryLocation()) < 40){
+            nearDelivery = true;
+            notifyNearDelivery();
+            showDeliveryRadiusOnMap();
+            isAtDelivery();
+            return true;
+          }
+          else{
+            throw "Not enough points on polyline to calculate";
+          }
         }
         int dist = calculateDistanceBetween(
             currentPolyline.points[0], currentPolyline.points.last);
