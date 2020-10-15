@@ -79,15 +79,6 @@ class DBManagement:
         sql = "INSERT INTO weekly_reports (driver_id, report, days, abnormalities, pattern) " \
               "VALUES (%s, %s, %s, %s, %s)"
 
-        if report[0] is not None:
-            report.insert(0, -1);
-
-        if days[0] is not None:
-            days.insert(0, -1);
-
-        if abnormalities[0] is not None:
-            abnormalities.insert(0, -1);
-
         val = (driverID, report, days, abnormalities, pattern)
         cursor.execute(sql, val)
         self.conn.commit()
@@ -114,15 +105,6 @@ class DBManagement:
         cursor = self.conn.cursor()
         sql = "INSERT INTO monthly_reports (driver_id, report, weeks, abnormalities, pattern) " \
               "VALUES (%s, %s, %s, %s, %s)"
-
-        if report[0] is not None:
-            report.insert(0, -1);
-
-        if weeks[0] is not None:
-            weeks.insert(0, -1);
-
-        if abnormalities[0] is not None:
-            abnormalities.insert(0, -1);
 
         val = (driverID, report, weeks, abnormalities, pattern)
         cursor.execute(sql, val)

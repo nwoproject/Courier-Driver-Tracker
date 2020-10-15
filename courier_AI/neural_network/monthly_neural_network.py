@@ -12,17 +12,18 @@ import data.db_management as db
 class NeuralNetwork:
     def __init__(self):
         self.model_path = 'models/MonthlyModel'
-        #self.checkpoint = ModelCheckpoint(
-            #self.model_path,
-            #monitor="val_acc",
-            #verbose=1,
-           # mode="max",
-            #save_best_only=True,
-            #save_weights_only=False,
-            #period=1
-        #)
-       # self.db_manager = db.DBManagement()
-        #self.initialise()
+        self.checkpoint = ModelCheckpoint(
+            self.model_path,
+            monitor="val_acc",
+            verbose=1,
+            mode="max",
+            save_best_only=True,
+            save_weights_only=False,
+            period=1
+        )
+
+        self.db_manager = db.DBManagement()
+
 
     def initialise(self):
         self.model = keras.Sequential([

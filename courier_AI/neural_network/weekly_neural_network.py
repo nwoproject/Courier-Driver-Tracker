@@ -20,7 +20,6 @@ class NeuralNetwork:
             period=1
         )
         self.db_manager = db.DBManagement()
-        self.initialise()
 
     def initialise(self):
         self.model = keras.Sequential([
