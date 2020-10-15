@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "dart:ui";
@@ -15,7 +16,28 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final storage = new FlutterSecureStorage();
   final loginResponse = List<Widget>();
-  
+
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+          context: context,
+          builder: (context) => new AlertDialog(
+            title: new Text('Are you sure?'),
+            content: new Text('Do you want to exit an App'),
+            actions: <Widget>[
+              new FlatButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: new Text('No'),
+              ),
+              new FlatButton(
+                onPressed: () => exit(0),
+                child: new Text('Yes'),
+              ),
+            ],
+          ),
+        )) ??
+        false;
+  }
+
   bool _clicked = false;
   double _opacity = 1.0;
   bool enableButton = true;
@@ -58,8 +80,7 @@ class _LoginPageState extends State<LoginPage>
     });
   }
 
-  void changeLoginButtonState()
-  {
+  void changeLoginButtonState() {
     setState(() {
       _clicked = !_clicked;
       _opacity = _opacity == 1.0 ? 0.0 : 1.0;
@@ -115,12 +136,11 @@ class _LoginPageState extends State<LoginPage>
       await storage.write(key: 'surname', value: responseData['surname']);
       await storage.write(key: 'loginstatus', value: 'true');
       await storage.write(key: 'email', value: email.text);
-     
+
       changeLoginButtonState();
       Navigator.of(context)
-          .popAndPushNamed('/home', arguments: responseData['token']);
-      Navigator.of(context)
-          .pushNamed('/delivery', arguments: responseData['token']);
+          .popAndPushNamed('/delivery', arguments: responseData['token']);
+      storage.write(key: 'loginstatus', value: 'true');
     } else //invalid credentials
     {
       String errorResponse = '';
@@ -269,7 +289,7 @@ class _LoginPageState extends State<LoginPage>
           absorbing: !enableButton,
           child: InkWell(
             onTap: () {
-                setState(() {
+              setState(() {
                 _clicked = !_clicked;
                 _opacity = _opacity == 1.0 ? 0.0 : 1.0;
                 enableButton = false;
@@ -293,11 +313,10 @@ class _LoginPageState extends State<LoginPage>
                     child: Text(
                       "LOGIN",
                       style: TextStyle(
-                        color: Colors.black, 
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "OpenSans-Regular"
-                      ),
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "OpenSans-Regular"),
                     ),
                     opacity: _opacity,
                   ),
@@ -329,10 +348,10 @@ class _LoginPageState extends State<LoginPage>
                 duration: Duration(milliseconds: 700),
                 child: Padding(
                   child: CircularProgressIndicator(
-                      backgroundColor: Colors.greenAccent,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          _clicked ? Colors.black : Colors.greenAccent),
-                          ),
+                    backgroundColor: Colors.blue,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        _clicked ? Colors.black : Colors.blue),
+                  ),
                   padding: EdgeInsets.all(1),
                 ),
                 opacity: _opacity == 0.0 ? 1.0 : 0.0,
@@ -349,20 +368,23 @@ class _LoginPageState extends State<LoginPage>
     return new GestureDetector(
       onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
-        if(!currentFocus.hasPrimaryFocus) {
+        if (!currentFocus.hasPrimaryFocus) {
           currentFocus.unfocus();
         }
       },
       child: Scaffold(
         body: Stack(
           children: <Widget>[
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: AssetImage("assets/images/login.jpg"),
+            WillPopScope(
+              onWillPop: _onWillPop,
+              child: Container(
+                height: double.infinity,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: AssetImage("assets/images/login.jpg"),
+                  ),
                 ),
               ),
             ),

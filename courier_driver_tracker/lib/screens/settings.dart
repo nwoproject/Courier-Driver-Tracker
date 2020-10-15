@@ -1,6 +1,7 @@
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import "dart:ui";
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,11 +13,11 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final headingLabelStyle = TextStyle(
-      fontSize: 25, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+      fontSize: 25, fontFamily: 'Montserrat', color: Colors.grey[100]);
   final textStyle = TextStyle(
-      fontSize: 20, fontFamily: 'OpenSans-Regular', color: Colors.grey[100]);
+      fontSize: 20, fontFamily: 'Montserrat', color: Colors.grey[100]);
   final subtitle = TextStyle(
-      fontSize: 18, fontFamily: 'OpenSans-Regular', color: Colors.grey[500]);
+      fontSize: 18, fontFamily: 'Montserrat', color: Colors.grey[500]);
   final RouteLogging routeLogging = RouteLogging();
 
   final storage = new FlutterSecureStorage();
@@ -50,7 +51,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             actions: <Widget>[
               FlatButton(
                 child: Text('Cancel'),
-                onPressed: () {
+                onPressed: () async {
+                  var _backgroundChannel = MethodChannel("com.ctrlaltelite.background");
+                  String data = await _backgroundChannel.invokeMethod("stopService");
+                  print(data);
                   Navigator.of(context).pop();
                 },
               ),
@@ -60,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   storage.deleteAll();
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
-                  Navigator.of(context).popAndPushNamed('/login');
+                  Navigator.of(context).pushNamed("/login");
                 },
               ),
             ],
@@ -159,7 +163,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           topLeft: Radius.circular(30),
         ),
         child: BottomNavigationBar(
-            backgroundColor: Colors.grey[800],
+            backgroundColor: Colors.black87,
             unselectedItemColor: Colors.grey[100],
             type: BottomNavigationBarType.fixed,
             items: [

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:courier_driver_tracker/services/file_handling/route_logging.dart';
 import 'package:courier_driver_tracker/services/api_handler/uncalculated_route_model.dart' as delivery;
 import 'package:courier_driver_tracker/services/api_handler/api.dart';
+import 'package:courier_driver_tracker/services/navigation/delivery_route.dart';
+import 'package:courier_driver_tracker/services/navigation/navigation_service.dart';
 import 'package:courier_driver_tracker/services/notification/local_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +37,18 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   @override
   void initState() {
-    getRoutes();
+    NavigationService navigationService = NavigationService();
+    if(!navigationService.isRouteInitialised()){
+      getRoutesFromAPI();
+    }
+    else{
+      getRoutesFromNavigation();
+    }
+
     super.initState();
   }
 
-  getRoutes() async{
+  getRoutesFromAPI() async{
     // see if driver has routes still stored
     List<delivery.Route> routes = await _api.getUncalculatedRoute();
     String currentRoute = await storage.read(key: 'current_route');
@@ -67,17 +76,19 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       //write deliveries to file
 
 
-      setState(() {
-        _durationString = "";
-        _loadingDeliveries.add(Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: _deliveryCards("No Routes Available", "",
-              "You have no routes for the day. Ensure to exit app completely." , "", -1),
-        ));
+      if(this.mounted){
+        setState(() {
+          _durationString = "";
+          _loadingDeliveries.add(Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: _deliveryCards("No Routes Available", "",
+                "You have no routes for the day. Ensure to exit app completely." , "", -1),
+          ));
 
-        _deliveries = _loadingDeliveries;
-      });
-      print("Dev: Error while retrieving uncalculated routes");
+          _deliveries = _loadingDeliveries;
+        });
+        print("Dev: Error while retrieving uncalculated routes");
+      }
       return;
     }
 
@@ -211,6 +222,40 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     });
   }
 
+  getRoutesFromNavigation() async {
+    NavigationService navigationService = NavigationService();
+    print("Deliveries: " + navigationService.getTotalDeliveries().toString());
+
+    if(!navigationService.isRouteInitialised()){
+      await navigationService.initialiseRoutes();
+    }
+
+    DeliveryRoute deliveries = navigationService.getDeliveryRoutes();
+
+    if(deliveries == null && this.mounted){
+      setState(() {
+        _durationString = "";
+        _loadingDeliveries.add(Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: _deliveryCards("Failed to load Routes", "",
+              "Could not load route. Contact your manager for assistance." , "", -1),
+        ));
+
+        _deliveries = _loadingDeliveries;
+      });
+
+      print("Dev: error while retrieving active calculated route locally.");
+      return;
+    }
+
+
+
+    for(var route in deliveries.routes) {
+      // create delivery cards
+    }
+  }
+
+
   String getTimeString(int time){
     int hours = 0;
     int minutes = time;
@@ -227,6 +272,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       return "$hours h $minutes min";
     }
   }
+
+
 
   drivingWithNoRoutes() async {
     await Future.delayed(Duration(minutes: 2));

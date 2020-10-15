@@ -5,6 +5,7 @@ const app = express();
 const cors = require('cors');
 const cron = require('node-cron');
 const tasks = require('./utility/daily_tasks');
+const mailer = require('./services/mailer');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -55,6 +56,14 @@ cron.schedule('59 23 * * *', async () =>
 cron.schedule('00 02 * * 1-5', () => 
 {
   tasks.assignReaptingRoutes('daily');
+},{
+  scheduled: true,
+  timezone: "Africa/Johannesburg"
+});
+
+cron.schedule('00 06 * * 1', () => 
+{
+  mailer.sendWeeklyNotification();
 },{
   scheduled: true,
   timezone: "Africa/Johannesburg"

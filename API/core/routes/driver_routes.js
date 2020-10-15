@@ -335,7 +335,7 @@ router.delete('/:routeid', (req,res)=>
                 }
                 else
                 {
-                    res.status(200).end();
+                    res.status(204).end();
                 }
             });
         }
@@ -444,7 +444,7 @@ router.delete('/repeating/:routeid', (req,res)=>
                 }
                 else
                 {
-                    res.status(200).end();
+                    res.status(204).end();
                 }
             });
         }
