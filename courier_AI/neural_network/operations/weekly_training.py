@@ -136,9 +136,6 @@ class WeeklyTraining:
                                                each[5])
 
 
-training = WeeklyTraining(db.DBManagement())
-training.generateWeeklyReport()
-
 #training.createWeeklyTrainingSet(4000)
 #print("done")
 

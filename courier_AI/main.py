@@ -4,28 +4,34 @@ import neural_network.weekly_neural_network as wnn
 
 
 def main():
-    #wnn.NeuralNetwork.importNN()
-
     array = db.DBManagement().getDriverInputs()
+    # gets driver abnormalities from Neural Network database excluding the driver ID
+    temp = []
+    for each in range(0, len(array) - 1):
+        temp2 = []
+        for each2 in range(1, len(array[each]) - 1):
+            temp2.append(array[each][each2])
+        temp.append(temp2)
 
-    for each in array:
-        print(each)
+    # data is for input to neural network and array[0] for the driver ID
+    data = temp
+    for each in range(0, len(data) - 1):
+        driverId = array[0]
+        # insert each into Neural network predict
+        # get output
 
-    # for each in range(0, len(array)):
-        # for each2 in range(1, len(array[each]) - 1):
-            # weeklyModel = wnn.nn.model(each)
+    #   0 - long_stop
+    #   1 - off_route
+    #   2 - sudden_stop
+    #   3 - company_car
+    #   4 - speeding
+    #   5 - neverStartedRoute
+    #   6 - skippedDelivery
 
-    for each3 in range(0, len(array)):
-        print(array[each3][])
+        array = db.DBManagement().insertWeeklyReport(# driverID, report, days, abnormalities, pattern)
 
-        arr = []
-        for each4 in range(1, len(array[each3]) - 1):
-            arr2 = []
-            arr2.append(array[each3][each4])
-        arr.append(arr2)
 
-    for each2 in arr:
-        print(each2)
+
 
 if __name__ == "__main__":
     main()
