@@ -7,7 +7,6 @@ from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
 import data.db_management as db
 
-
 class NeuralNetwork:
     def __init__(self):
         self.model_path = 'models/WeeklyModel'

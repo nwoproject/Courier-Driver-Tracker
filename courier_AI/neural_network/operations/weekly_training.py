@@ -3,6 +3,7 @@ import data.db_management as db
 import data.db_management
 import datetime
 import tensorflow as tf
+import json
 
 
 class WeeklyTraining:
@@ -136,6 +137,7 @@ class WeeklyTraining:
 
 
 training = WeeklyTraining(db.DBManagement())
+training.generateWeeklyReport()
 
 #training.createWeeklyTrainingSet(4000)
 #print("done")

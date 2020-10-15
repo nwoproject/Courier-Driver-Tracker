@@ -122,8 +122,3 @@ class NeuralNetwork:
                 output.append(tem)
 
         return output
-
-
-nn = NeuralNetwork()
-
-nn.train()

@@ -174,6 +174,9 @@ class MonthlyTraining:
                                                 each[4])
 
 
+
+
+
 training = MonthlyTraining(db.DBManagement())
 training.createMonthlyTrainingSet(4000)
 print("noice")
