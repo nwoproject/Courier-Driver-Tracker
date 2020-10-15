@@ -75,7 +75,8 @@ function LoginForm(){
                     </Form.Group>
                     <Button variant="primary" type="submit">
                         Submit
-                    </Button>
+                    </Button><br/><br/>
+    <Alert variant="info">If you do not have a profile and wish to have one to use the System, please email us at ctrlaltelite301@gmail.com and we will provide you with one. {<br/>}Please also include you First name, Surname and the email you wish to use so that we can create your account for you. </Alert>
                 </Form>
                 <br />
                 {Failed ? <Alert variant="danger">Incorrect Email or Password</Alert>:null}
