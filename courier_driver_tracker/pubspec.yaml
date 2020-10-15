@@ -55,6 +55,9 @@ dependencies:
   #navigation directions
   flutter_widget_from_html_core: ^0.4.3
 
+  #background
+  shared_preferences: ^0.5.4+3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -76,3 +79,15 @@ flutter:
     - family: OpenSans
       fonts:
         - asset: assets/fonts/OpenSans-Regular.ttf
+    
+    - family: Montserrat-regular
+      fonts:
+        - asset: assets/fonts/Montserrat-Regular.ttf
+    
+    - family: Montserrat-bold
+      fonts:
+        - asset: assets/fonts/Montserrat-Bold.ttf
+    
+    - family: Montserrat-thin
+      fonts:
+        - asset: assets/fonts/Montserrat-Thin.ttf

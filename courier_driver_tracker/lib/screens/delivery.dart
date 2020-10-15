@@ -78,6 +78,10 @@ class _FeedbackState extends State<Feedback> {
     } else {
       textController.clear();
       report();
+      NavigationService _navigator = NavigationService();
+      _navigator.notifyNotNearDelivery();
+      _navigator.sendCompletedRouteAPICall();
+      _navigator.moveToNextDelivery();
     }
   }
 

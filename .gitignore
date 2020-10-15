@@ -1,3 +1,11 @@
+
+courier_driver_tracker/android/local.properties
+
+courier_driver_tracker/ios/Flutter/Generated.xcconfig
+
+courier_driver_tracker/ios/Flutter/flutter_export_environment.sh
+
+.idea/
 courier_driver_tracker/.env
 .idea/
 /workspace.xml

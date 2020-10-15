@@ -52,6 +52,12 @@ class DeliveryRoute{
   String getDeliveryAddress(int deliveryRoute, int leg){
     return routes[deliveryRoute].getDeliveryAddress(leg);
   }
+  int getRouteDistance(int deliveryRoute){
+    return routes[deliveryRoute].getRouteDistance();
+  }
+  int getRouteDuration(int deliveryRoute){
+    return routes[deliveryRoute].getRouteDuration();
+  }
 
   LatLng getStepStartLatLng(int deliveryRoute, int leg, int step){
     return routes[deliveryRoute].getStepStartLatLng(leg, step);
@@ -72,4 +78,5 @@ class DeliveryRoute{
   LatLng getNextDeliveryLocation(int route, int leg){
     return routes[route].getNextDeliveryLocation(leg);
   }
+
 }

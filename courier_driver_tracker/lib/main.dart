@@ -1,3 +1,5 @@
+import 'package:courier_driver_tracker/screens/home.dart';
+import 'package:courier_driver_tracker/services/background/background_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:courier_driver_tracker/routing.dart';
 import 'package:flutter/services.dart';
@@ -17,8 +19,10 @@ class CourierDriverTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/',
       onGenerateRoute: Router.generateRoute,
+      home: BackgroundWidget(
+        child: HomePage(),
+      ),
     );
   }
 }

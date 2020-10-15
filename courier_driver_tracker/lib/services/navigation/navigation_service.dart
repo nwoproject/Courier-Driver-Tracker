@@ -19,11 +19,15 @@ class NavigationService {
    * Description: Navigation class.
    */
 
+  static final NavigationService _navigationService = NavigationService._construct();
+
   DeliveryRoute _deliveryRoutes;
+  bool _routesInitialised = false;
   int _currentRoute;
   int _currentLeg; // delivery
   int _currentStep; // directions
-  int _lengthRemainingAtNextDelivery; // number of points on route remaining at next delivery.
+  int _lengthRemainingAfterNextDelivery; // number of points on route remaining at next delivery.
+  int _lengthRemainingAfterNextStep;
   String jsonFile;
   LocalNotifications _notificationManager = LocalNotifications();
   AbnormalityService _abnormalityService = AbnormalityService();
@@ -32,6 +36,7 @@ class NavigationService {
   // Map polylines and markers
   Map<String, Polyline> polylines = {};
   Polyline currentPolyline;
+  LatLng previousPoint;
   Set<Marker> markers = {};
   Set<Circle> circles = {};
   LatLng northEast;
@@ -44,11 +49,14 @@ class NavigationService {
   String directions;
   String deliveryTimeRemaining;
   int distance;
+  String distanceString;
   String eta;
-  String distanceETA;
   String delivery;
   String deliveryAddress;
   String directionIconPath;
+
+  // observers
+  List<dynamic> subscribers = [];
 
   // Notifications
   Map<String, String> _abnormalityHeaders = {
@@ -66,11 +74,18 @@ class NavigationService {
     "driving_too_slow": "You are driving slow for a while now."
   };
 
-  NavigationService() {
-    _currentRoute = -1;
-    _currentLeg = 0;
-    _currentStep = 0;
+  NavigationService._construct() {
+    if(_currentRoute == null && _currentLeg == null && _currentStep == null){
+      _currentRoute = -1;
+      _currentLeg = 0;
+      _currentStep = 0;
+    }
   }
+
+  factory NavigationService(){
+    return _navigationService;
+  }
+
 
   //__________________________________________________________________________________________________
   //                            Initialisation
@@ -89,18 +104,20 @@ class NavigationService {
   initialiseRoutes() async {
     String initialised = await _storage.read(key: 'route_initialised');
     if (initialised != "true") {
+      _routesInitialised = false;
       return;
     }
 
     RouteLogging logger = RouteLogging();
     String jsonString = await logger.readFileContents("deliveries");
     if (jsonString == null || jsonString.length == 0) {
-      print(
-          "Dev: Error initialising routes from json file. [Navigation Service:initialiseRoutes]");
+      print("Dev: Error initialising routes from json file. [Navigation Service:initialiseRoutes]");
+      _routesInitialised = false;
       return;
     }
     Map<String, dynamic> json = jsonDecode(jsonString);
     _deliveryRoutes = DeliveryRoute.fromJson(json);
+    _routesInitialised = true;
   }
 
   initialisePolyPointsAndMarkers(int route) async {
@@ -151,7 +168,7 @@ class NavigationService {
       // Initializing Polyline
       Polyline polyline = Polyline(
           polylineId: id,
-          color: Colors.deepPurple[200],
+          color: Colors.lightBlue[100],
           points: polylineCoordinates,
           width: 10);
 
@@ -161,6 +178,7 @@ class NavigationService {
     }
     // after all polylines are created set current polyline for navigation.
     setCurrentPolyline();
+    notifyMapInfoChange();
   }
 
   initialiseBounds() {
@@ -172,14 +190,15 @@ class NavigationService {
 
   initialiseInfoVariables() {
     getDeliveryArrivalTime();
+    updateDistanceRemaining();
     int del = _currentLeg + 1;
     delivery = "Delivery $del";
     directions = getDirection();
     deliveryTimeRemaining = getTimeToDelivery();
-    String distance = updateDistanceRemaining();
-    distanceETA = "$distance . $eta";
     deliveryAddress = getCurrentDeliveryAddress();
     directionIconPath = getDirectionIcon();
+    notifyStepInfoChange();
+    notifyDeliveryInfoChange();
   }
 
   initialiseDeliveryCircle() {
@@ -192,17 +211,17 @@ class NavigationService {
       radius: 100.0,
     );
     circles.add(deliveryCircle);
+    notifyCircleChange();
   }
 
   clearAllSetVariables() {
-    directions = null;
-    deliveryTimeRemaining = null;
-    distance = null;
-    eta = null;
-    distanceETA = null;
-    delivery = null;
-    deliveryAddress = null;
-    directionIconPath = null;
+    directions = "";
+    deliveryTimeRemaining = "";
+    distance = 0;
+    eta = "N/A";
+    delivery = "N/A";
+    deliveryAddress ="";
+    directionIconPath = "assets/images/navigation_marker_white.png";
   }
 
   //__________________________________________________________________________________________________
@@ -216,17 +235,11 @@ class NavigationService {
    *              the driver is moving along the route between the points.
    */
   updateCurrentPolyline() {
-    /*
-    TODO
-      - fix to work with new current polyline
-     */
-
     try {
       if (_deliveryRoutes == null || currentPolyline == null) {
         throw "Route error";
       }
       LatLng positionOnPoly = calculatePointOnPolyline();
-
       // remove previous position from polyline
       currentPolyline.points.removeAt(0);
 
@@ -247,36 +260,70 @@ class NavigationService {
 
       while (currentPolyline.points.length > 0 &&
           currentPolyline.points.length > newLength) {
-        if (_currentStep + 1 <=
-            _deliveryRoutes
-                .routes[_currentRoute].legs[_currentLeg].steps.length -
-                1 &&
-            calculateDistanceBetween(
-                currentPolyline.points[0],
-                getStepStartLatLng(
-                    _currentRoute, _currentLeg, _currentStep + 1)) <
-                20) {
-          _currentStep += 1;
-        } else if (_currentStep - 1 >= 0 &&
-            _currentStep + 1 <=
-                _deliveryRoutes
-                    .routes[_currentRoute].legs[_currentLeg].steps.length -
-                    1 &&
-            (calculateDistanceBetween(
-                currentPolyline.points[0],
-                getStepEndLatLng(
-                    _currentRoute, _currentLeg, _currentStep - 1)) <
-                20)) {
-          _currentStep += 1;
+        if(_lengthRemainingAfterNextStep == null){
+          calculateNextStepPoint();
         }
-        currentPolyline.points.removeAt(0);
+        else if(_currentStep != _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length -1 && _lengthRemainingAfterNextStep >= currentPolyline.points.length){
+          _currentStep++;
+          calculateNextStepPoint();
+          // call update functions
+          updateDirections();
+          updateDeliveryTimeRemaining();
+          updateETA();
+          updateDirectionIconPath();
+
+          notifyStepInfoChange();
+        }
+        if(currentPolyline.points.length == newLength + 1){
+          previousPoint = currentPolyline.points.removeAt(0);
+        }
+        else{
+          currentPolyline.points.removeAt(0);
+        }
       }
+
       // re-add current position
-      currentPolyline.points.insert(0, positionOnPoly);
+      if(calculateDistanceBetween(currentPolyline.points[0], positionOnPoly) <
+          calculateDistanceBetween(currentPolyline.points[0], previousPoint) * 2){
+        currentPolyline.points.insert(0, positionOnPoly);
+      }
+
+      notifyMapInfoChange();
     } catch (error) {
       print("Failed to update current polyline.[$error]");
       return null;
     }
+  }
+
+  int calculateNextStepPoint(){
+    LatLng nextStepStart = getStepStartLatLng(_currentRoute, _currentLeg, _currentStep);
+    LatLng currentStepEnd;
+    if(_currentStep > 0){
+      currentStepEnd = getStepEndLatLng(_currentRoute, _currentLeg, _currentStep - 1);
+    }
+    else{
+      currentStepEnd = getStepEndLatLng(_currentRoute, _currentLeg, _currentStep);
+    }
+
+    for (int i = 0; i < currentPolyline.points.length; i++) {
+      if (_currentStep + 1 <= currentPolyline.points.length - 1 &&
+          calculateDistanceBetween(
+              currentPolyline.points[i],
+              nextStepStart) <
+              20) {
+        _lengthRemainingAfterNextStep = currentPolyline.points.length - i;
+        return _lengthRemainingAfterNextStep;
+      } else if (_currentStep - 1 >= 0 &&
+          _currentStep + 1 <=
+              _deliveryRoutes.routes[_currentRoute].legs[_currentLeg].steps.length - 1 &&
+          calculateDistanceBetween(
+              currentPolyline.points[i],
+              currentStepEnd) < 20) {
+        _lengthRemainingAfterNextStep = currentPolyline.points.length - i;
+        return _lengthRemainingAfterNextStep;
+      }
+    }
+    return -1;
   }
 
   String updateDistanceRemaining() {
@@ -311,52 +358,39 @@ class NavigationService {
         m = (m / 100).round();
         totalDistance = (totalDistance / 10).round() * 10;
         distance = totalDistance;
-        return "$km,$m km";
+        distanceString = "$km,$m km";
+        notifyDistanceChange();
+        return distanceString;
       }
 
       totalDistance = (totalDistance / 10).round() * 10;
       distance = totalDistance;
-      return "$totalDistance m";
+      distanceString = "$totalDistance m";
+      notifyDistanceChange();
+
+      return distanceString;
     } catch (error) {
       print("Failed to update distance-eta.[$error]");
       return "N/A";
     }
   }
 
-  String updateDistanceETA() {
+  String updateETA(){
     if (_deliveryRoutes == null) {
       return null;
     }
-    DateTime now = DateTime.now();
-    int totalTime =
-    _deliveryRoutes.getDeliveryDuration(_currentRoute, _currentLeg);
-    for (int i = 0; i < _currentStep; i++) {
-      totalTime -=
-          _deliveryRoutes.getStepDuration(_currentRoute, _currentLeg, i);
+
+    getDeliveryArrivalTime();
+    return eta;
+  }
+
+  String updateDirectionIconPath(){
+    if (_deliveryRoutes == null) {
+      return null;
     }
 
-    totalTime = (totalTime / 60).ceil();
-    now = now.add(Duration(minutes: totalTime));
-    String distance = updateDistanceRemaining();
-    int hours = now.hour;
-    String hourString;
-    int minutes = now.minute;
-    String minuteString;
-
-    if (hours < 10) {
-      hourString = "0$hours";
-    } else {
-      hourString = "$hours";
-    }
-    if (minutes < 10) {
-      minuteString = "0$minutes";
-    } else {
-      minuteString = "$minutes";
-    }
-
-    distanceETA = "$distance . $hourString:$minuteString";
-
-    return distanceETA;
+    getDirectionIcon();
+    return directionIconPath;
   }
 
   String updateDeliveryTimeRemaining() {
@@ -373,6 +407,7 @@ class NavigationService {
     totalTime = (totalTime / 60).ceil();
 
     deliveryTimeRemaining = "$totalTime min";
+
     return deliveryTimeRemaining;
   }
 
@@ -382,30 +417,8 @@ class NavigationService {
     }
     getDirectionIcon();
     directions = getDirection();
+
     return directions;
-  }
-
-  updateCurrentDeliveryRoutes() async {
-    // store and switch
-    String currentRoute = await _storage.read(key: 'current_route');
-
-    if (currentRoute != null &&
-        currentRoute != '$_currentRoute' &&
-        currentRoute != '-1') {
-      _storage.write(
-          key: 'route$_currentRoute', value: '$_currentLeg-$_currentStep');
-      String savedRouteInfo = await _storage.read(key: 'route$currentRoute');
-      List<String> routeInfo =
-      savedRouteInfo != null ? savedRouteInfo.split("-") : ["0", "0"];
-      _currentRoute = int.parse(currentRoute);
-      _currentLeg = int.parse(routeInfo[0]);
-      _currentStep = int.parse(routeInfo[1]);
-
-      clearAllSetVariables();
-      initialisePolyPointsAndMarkers(_currentRoute);
-      initialiseBounds();
-      initialiseInfoVariables();
-    }
   }
 
   //__________________________________________________________________________________________________
@@ -418,16 +431,16 @@ class NavigationService {
         return;
       }
 
-      if (_lengthRemainingAtNextDelivery == null) {
+      if (_lengthRemainingAfterNextDelivery == null) {
         calculateNextDeliveryPoint();
       }
 
-      if (_lengthRemainingAtNextDelivery == null) {
+      if (_lengthRemainingAfterNextDelivery == null) {
         throw "Delivery point not found";
       }
 
       int lengthRemaining = polylines["$_currentRoute"].points.length -
-          _lengthRemainingAtNextDelivery;
+          _lengthRemainingAfterNextDelivery;
 
       List<LatLng> currentPoints = [];
       polylines["current"] = null;
@@ -441,7 +454,7 @@ class NavigationService {
       currentPolyline = Polyline(
           polylineId: PolylineId("current"),
           points: currentPoints,
-          color: Colors.deepPurple[400],
+          color: Colors.blueAccent,
           width: 8,
           zIndex: 1000
       );
@@ -460,9 +473,122 @@ class NavigationService {
         : -1);
   }
 
+  setPreviousPoint(LatLng point){
+    previousPoint = point;
+  }
+
+  //__________________________________________________________________________________________________
+  //                            Observers
+  //__________________________________________________________________________________________________
+
+  subscribe(dynamic subscriber){
+    subscribers.add(subscriber);
+  }
+
+  unsubscribe(dynamic subscriber){
+    subscribers.remove(subscriber);
+  }
+
+  notifyStepInfoChange(){
+    notifyDirectionChange();
+    notifyTimeRemainingChange();
+    notifyETAChange();
+    notifyDirectionIconPathChange();
+  }
+
+  notifyDeliveryInfoChange(){
+    notifyDeliveryChange();
+    notifyDeliveryAddressChange();
+  }
+
+  notifyMapInfoChange(){
+    notifyPolylineChange();
+    notifyMarkerChange();
+  }
+
+  notifyDirectionChange(){
+    subscribers.forEach((element) {
+      element.setDirection(directions);
+    });
+  }
+
+  notifyTimeRemainingChange(){
+    subscribers.forEach((element) {
+      element.setTimeRemaining(deliveryTimeRemaining);
+    });
+  }
+
+  notifyDistanceChange(){
+    subscribers.forEach((element) {
+      element.setDistance(distanceString);
+    });
+  }
+
+  notifyETAChange(){
+    subscribers.forEach((element) {
+      element.setETA(eta);
+    });
+  }
+
+  notifyDeliveryChange(){
+    subscribers.forEach((element) {
+      element.setDelivery(delivery);
+    });
+  }
+
+  notifyDeliveryAddressChange(){
+    subscribers.forEach((element) {
+      element.setDeliveryAddress(deliveryAddress);
+    });
+  }
+
+  notifyDirectionIconPathChange(){
+    subscribers.forEach((element) {
+      element.setDirectionIconPath(directionIconPath);
+    });
+  }
+
+  notifyPolylineChange(){
+    subscribers.forEach((element) {
+      element.setPolylines(polylines);
+    });
+  }
+
+  notifyCircleChange(){
+    subscribers.forEach((element) {
+      element.setCircles(circles);
+    });
+  }
+
+  notifyMarkerChange(){
+    subscribers.forEach((element) {
+      element.setMarkers(markers);
+    });
+  }
+
+  notifyNearDelivery(){
+    subscribers.forEach((element) {
+      element.setNearDelivery(true);
+    });
+  }
+
+  notifyNotNearDelivery(){
+    subscribers.forEach((element) {
+      element.setNearDelivery(false);
+    });
+  }
+
   //__________________________________________________________________________________________________
   //                            Getters
   //__________________________________________________________________________________________________
+
+  bool isRouteInitialised(){
+    return _routesInitialised;
+  }
+
+  Position getPosition(){
+    return _position;
+  }
 
   int getRoute() {
     return _currentRoute;
@@ -474,6 +600,10 @@ class NavigationService {
 
   int getStep() {
     return _currentStep;
+  }
+
+  DeliveryRoute getDeliveryRoutes(){
+    return _deliveryRoutes;
   }
 
   /*
@@ -544,6 +674,24 @@ class NavigationService {
     return (_deliveryRoutes.getStepDistance(
         _currentRoute, _currentLeg, _currentStep) /
         10).round() * 10;
+  }
+
+  int getRouteDistance(int route) {
+    if (_deliveryRoutes == null) {
+      return null;
+    }
+
+    return (_deliveryRoutes.getRouteDistance(route) / 10)
+            .round() * 10;
+
+  }
+
+  int getRouteDuration(int route){
+    if (_deliveryRoutes == null) {
+      return null;
+    }
+
+    return _deliveryRoutes.getRouteDuration(route);
   }
 
   String getDeliveryDistance() {
@@ -767,7 +915,15 @@ class NavigationService {
         return null;
       }
 
-      LatLng start = currentPolyline.points[0];
+      /*
+      TODO
+        - Fix this shit
+       */
+
+      LatLng start = previousPoint;
+      if(start == null){
+        start = currentPolyline.points[0];
+      }
       LatLng end = currentPolyline.points[1];
 
       // work out perpendicular intersect of line between polyline points and line that goes through current position.
@@ -792,9 +948,9 @@ class NavigationService {
         if (calculateDistanceBetween(
             delivery, polylines["$_currentRoute"].points[i]) <
             2) {
-          _lengthRemainingAtNextDelivery =
+          _lengthRemainingAfterNextDelivery =
               polylines["$_currentRoute"].points.length - i;
-          return _lengthRemainingAtNextDelivery;
+          return _lengthRemainingAfterNextDelivery;
         }
       }
       return null;
@@ -807,21 +963,35 @@ class NavigationService {
     bool isNearDelivery() {
       try {
         if(currentPolyline.points.length < 2){
-          throw "Not enough points on polyline to calculate";
+          LatLng current = LatLng(_position.latitude, _position.longitude);
+          print(getNextDeliveryLocation());
+          if(calculateDistanceBetween(current, getNextDeliveryLocation()) < 40){
+            nearDelivery = true;
+            notifyNearDelivery();
+            showDeliveryRadiusOnMap();
+            isAtDelivery();
+            return true;
+          }
+          else{
+            throw "Not enough points on polyline to calculate";
+          }
         }
         int dist = calculateDistanceBetween(
             currentPolyline.points[0], currentPolyline.points.last);
         if (dist < 50) {
           nearDelivery = true;
+          notifyNearDelivery();
           isAtDelivery();
         } else {
           nearDelivery = false;
+          notifyNotNearDelivery();
         }
         showDeliveryRadiusOnMap();
         return nearDelivery;
       } catch (error) {
         print("Failed to determine if near delivery.[$error]");
         nearDelivery = false;
+        notifyNotNearDelivery();
         return nearDelivery;
       }
     }
@@ -832,12 +1002,12 @@ class NavigationService {
       } else {
         circles = {};
       }
+      notifyCircleChange();
     }
 
     bool isAtDelivery() {
-      if (calculateDistanceBetween(
-          currentPolyline.points[0], currentPolyline.points.last) <
-          _position.accuracy + 50) {
+      if (currentPolyline.points.length < 3 || calculateDistanceBetween(currentPolyline.points[0], currentPolyline.points.last) < 40) {
+        notifyNearDelivery();
         atDelivery = true;
       }
       return atDelivery;
@@ -867,6 +1037,9 @@ class NavigationService {
     }
 
     sendCompletedRouteAPICall() async {
+      if(_currentLeg != _deliveryRoutes.routes.length -1){
+        return;
+      }
       ApiHandler api = ApiHandler();
       var id = await api.getActiveRouteID(_currentRoute);
       api.completeRoute(id, _position);
@@ -884,6 +1057,11 @@ class NavigationService {
         _currentStep = 0;
         nearDelivery = false;
         atDelivery = false;
+        notifyCircleChange();
+        notifyNotNearDelivery();
+        notifyMapInfoChange();
+        notifyDeliveryInfoChange();
+        notifyDeliveryChange();
         return;
       }
 
@@ -898,6 +1076,7 @@ class NavigationService {
       setCurrentPolyline();
       clearAllSetVariables();
       initialiseInfoVariables();
+      notifyDeliveryChange();
     }
 
     //__________________________________________________________________________________________________
@@ -919,6 +1098,7 @@ class NavigationService {
     - update current polyline
     - update the info vars for map
      */
+
       if (_deliveryRoutes == null) {
         initialiseRoutes();
         return;
@@ -926,14 +1106,11 @@ class NavigationService {
 
       if (_notificationManager == null) {
         _notificationManager = LocalNotifications();
-        _notificationManager.initializing(context);
+        initialiseNotifications(context);
       }
       if (!_notificationManager.initialised) {
-        print("Here");
         _notificationManager.initializing(context);
       }
-
-      updateCurrentDeliveryRoutes();
 
       if (_currentRoute == -1) {
         String currentRoute = await _storage.read(key: 'current_route');
@@ -966,24 +1143,22 @@ class NavigationService {
         //_abnormalityService.getSpeedLimit(currentPolyline.points);
       }
       if (directions == null ||
-          distance == null ||
-          distanceETA == null ||
+          distanceString == null ||
           delivery == null ||
           deliveryAddress == null ||
           directionIconPath == null) {
+
         initialiseInfoVariables();
         return;
       }
-
-      if (_lengthRemainingAtNextDelivery == null) {
+      if (_lengthRemainingAfterNextDelivery == null) {
         calculateNextDeliveryPoint();
-        if (_lengthRemainingAtNextDelivery == null) {
+        if (_lengthRemainingAfterNextDelivery == null) {
           print("Dev: Couldn't find next delivery Point");
           return;
         }
       }
-
-      if (currentPolyline.points.length < 4) {
+      if (currentPolyline.points.length < 10) {
         isNearDelivery();
       }
 
@@ -1027,7 +1202,6 @@ class NavigationService {
 //          //_notificationManager.showNotifications(_abnormalityHeaders["driving_too_slow"], _abnormalityMessages["driving_too_slow"]);
 //        }
         //update info
-        updateDistanceETA();
         updateDeliveryTimeRemaining();
         updateDistanceRemaining();
         updateDirections();
@@ -1054,17 +1228,9 @@ class NavigationService {
       }
     }
   }
-
-/*
-TODO
-  - see if old route is still saved, meaning incomplete. create abnormality
-  - store current route, leg and step in secure storage for if they change route
-  - read in all of the above variables in case it is stored
-  - change icons on delivery page
-  */
 /*
  TODO
-  -navigation
+  navigation
   - update storage variables
   - when routes are completed, delete file clear uncalculated and calculating
  */

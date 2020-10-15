@@ -19,10 +19,9 @@ class MapSampleState extends State<GMap> {
   // Google map setup
   CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
   GoogleMapController mapController;
-  Set<Marker> markers = {};
-  Set<Circle> circles = {};
-  List<LatLng> polylineCoordinates = [];
-  Map<String, Polyline> polylines = {};
+  Set<Marker> _markers = {};
+  Set<Circle> _circles = {};
+  Map<String, Polyline> _polylines = {};
   bool lockedOnPosition = true;
 
   List<Widget> _deliveries = [];
@@ -37,15 +36,15 @@ class MapSampleState extends State<GMap> {
 
   // Navigation
   int _route;
-  static String _routeFile = "route.json";
   NavigationService _navigatorService = NavigationService();
   String _directions = "LOADING...";
   String _stepTimeRemaining = "LOADING...";
-  String _distanceETA = "";
+  String _distance = "";
+  String _eta = "";
   String _delivery = "LOADING...";
   String _deliveryAddress = "";
   String _directionIconPath = "assets/images/navigation_marker_white.png";
-  bool atDelivery = false;
+  bool _atDelivery = false;
 
   @override
   void initState() {
@@ -53,7 +52,7 @@ class MapSampleState extends State<GMap> {
     getCurrentLocation();
     getCurrentRoute();
     _createRoute();
-    setInformationVariables();
+    _navigatorService.subscribe(this);
   }
 
   BorderRadiusGeometry radius = BorderRadius.only(
@@ -63,7 +62,7 @@ class MapSampleState extends State<GMap> {
 
   final headingLabelStyle = TextStyle(
     fontSize: 20,
-    fontFamily: 'OpenSans-Regular',
+    fontFamily: 'Montserrat',
   );
 
   Widget _deliveryCards(String text) {
@@ -82,7 +81,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Sets current location and Google maps polylines if not set.
@@ -102,14 +100,60 @@ class MapSampleState extends State<GMap> {
     }
   }
 
+  setDirection(String directions) {
+    _directions = directions;
+  }
+
+  setTimeRemaining(String deliveryTimeRemaining) {
+    _stepTimeRemaining = deliveryTimeRemaining;
+  }
+
+  setDistance(String distance) {
+    _distance = distance;
+  }
+
+  setETA(String eta) {
+    _eta = eta;
+  }
+
+  setDelivery(String delivery) {
+    _delivery = delivery;
+  }
+
+  setDeliveryAddress(String deliveryAddress) {
+    _deliveryAddress = deliveryAddress;
+  }
+
+  setDirectionIconPath(String directionIconPath) {
+    _directionIconPath = directionIconPath;
+  }
+
+  setPolylines(Map<String, Polyline> poly) {
+    _polylines = poly;
+  }
+
+  setCircles(Set<Circle> circles) {
+    _circles = circles;
+  }
+
+  setMarkers(Set<Marker> markers) {
+    _markers = markers;
+  }
+
+  setNearDelivery(bool near){
+    _atDelivery = near;
+  }
+
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to current location.
    */
   moveToCurrentLocation() {
     // Move camera to the specified latitude & longitude
+    if(_currentPosition == null || mapController == null){
+      return;
+    }
     mapController
         .animateCamera(
       CameraUpdate.newCameraPosition(
@@ -130,7 +174,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to show entire route.
@@ -161,7 +204,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Zooms in or out on Google map camera to show route within screen bounds.
@@ -198,7 +240,6 @@ class MapSampleState extends State<GMap> {
   }
 
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Moves Google map camera to current location
@@ -245,43 +286,7 @@ class MapSampleState extends State<GMap> {
         southWestLongitudeCheck;
   }
 
-  setInformationVariables() {
-    if (_navigatorService.directions != null) {
-      _directions = _navigatorService.directions;
-    } else {
-      _directions = "LOADING...";
-    }
-    if (_navigatorService.deliveryTimeRemaining != null) {
-      _stepTimeRemaining = _navigatorService.deliveryTimeRemaining;
-    } else {
-      _stepTimeRemaining = "LOADING...";
-    }
-    if (_navigatorService.distanceETA != null) {
-      _distanceETA = _navigatorService.distanceETA;
-    } else {
-      _distanceETA = "";
-    }
-    if (_navigatorService.delivery != null) {
-      _delivery = _navigatorService.delivery;
-    } else {
-      _delivery = "LOADING...";
-    }
-    if (_navigatorService.deliveryAddress != null) {
-      _deliveryAddress = _navigatorService.deliveryAddress;
-    } else {
-      _deliveryAddress = "";
-    }
-    if (_navigatorService.directionIconPath != null) {
-      _directionIconPath = _navigatorService.directionIconPath;
-    } else {
-      _directionIconPath = "assets/images/navigation_marker_white.png";
-    }
-    circles = _navigatorService.circles;
-    atDelivery = _navigatorService.atDelivery;
-  }
-
   /*
-   * Author: Gian Geyser
    * Parameters: none
    * Returns: none
    * Description: Creates the whole routes polylines and sets markers.
@@ -291,7 +296,7 @@ class MapSampleState extends State<GMap> {
       - make new function to replace polylines.
      */
     await _navigatorService.initialisePolyPointsAndMarkers(_route);
-    markers = _navigatorService.markers;
+    _markers = _navigatorService.markers;
   }
 
   _updatePolyline() {
@@ -300,7 +305,7 @@ class MapSampleState extends State<GMap> {
         _route >= 0 &&
         _navigatorService.currentPolyline != null &&
         _navigatorService.polylines["$_route"] != null) {
-      polylines = {
+      _polylines = {
         "current": _navigatorService.currentPolyline,
         "$_route": _navigatorService.polylines["$_route"]
       };
@@ -334,8 +339,6 @@ class MapSampleState extends State<GMap> {
       setDeliveries();
 
       _updatePolyline();
-
-      setInformationVariables();
       if (lockedOnPosition) {
         moveToCurrentLocation();
       }
@@ -377,10 +380,10 @@ class MapSampleState extends State<GMap> {
                     padding:
                         const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(atDelivery ? "Arrived" : _stepTimeRemaining,
+                      child: Text(_atDelivery ? "Arrived" : _stepTimeRemaining,
                           style: TextStyle(
                               color: Colors.green,
-                              fontFamily: "OpenSans-Regular",
+                              fontFamily: "Montserrat",
                               fontSize: fontSize,
                               fontWeight: FontWeight.w600)),
                     ),
@@ -389,49 +392,53 @@ class MapSampleState extends State<GMap> {
                     padding:
                         const EdgeInsets.only(top: 10.0, left: 10.0, right: 10),
                     child: Center(
-                      child: Text(atDelivery ? "at Destination" : _distanceETA,
+                      child: Text(
+                          _atDelivery ? "at Destination" : "$_distance . $_eta",
                           style: TextStyle(
                               color: Colors.grey,
-                              fontFamily: "OpenSans-Regular",
+                              fontFamily: "Montserrat",
                               fontSize: fontSize - 5)),
                     ),
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 5, right: 5),
-                child: VerticalDivider(
-                  width: 10.0,
+              VerticalDivider(
+                  width: 20.0,
                   color: Colors.grey,
                   thickness: 1,
                   indent: 10,
                   endIndent: 10,
-                ),
               ),
-              Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
-                    child: Center(
-                      child: Text(_delivery,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: "OpenSans-Regular",
-                              fontSize: fontSize,
-                              fontWeight: FontWeight.w600)),
+
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Center(
+                        child: Text(_delivery,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "OpenSans-Regular",
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.w600)),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0, left: 15.0),
-                    child: Center(
-                      child: Text(_deliveryAddress,
-                          style: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: "OpenSans-Regular",
-                              fontSize: fontSize - 5)),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Center(
+                        child: Text(_deliveryAddress,
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontFamily: "OpenSans-Regular",
+                                fontSize: fontSize - 5)),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -451,12 +458,12 @@ class MapSampleState extends State<GMap> {
                       Container(
                         child: GoogleMap(
                           initialCameraPosition: _initialLocation,
-                          markers: markers != null
-                              ? Set<Marker>.from(markers)
+                          markers: _markers != null
+                              ? Set<Marker>.from(_markers)
                               : null,
-                          polylines: Set<Polyline>.of(polylines.values),
-                          circles: circles != null
-                              ? Set<Circle>.from(circles)
+                          polylines: Set<Polyline>.of(_polylines.values),
+                          circles: _circles != null
+                              ? Set<Circle>.from(_circles)
                               : null,
                           myLocationEnabled: true,
                           myLocationButtonEnabled: false,
@@ -556,7 +563,7 @@ class MapSampleState extends State<GMap> {
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 200.0),
                           child: Container(
-                            child: atDelivery
+                            child: _atDelivery
                                 ? RaisedButton(
                                     padding: EdgeInsets.symmetric(
                                         vertical: 12.0, horizontal: 40.0),
@@ -568,13 +575,15 @@ class MapSampleState extends State<GMap> {
                                     child: Text(
                                       "FINISH DELIVERY",
                                       style: TextStyle(
-                                          fontSize: 30.0, color: Colors.white),
+                                          fontSize: 30.0,
+                                          color: Colors.white,
+                                          fontFamily: "Montserrat"),
                                     ),
                                     color: Colors.green,
                                     onPressed: () {
                                       Navigator.of(context)
                                           .pushNamed("/reportDelivery");
-                                      _navigatorService.moveToNextDelivery();
+
                                     },
                                   )
                                 : Container(),
