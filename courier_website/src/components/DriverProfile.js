@@ -6,6 +6,7 @@ import Alert from 'react-bootstrap/Alert';
 
 import CenterPoint from './CenterPoint';
 import DeleteDriver from './DeleteDriver';
+import DriverRoutes from './DriverRoutes';
 
 import './style/style.css';
 
@@ -17,6 +18,7 @@ function DriverProfile(props){
     const [EditCenter, setEC] = useState(false);
     const [InvalidId, setIID] = useState(false);
     const [ShowDeleteDriver, setSDD] = useState(false);
+    const [ShowDeleteRoutes, setSDR] = useState(false);
 
     useEffect(()=>{
         let Token = "Bearer "+ process.env.REACT_APP_BEARER_TOKEN;
@@ -50,6 +52,9 @@ function DriverProfile(props){
         }
         else if(event.target.name==="ShowDD"){
             setSDD(!ShowDeleteDriver);
+        }
+        else if(event.target.name==="ShowDR"){
+            setSDR(!ShowDeleteRoutes);
         }  
     }
 
@@ -78,6 +83,9 @@ function DriverProfile(props){
                             <hr className="BorderLine"/>
                             <Button name="ShowDD" onClick={handleChange}>Delete Driver</Button>
                             {ShowDeleteDriver ? <div><br/><DeleteDriver DriverID={props.DriverID}/></div>:null}
+                            <hr className="BorderLine"/>
+                            <Button name="ShowDR" onClick={handleChange}>Delete Driver Routes</Button>
+                            {ShowDeleteRoutes ? <div><br /><DriverRoutes DriverID={props.DriverID}/></div>:null}
                         </Card.Body>
                     </div>
                 }

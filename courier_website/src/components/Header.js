@@ -32,7 +32,7 @@ function Header() {
                     </Nav.Link>
                     {Logged ? 
                         <Nav.Link href="#routes" as={Link} to="/pages/Routes">
-                            Routes
+                            Create Routes
                         </Nav.Link>
                     :null}
                     {Logged ? 
@@ -42,7 +42,7 @@ function Header() {
                     :null}
                     {Logged ? 
                         <Nav.Link href="#ManageDrivers" as={Link} to="/pages/ManageDrivers">
-                            Manage Drivers
+                            Manage Drivers and Routes
                         </Nav.Link>
                     :null}
                     {Logged ? 

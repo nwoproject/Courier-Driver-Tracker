@@ -15,6 +15,8 @@ function TrackMap(props){
     const [DriverNotFound, setDF] = useState(false);
     const [ServerError, setSE] = useState(false);
     const [Looking, setL] = useState(true);
+    const [ActiveRoute, setAR] = useState(true);
+    const [ActiveTime, setAT] = useState(true);
 
     const mapStyles = {
         'width': '90%',
@@ -26,6 +28,24 @@ function TrackMap(props){
 
 
     useEffect(()=>{
+        fetch(process.env.REACT_APP_API_SERVER+"/api/routes/"+props.ID,{
+            method : 'GET',
+            headers:{
+                'authorization': "Bearer "+process.env.REACT_APP_BEARER_TOKEN,
+                'Content-Type' : 'application/json'
+            }
+        })
+        .then(response=>{
+            if(response.status===404){
+                setAR(false);
+            }
+            else{
+                let CurrentTime = new Date();
+                if(CurrentTime.getHours()>17||CurrentTime.getHours()<9){
+                    setAT(false);
+                }   
+            }
+        });
         const interval = setInterval(()=>{
             setL(true);
             let Call = process.env.REACT_APP_API_SERVER+"/api/location/driver?id="+props.ID;
@@ -69,8 +89,12 @@ function TrackMap(props){
                     <Card.Header>
                         {"Tracking "+DriverName + " " + DriverSurname}
                     </Card.Header>
+                    <div>
+                        {ActiveRoute ? null:<Alert variant="warning">This driver does not have an Active Route. This is thus a Last Known Location</Alert>}
+                        {ActiveTime ? null:<Alert variant="warning">It is currently Not Working Hours. This is thus a Last Known Location</Alert>}
+                    </div>
                     <Card.Body>
-                        <div className="MapDiv">
+                        <div className="MapDiv">    
                             <Map
                                 google={props.google}
                                 zoom={14}
