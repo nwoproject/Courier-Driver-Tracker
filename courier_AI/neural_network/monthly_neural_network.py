@@ -124,6 +124,3 @@ class NeuralNetwork:
         return output
 
 
-nn = NeuralNetwork()
-
-nn.train()

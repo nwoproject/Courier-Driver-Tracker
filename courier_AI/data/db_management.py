@@ -65,7 +65,6 @@ class DBManagement:
             "days": days
         }
 
-
         r = Session()
         headers = {
             'Accept': 'application/json',
@@ -140,6 +139,16 @@ class DBManagement:
         print(cursor.rowcount, "Abnormalities for driver with ID: " + str(driverID) + " have been inserted")
 
     #   Database GETTERS
+    def getDriverInputs(self):
+        cursor = self.conn.cursor()
+        sql = "SELECT driver_id, day1, day2, day3, day4, day5 from driver_abnormalities"
+        cursor.execute(sql)
+        self.conn.commit()
+
+        records = cursor.fetchall()
+
+        return records
+
     def getWeeklyInputs(self):
 
         cursor = self.conn.cursor()
@@ -383,5 +392,5 @@ class DBManagement:
         return abnormalities
 
 db = DBManagement()
-db.insertMonthlyReport(20, [-1, 0.0, 0.1, 0.0, 0.0], [-1, 1], [-1, 102, 103, 106], "Recurring")
-db.insertWeeklyReport(20, [-1, 0, 0, 0, 1, 0], [2, 3], [-1, 102, 103], "Recurring")
+# db.insertMonthlyReport(20, [-1, 0.0, 0.1, 0.0, 0.0], [-1, 1], [-1, 102, 103, 106], "Recurring")
+# db.insertWeeklyReport(20, [-1, 0, 0, 0, 1, 0], [2, 3], [-1, 102, 103], "Recurring")
