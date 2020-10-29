@@ -11,7 +11,7 @@ function Pattern(props){
     const [PatternList, setPL] = useState();
     const [Loading, setL] = useState(true);
     const [DriverList, setDL] = useState();
-    const [Pattern404, setP404] = useState(false);
+    const [Pattern404, setP404] = useState(true);
 
     useEffect(()=>{
         fetch(process.env.REACT_APP_API_SERVER+"/api/patterns/report/"+props.time,{
@@ -30,6 +30,12 @@ function Pattern(props){
                 response.json()
                 .then(result=>{
                     setPL(result);
+                    console.log(result);
+                    for(let i=0;i<result.length;i++){
+                        if(result[i].pattern_detected === "None"){
+                            result[i].abnormality = [404];
+                        }
+                    }
                 })
                 .then(()=>{
                     fetch(process.env.REACT_APP_API_SERVER+"/api/reports/drivers",{
@@ -43,6 +49,7 @@ function Pattern(props){
                     .then(result=>{
                         setDL(result.drivers);
                         setL(false);
+                        setP404(false);
                     });
                 });
             }
@@ -78,6 +85,9 @@ function Pattern(props){
         }
         else if(code==106){
             return(<div>Driver skipped a delivery on his route<b /></div>);
+        }
+        else{
+            return(<div>No Abnormalities Detected</div>);
         }
     }
 
